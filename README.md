@@ -2,6 +2,14 @@
 
 A local Yu-Gi-Oh! practice client based on [MDPro3](https://github.com/daominah/mdpro3fork), with TCG Advanced and Genesys rules, AI opponents, a deck editor, and the original duel presentation.
 
+## Download for Windows
+
+[Download Matteo Duel Setup](https://github.com/MatteoGXC/matteo-duel/releases/latest/download/Matteo-Duel-Setup.exe), run it, and choose an installation folder. Setup downloads the complete game, verifies the archives, and creates a desktop shortcut. No Unity installation is needed. Keep the game's runtime and asset folders together; the game EXE alone is insufficient.
+
+For a portable install, download all `Matteo-Duel-Windows-*.zip` assets from the [latest release](https://github.com/MatteoGXC/matteo-duel/releases/latest) and extract them into the same empty folder. Run `Matteo-Duel.exe`. GitHub's automatic **Source code** ZIP is for development and does not include the runtime asset packs.
+
+Solo works offline after installation. The embedded room server currently binds to localhost: remote multiplayer hosting is not ready in this build. LAN hosting requires an explicit network listener; internet hosting additionally requires routing/firewall configuration or a hosted room service. No public lobby service is bundled.
+
 ## Playing
 
 - **My Decks** opens your deck library directly. Corner badges show each deck's saved format: TCG, Genesys (100 points), Genesys 0, or its custom point cap. Each deck has its own **Format** button in the editor; the format and cap are saved inside the YDK file.
@@ -11,7 +19,7 @@ A local Yu-Gi-Oh! practice client based on [MDPro3](https://github.com/daominah/
 
 ## Build and verification
 
-See [FORMAT-BUILD.md](FORMAT-BUILD.md) for Unity, native engine, runtime asset, data snapshot, and Windows build instructions. Runtime art/font bundles must be restored separately as described there; this repository does not provide a newly packaged game download.
+See [FORMAT-BUILD.md](FORMAT-BUILD.md) for Unity, native engine, runtime asset, data snapshot, and Windows build instructions. Developers building from source must restore runtime art/font bundles as described there; players can use the packaged release above.
 
 ```powershell
 python Tools/prepare-solo-decks.py
