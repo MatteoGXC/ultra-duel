@@ -5,8 +5,8 @@ A local Yu-Gi-Oh! practice client based on [MDPro3](https://github.com/daominah/
 ## Playing
 
 - **My Decks** opens your deck library directly. Each deck has its own **Format** button in the editor; TCG or Genesys and its point cap are saved inside the YDK file.
-- **Play Solo** uses the selected deck's saved format. TCG and Genesys use separate AI deck libraries. Opponents incompatible with the current format or point cap are excluded, including from Random selection.
-- The TCG library contains 57 builds with forbidden cards removed and limited copies corrected. Genesys has 52 compatible builds, with 10 fitting a 100-point cap. Custom AI decks are validated before a duel starts.
+- **Play Solo** starts with the selected deck's saved format and has its own format/point-cap switch and player-deck selector. TCG and Genesys use separate AI deck libraries. Opponents incompatible with the current format or point cap are excluded, including from Random selection.
+- Solo offers 14 TCG and 15 Genesys published lists, with a mix of Casual, Standard, and Hard practice opponents. Difficulty labels are estimates, not tournament rankings. Sources and exact card arrays are recorded in `Data/solo-published-decks.json`. Cards are imported unchanged; there is no automatic rebuilding, substitution, trimming, or staple filling. Custom AI decks are validated before play.
 - The home screen prioritizes Solo and Decks. LP notifications distinguish damage from activation costs. Optional card-preview visuals cannot interrupt a monster's movement from hand to field.
 
 ## Build and verification
@@ -18,9 +18,9 @@ python Tools/prepare-solo-decks.py
 python Tests/NativeServerProtocolTests.py --all-solo
 ```
 
-The Solo audit checks every generated deck against the installed TCG/Genesys data. Native TCP checks cover all 109 builds and 50 below-cap rejection cases. Packaged runtime checks cover the opponent catalog, actual AI admission, deck profiles, direct-damage mapping, hand-to-field movement, and field destruction without removing unrelated hand cards.
+The Solo audit validates every published list against the installed TCG/Genesys snapshots and records file hashes. Native TCP checks cover every catalog entry and below-cap rejection for every Genesys list. Packaged runtime checks cover the opponent catalog, AI admission, deck profiles, damage mapping, hand movement, and destruction.
 
-These checks establish deck construction and tested gameplay paths; every card interaction and every AI strategy's playing strength have not been exhaustively tested. Rule snapshots and unavailable card names are recorded in Data/format-data-sources.json; regenerate and revalidate the Solo libraries when updating rules or card data.
+Only sourced, compatible opponents are offered, including by Random. An archetype without a compatible published list is unavailable; Pendulum/Link strategies cannot be converted to Genesys unchanged. Lower custom caps may leave no built-in opponents; the Custom AI option still accepts legal user decks. These checks establish deck legality and tested paths, not exhaustive combo execution or playing strength. To update rules, revalidate the published snapshots; never alter a source list to force it to fit.
 
 ## Credits and license
 

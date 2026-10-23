@@ -83,16 +83,89 @@ namespace MDPro3.UI.ServantUI
         private const int DEFAULT_DRAW = 1;
 
         public SuperScrollView superScrollView;
+        private TextMeshProUGUI formatLabel;
+        private TextMeshProUGUI playerDeckLabel;
+        private GameObject formatControls;
+        private GameObject sourceControl;
+        private string selectedSource;
 
         public override void Initialize(Servant.Servant servant)
         {            
             base.Initialize(servant);
             ButtonDeck.gameObject.SetActive(false);
+            formatControls = new GameObject("Solo format controls", typeof(RectTransform));
+            formatControls.layer = gameObject.layer;
+            var controls = formatControls.GetComponent<RectTransform>();
+            controls.SetParent(Root, false);
+            controls.anchorMin = Vector2.zero;
+            controls.anchorMax = Vector2.one;
+            controls.offsetMin = controls.offsetMax = Vector2.zero;
+            playerDeckLabel = AddSoloControl("Your deck", .34f, .30f, () => {
+                Program.instance.deckSelector.SwitchCondition(DeckSelector.Condition.ForSolo);
+                Program.instance.ShiftToServant(Program.instance.deckSelector);
+            });
+            formatLabel = AddSoloControl("Format", .66f, .29f, OnChangeSoloFormat);
+            var sourceLabel = AddSoloControl("Source", .55f, .38f, () => {
+                if (!string.IsNullOrEmpty(selectedSource)) Application.OpenURL(selectedSource);
+            });
+            sourceLabel.text = "View published list  >";
+            sourceControl = sourceLabel.transform.parent.gameObject;
+            var sourceRect = sourceControl.GetComponent<RectTransform>();
+            sourceRect.anchorMin = new Vector2(.55f, .18f);
+            sourceRect.anchorMax = new Vector2(.93f, .235f);
+            sourceControl.SetActive(false);
+            TextOverview.enableAutoSizing = false;
+            TextOverview.fontSize = 25;
+            TextOverview.textWrappingMode = TextWrappingModes.Normal;
+        }
+
+        private TextMeshProUGUI AddSoloControl(string name, float x, float width, UnityEngine.Events.UnityAction action)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+            go.layer = gameObject.layer;
+            var rect = go.GetComponent<RectTransform>();
+            rect.SetParent(formatControls.transform, false);
+            rect.anchorMin = new Vector2(x, .92f);
+            rect.anchorMax = new Vector2(x + width, .985f);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            go.GetComponent<Image>().color = new Color(.025f, .07f, .085f, .97f);
+            go.GetComponent<Button>().onClick.AddListener(action);
+            var textObject = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            textObject.layer = gameObject.layer;
+            var textRect = textObject.GetComponent<RectTransform>();
+            textRect.SetParent(rect, false);
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = new Vector2(14, 3);
+            textRect.offsetMax = new Vector2(-14, -3);
+            var label = textObject.GetComponent<TextMeshProUGUI>();
+            label.font = TMP_Settings.defaultFontAsset;
+            label.fontSize = 27;
+            label.enableAutoSizing = true;
+            label.fontSizeMin = 17;
+            label.fontSizeMax = 27;
+            label.alignment = TextAlignmentOptions.Center;
+            label.color = new Color(.83f, .93f, .70f);
+            label.raycastTarget = false;
+            return label;
+        }
+
+        public void OnChangeSoloFormat()
+        {
+            DuelFormat.Select(() => {
+                SoloSelector.HasFormatOverride = true;
+                formatLabel.text = "Format: " + DuelFormat.DisplayName + "  >";
+                Program.instance.solo.lastSoloItem = null;
+                Program.instance.solo.LoadBots();
+            });
         }
 
         public override void ShowEvent()
         {
             base.ShowEvent();
+            formatControls.SetActive(SoloSelector.condition == SoloSelector.Condition.ForSolo);
+            formatLabel.text = "Format: " + DuelFormat.DisplayName + "  >";
+            playerDeckLabel.text = "Your deck: " + Config.GetConfigDeckName() + "  >";
 
             switch (SoloSelector.condition)
             {
@@ -233,10 +306,12 @@ namespace MDPro3.UI.ServantUI
             return DEFAULT_DRAW;
         }
 
-        public void SetOverview(string text, bool activateDeckButton)
+        public void SetOverview(string text, bool activateDeckButton, string source = null)
         {
             TextOverview.text = text;
             ButtonDeck.gameObject.SetActive(activateDeckButton);
+            selectedSource = source;
+            sourceControl.SetActive(!string.IsNullOrEmpty(source));
         }
 
         public string GetAIDeck()

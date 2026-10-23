@@ -12,6 +12,11 @@ import threading
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
+PUBLISHED = json.loads((ROOT / 'Data/solo-published-decks.json').read_text(encoding='utf-8'))['decks']
+def published_deck(mode, executor):
+    return next(row['file'].removeprefix('Windbot/Decks/').removesuffix('.ydk')
+                for row in PUBLISHED if row['mode'] == mode and row['executor'] == executor)
+
 CASES = {
     'genesys-exact-100': (8, 100, 'Starter - Genesys', None, True),
     'genesys-over-cap': (8, 99, 'Starter - Genesys', None, False),
@@ -20,11 +25,10 @@ CASES = {
     'genesys-link-rejected': (8, 10000, 'Starter - Genesys', 'link', False),
     'tcg-starter': (7, 100, 'Starter - TCG', None, True),
     'tcg-forbidden-rejected': (7, 100, 'Starter - TCG', 'forbidden', False),
-    'tcg-solo-dragunity': (7, 100, 'TCG/AI_Dragunity', None, True),
-    'tcg-solo-maxxc-rejected': (7, 100, 'TCG/AI_Dragunity', 'maxxc', False),
-    'genesys-solo-cyber-100': (8, 100, 'Genesys/AI_CyberDragon', None, True),
-    'genesys-solo-cyber-zero-rejected': (8, 0, 'Genesys/AI_CyberDragon', None, False),
-    'genesys-solo-mokey-zero': (8, 0, 'Genesys/AI_MokeyMokey', None, True),
+    'tcg-solo-dragunity': (7, 100, published_deck('TCG', 'CyberDragon'), None, True),
+    'tcg-solo-maxxc-rejected': (7, 100, published_deck('TCG', 'CyberDragon'), 'maxxc', False),
+    'genesys-solo-cyber-100': (8, 100, published_deck('Genesys', 'CyberDragon'), None, True),
+    'genesys-solo-cyber-zero-rejected': (8, 0, published_deck('Genesys', 'CyberDragon'), None, False),
 }
 for row in json.loads((ROOT / 'Data/solo-decks-audit.json').read_text(encoding='utf-8'))['decks']:
     deck = row['file'].removeprefix('Windbot/Decks/').removesuffix('.ydk')

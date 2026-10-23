@@ -155,10 +155,31 @@ namespace MDPro3
             }
             if (checkedBots == 0) throw new Exception("No compatible Solo opponents offered.");
             Debug.Log("FORMAT_SMOKE_SOLO_LIBRARY_PASSED " + mode + " opponents=" + checkedBots);
+            // Use the same header callback and rendered choices as a player.
+            string[] selections = { mode == "Genesys" ? "TCG Advanced" : "Genesys · 100 points",
+                "Genesys · 0 points", mode == "Genesys" ? "Genesys · 100 points" : "TCG Advanced" };
+            foreach (string selection in selections)
+            {
+                solo.GetUI<SoloSelectorUI>().OnChangeSoloFormat();
+                yield return new WaitForSecondsRealtime(1);
+                var choice = FindObjectsByType<SelectionButton>(FindObjectsSortMode.None)
+                    .FirstOrDefault(b => b.isActiveAndEnabled && b.GetButtonText() == selection);
+                if (choice == null) throw new Exception("Solo format control did not open its options.");
+                EventSystem.current.SetSelectedGameObject(choice.gameObject);
+                choice.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                yield return new WaitForSecondsRealtime(2);
+                if (!SoloSelector.HasFormatOverride || DuelFormat.Genesys != selection.StartsWith("Genesys"))
+                    throw new Exception("Solo session format override was not applied.");
+                int offered = SoloSelector.bots.Count(b => !b.command.StartsWith("Random=") && !b.flags.Contains("SELECT_DECKFILE"));
+                if (selection == "Genesys · 0 points" ? offered != 0 : offered == 0)
+                    throw new Exception("Solo catalog was not reloaded for the selected point cap.");
+                foreach (var bot in SoloSelector.bots.Where(b => !b.command.StartsWith("Random=") && !b.flags.Contains("SELECT_DECKFILE")))
+                    if (!DuelFormat.ValidateBotCommand(bot.command)) throw new Exception("Format switch retained an illegal opponent.");
+            }
+            Debug.Log("FORMAT_SMOKE_SOLO_FORMAT_SWITCH_PASSED " + mode);
             yield return Capture("solo-library");
             string command;
-            if (!DuelFormat.PrepareSoloBot(mode == "Genesys" ? "Deck=CyberDragon Name=SmokeAI Dialog=default"
-                : "Deck=Dragunity Name=SmokeAI Dialog=default", out command))
+            if (!DuelFormat.PrepareSoloBot("Deck=CyberDragon Name=SmokeAI Dialog=default", out command))
                 throw new Exception("The format-specific AI build could not be prepared.");
             solo.Launch(command, false, false, true);
             bool readied = false, started = false;

@@ -133,23 +133,45 @@ namespace MDPro3
             return token == null ? null : token.Substring(5).Trim('"');
         }
 
+        [Serializable]
+        public class PublishedSoloDeck
+        {
+            public string name, executor, difficulty, mode, source, title, file;
+            public int points;
+        }
+        [Serializable]
+        private class PublishedSoloCatalog { public PublishedSoloDeck[] decks; }
+
+        public static IEnumerable<PublishedSoloDeck> AvailableSoloDecks()
+        {
+            const string catalogPath = "Data/solo-published-decks.json";
+            if (!File.Exists(catalogPath)) yield break;
+            var catalog = UnityEngine.JsonUtility.FromJson<PublishedSoloCatalog>(File.ReadAllText(catalogPath));
+            var ban = Genesys ? BanlistManager.currentGenesysBanList : TcgBanlist;
+            if (catalog?.decks == null || ban == null) yield break;
+            foreach (var row in catalog.decks)
+            {
+                if (row.mode != (Genesys ? "Genesys" : "TCG")) continue;
+                string path = Path.Combine("Data", row.file);
+                if (File.Exists(path) && InspectDeck(new Deck(path), ban).Valid) yield return row;
+            }
+        }
+
+        public static string PublishedSoloCommand(PublishedSoloDeck row)
+        {
+            return "Deck=\"" + row.executor + "\" Name=\"" + row.name + "\" Dialog=Universal.EN DeckFile=\""
+                + Path.GetFullPath(Path.Combine("Data", row.file)) + "\"";
+        }
+
         public static bool PrepareSoloBot(string command, out string prepared)
         {
             prepared = command;
             if (command.StartsWith("Random=")) return true;
             string name = SoloBotExecutor(command);
             if (name == null) return false;
-            string file = "AI_" + name;
-            if (File.Exists("Data/solo-executors.conf"))
-                foreach (string line in File.ReadAllLines("Data/solo-executors.conf"))
-                {
-                    var parts = line.Split('|');
-                    if (parts.Length == 2 && parts[0] == name) { file = parts[1]; break; }
-                }
-            string path = Path.Combine("Data", "Windbot", "Decks", Genesys ? "Genesys" : "TCG", file + ".ydk");
-            var ban = Genesys ? BanlistManager.currentGenesysBanList : TcgBanlist;
-            if (!File.Exists(path) || ban == null || !InspectDeck(new Deck(path), ban).Valid) return false;
-            prepared += " DeckFile=\"" + Path.GetFullPath(path) + "\"";
+            var row = AvailableSoloDecks().FirstOrDefault(deck => deck.executor == name);
+            if (row == null) return false;
+            prepared += " DeckFile=\"" + Path.GetFullPath(Path.Combine("Data", row.file)) + "\"";
             return true;
         }
 

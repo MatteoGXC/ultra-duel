@@ -135,6 +135,7 @@ namespace MDPro3.UI.ServantUI
                 return;
 
             DuelFormat.ApplyDeckFormat(Config.GetConfigDeckName());
+            SoloSelector.HasFormatOverride = false;
             Program.instance.solo.SwitchCondition(SoloSelector.Condition.ForSolo);
             Program.instance.ShiftToServant(Program.instance.solo);
         }

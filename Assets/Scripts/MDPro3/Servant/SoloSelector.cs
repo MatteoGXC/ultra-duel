@@ -26,6 +26,7 @@ namespace MDPro3.Servant
             public string desc;
             public string[] flags;
             public int main0;
+            public string source;
         }
         public static readonly List<BotInfo> bots = new();
 
@@ -40,6 +41,7 @@ namespace MDPro3.Servant
             ForRoom
         }
         public static Condition condition = Condition.ForSolo;
+        public static bool HasFormatOverride;
         public void SwitchCondition(Condition condition)
         {
             SoloSelector.condition = condition;
@@ -122,6 +124,11 @@ namespace MDPro3.Servant
         private void ReadBots(string confPath)
         {
             bots.Clear();
+            if (condition == Condition.ForSolo || DuelFormat.LocalSession)
+            {
+                ReadPublishedBots();
+                return;
+            }
             using StreamReader reader = new(new FileStream(confPath, FileMode.Open, FileAccess.Read));
             while (!reader.EndOfStream)
             {
@@ -136,16 +143,6 @@ namespace MDPro3.Servant
                     };
                     line = reader.ReadLine().Trim();
                     newBot.flags = line.Split(' ');
-
-                    if (condition == Condition.ForSolo || DuelFormat.LocalSession)
-                    {
-                        if (System.Array.IndexOf(newBot.flags, "SELECT_DECKFILE") < 0)
-                        {
-                            if (!DuelFormat.PrepareSoloBot(newBot.command, out var prepared)) continue;
-                            newBot.command = prepared;
-                            newBot.desc = DuelFormat.DisplayName + " build\n" + newBot.desc;
-                        }
-                    }
 
                     newBot.main0 = DEFAULT_CARD;
                     try
@@ -165,25 +162,38 @@ namespace MDPro3.Servant
                     bots.Add(newBot);
                 }
             }
-            // Random picks must have an eligible opponent in the current library.
-            if ((condition == Condition.ForSolo || DuelFormat.LocalSession) && File.Exists("Data/solo-executors.conf"))
-                foreach (string entry in File.ReadAllLines("Data/solo-executors.conf"))
-                {
-                    var parts = entry.Split('|');
-                    if (parts.Length != 2 || bots.Exists(bot => DuelFormat.SoloBotExecutor(bot.command) == parts[0])) continue;
-                    string command = "Deck=\"" + parts[0] + "\" Name=\"" + parts[0] + "\" Dialog=Universal.EN";
-                    if (!DuelFormat.PrepareSoloBot(command, out var prepared)) continue;
-                    string path = Path.Combine("Data", "Windbot", "Decks", DuelFormat.Genesys ? "Genesys" : "TCG", parts[1] + ".ydk");
-                    var deck = new Deck(path);
-                    bots.Add(new BotInfo {
-                        name = Regex.Replace(parts[0], "(?<=[a-z])(?=[A-Z])", " "), command = prepared,
-                        desc = DuelFormat.DisplayName + " build\nPractice against " + parts[0] + ".",
-                        flags = new[] { "AI_LV3", "SUPPORT_MASTER_RULE_2020" },
-                        main0 = deck.Main.Count > 0 ? deck.Main[0] : DEFAULT_CARD
-                    });
-                }
-            bots.RemoveAll(bot => bot.command.StartsWith("Random=") &&
-                !bots.Exists(candidate => System.Array.IndexOf(candidate.flags, bot.command.Substring(7)) >= 0));
+
+        }
+
+        private void ReadPublishedBots()
+        {
+            foreach (var row in DuelFormat.AvailableSoloDecks())
+            {
+                var deck = new Deck(Path.Combine("Data", row.file));
+                string level = row.difficulty == "Casual" ? "AI_LV1" : row.difficulty == "Hard" ? "AI_LV3" : "AI_LV2";
+                bots.Add(new BotInfo {
+                    name = row.difficulty + " · " + row.name,
+                    command = DuelFormat.PublishedSoloCommand(row),
+                    source = row.source,
+                    desc = row.name + " — " + DuelFormat.DisplayName + "\n"
+                        + row.difficulty + " practice (estimated difficulty).\n"
+                        + (DuelFormat.Genesys ? row.points + " points, including Side Deck.\n" : "TCG legality checked.\n")
+                        + "Published Konami Neuron list; cards unchanged.\nUse View published list to see the original recipe.",
+                    flags = new[] { level, "SUPPORT_MASTER_RULE_2020" }, main0 = deck.Main[0]
+                });
+            }
+            foreach (var tier in new[] { "Casual", "Standard", "Hard" })
+            {
+                string level = tier == "Casual" ? "AI_LV1" : tier == "Hard" ? "AI_LV3" : "AI_LV2";
+                if (!bots.Exists(bot => Array.IndexOf(bot.flags, level) >= 0)) continue;
+                bots.Add(new BotInfo { name = "Random · " + tier, command = "Random=" + level,
+                    desc = "Choose a legal published " + tier.ToLowerInvariant() + " opponent for " + DuelFormat.DisplayName + ".",
+                    flags = new[] { "SUPPORT_MASTER_RULE_2020" }, main0 = DEFAULT_CARD });
+            }
+            bots.Add(new BotInfo { name = "Custom AI deck", command = "Deck=Lucky Name=CustomAI Dialog=Universal.EN",
+                desc = "Choose your own AI deck. It must meet " + DuelFormat.DisplayName
+                    + ".\nSome strategies require a dedicated AI executor.\nOnly published lists compatible with the selected rules and cap appear above; unavailable archetypes are never rebuilt automatically.",
+                flags = new[] { "SELECT_DECKFILE", "SUPPORT_MASTER_RULE_2020" }, main0 = DEFAULT_CARD });
         }
 
         private void Print()

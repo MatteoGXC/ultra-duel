@@ -58,7 +58,7 @@ namespace MDPro3.UI
         {
             base.CallToggleOnEvent();
             Program.instance.solo.GetUI<SoloSelectorUI>().superScrollView.selected = index;
-            Program.instance.solo.GetUI<SoloSelectorUI>().SetOverview(botInfo.desc, isDiyDeck);
+            Program.instance.solo.GetUI<SoloSelectorUI>().SetOverview(botInfo.desc, isDiyDeck, botInfo.source);
             Program.instance.solo.lastSoloItem = this;
         }
 

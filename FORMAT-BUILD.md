@@ -25,22 +25,25 @@ for your selected Deck's saved format. Every listed built-in opponent is checked
 against those rules before it is offered; random opponents use that same filtered
 library. The Dovphin option accepts your own AI Deck and checks its legality.
 
-TCG builds are in `Data/Windbot/Decks/TCG`: forbidden cards (including Maxx "C")
-and excess copies are removed, and Main Deck vacancies are filled with supported
-legal staples. Genesys builds are in `Data/Windbot/Decks/Genesys`: Main Decks that
-depend on Pendulum/Link cards are excluded; incompatible Extra/Side cards are
-removed, and only Decks within the selected point cap are offered. These are
-separate builds; the original upstream Decks remain available as source data.
-Run `python Tools/prepare-solo-decks.py` after changing the installed card/rule
-snapshots. `Data/solo-decks-audit.json` records changed cards and snapshot hashes.
-The current libraries contain 57 legal TCG builds and 52 Genesys builds, of which
-10 fit the 100-point cap. Legal construction is verified; every AI strategy's
-playing strength and combo execution are not exhaustively tested.
+Published Solo decks live in `Data/Windbot/Decks/Published`. The catalog in
+`Data/solo-published-decks.json` records public Konami Neuron source URLs, author
+titles, exact Main/Extra/Side arrays, supported executors, and estimated difficulty.
+There are 14 TCG entries and 15 Genesys entries at 100 points: a mixture of Casual,
+Standard, and Hard practice. No cards are added, removed, replaced, or optimized.
+Run `python Tools/import-published-solo.py` to reproduce and validate these exact
+snapshots; `Data/solo-decks-audit.json` records points and file hashes.
+Only legal source lists within the current cap are shown. Unsupported archetypes
+are unavailable, including Pendulum/Link strategies in Genesys. Smaller caps may
+leave no built-in opponents; a legal user-selected Custom AI deck can still play.
+The Solo header changes the session format/cap without changing a saved deck profile,
+and offers a separate player-deck selector. Random has separate difficulty pools.
+Difficulty is estimated; every AI combo and playing strength is not exhaustively tested.
 
 ## Format changes
 
 - The Deck editor's Format button offers TCG Advanced, Genesys 100, Genesys zero,
-  and a custom Genesys point cap. Solo uses the selected Deck's saved format.
+  and a custom Genesys point cap. Solo initially uses the selected Deck's saved format,
+  with a session override in its own header.
   Creating a local room still offers session rule selection.
 - Both formats use the TCG card pool from the installed card database.
 - TCG uses the official Forbidden & Limited snapshot; Genesys instead enforces
