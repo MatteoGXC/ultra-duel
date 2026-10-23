@@ -57,17 +57,28 @@ try {
         $taskSource = [IO.Path]::GetFullPath((Join-Path $taskStage $taskRelative))
         if (!$taskTarget.StartsWith($taskGame.TrimEnd('\')+'\', [StringComparison]::OrdinalIgnoreCase) -or
             !$taskSource.StartsWith($taskStage+'\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid update path.' }
-        if ($taskRelative -match '^(Deck|Replay|Progress)(/|\\)' -or $taskRelative -match '^Data[/\\](config\.conf|mycard_apps\.json|profile\.json|friends-session\.json)$') {
+        if ($taskRelative -match '^(Deck|Replay|Progress)(/|\\)' -or $taskRelative -match '^Data[/\\](config\.conf|mycard_apps\.json|profile\.json|friends-session\.json|Settings\.json)$') {
             throw 'Update attempted to replace personal data.'
         }
         if (!(Test-Path -LiteralPath $taskSource) -or (Get-FileHash -LiteralPath $taskSource -Algorithm SHA256).Hash.ToLowerInvariant() -ne $taskFile.sha256) {
             throw "Update file verification failed: $taskRelative"
         }
     }
+    $taskCopies = New-Object 'System.Collections.Generic.List[object]'
     foreach ($taskFile in $taskManifest.files) {
         $taskRelative = [string]$taskFile.path
-        $taskTarget = Join-Path $taskGame $taskRelative
-        $taskBackup = Join-Path $taskRollback $taskRelative
+        $taskCopies.Add(@{ source=$taskRelative; destination=$taskRelative })
+        if (Test-Path -LiteralPath (Join-Path $taskGame 'MDPro3-TCG-Genesys.exe')) {
+            if ($taskRelative -eq 'Matteo-Duel.exe') {
+                $taskCopies.Add(@{ source=$taskRelative; destination='MDPro3-TCG-Genesys.exe' })
+            } elseif ($taskRelative -like 'Matteo-Duel_Data/*') {
+                $taskCopies.Add(@{ source=$taskRelative; destination=($taskRelative -replace '^Matteo-Duel_Data/','MDPro3-TCG-Genesys_Data/') })
+            }
+        }
+    }
+    foreach ($taskCopy in $taskCopies) {
+        $taskTarget = Join-Path $taskGame $taskCopy.destination
+        $taskBackup = Join-Path $taskRollback $taskCopy.destination
         $taskExisted = Test-Path -LiteralPath $taskTarget
         if ($taskExisted) {
             New-Item -ItemType Directory -Path (Split-Path $taskBackup -Parent) -Force | Out-Null
@@ -75,15 +86,7 @@ try {
         }
         $taskApplied.Add(@{ target=$taskTarget; backup=$taskBackup; existed=$taskExisted })
         New-Item -ItemType Directory -Path (Split-Path $taskTarget -Parent) -Force | Out-Null
-        Copy-Item -LiteralPath (Join-Path $taskStage $taskRelative) -Destination $taskTarget -Force
-    }
-    if (Test-Path -LiteralPath (Join-Path $taskGame 'MDPro3-TCG-Genesys.exe')) {
-        Copy-Item -LiteralPath (Join-Path $taskGame 'Matteo-Duel.exe') -Destination (Join-Path $taskGame 'MDPro3-TCG-Genesys.exe') -Force
-        foreach ($taskFile in $taskManifest.files | Where-Object { $_.path -like 'Matteo-Duel_Data/*' }) {
-            $taskAlias = Join-Path $taskGame ($taskFile.path -replace '^Matteo-Duel_Data/','MDPro3-TCG-Genesys_Data/')
-            New-Item -ItemType Directory -Path (Split-Path $taskAlias -Parent) -Force | Out-Null
-            Copy-Item -LiteralPath (Join-Path $taskStage $taskFile.path) -Destination $taskAlias -Force
-        }
+        Copy-Item -LiteralPath (Join-Path $taskStage $taskCopy.source) -Destination $taskTarget -Force
     }
     @{ version=$taskManifest.version; sourceCommit=$taskManifest.sourceCommit; updatedAt=[DateTime]::UtcNow.ToString('o') } |
         ConvertTo-Json | Set-Content -LiteralPath $taskMarker -Encoding UTF8
