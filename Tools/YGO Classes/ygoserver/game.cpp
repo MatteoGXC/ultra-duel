@@ -87,7 +87,7 @@ void Game::MainServerLoop() {
 	dataManager.FileSystem = new irr::io::CFileSystem();
 #endif
 	deckManager.LoadLFList();
-	if (!dataManager.LoadDB(L"cards.cdb")) {
+	if (!dataManager.LoadDB(L"cards.cdb") && !dataManager.LoadDB(L"Data/locales/en-US/cards.cdb")) {
         fprintf(stderr, "Failed to load cards.cdb\n");
         return;
     }
