@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 
 namespace WindBot
 {
     public class WindBotInfo
     {
+        public bool NativeChainProtocol;
         public string Name { get; set; }
         public string Deck { get; set; }
         public string DeckFile { get; set; }

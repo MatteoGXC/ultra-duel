@@ -203,6 +203,7 @@ namespace MDPro3.Servant
         public static bool inputMode;
         public static bool Accing;
         public static bool CurrentReplayUseYRP2;
+        public static bool CurrentReplayNativePrompts;
         public static bool CurrentReplayGodView;
 
         #endregion

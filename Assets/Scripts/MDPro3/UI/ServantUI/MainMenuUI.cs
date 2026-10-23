@@ -61,8 +61,9 @@ namespace MDPro3.UI.ServantUI
 
         private void HomePanel(RectTransform rect, Color color)
         {
-            var panel = rect.gameObject.AddComponent<Image>();
+            var panel = rect.gameObject.AddComponent<UltraChrome>();
             panel.color = color;
+            panel.rim = 0; panel.rimColor = color;
             panel.raycastTarget = false;
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -71,6 +71,8 @@ namespace WindBot.Game.AI
 
             Executor executor = (Executor)Activator.CreateInstance(infos.Type, ai, duel);
             executor.Deck = infos.Deck;
+            if(executor is DefaultExecutor published && (ai.Game.DeckFile??"").Replace('\\','/').IndexOf("/Published/",StringComparison.OrdinalIgnoreCase)>=0)
+                published.EnablePublishedDeckSupport();
             return executor;
         }
     }

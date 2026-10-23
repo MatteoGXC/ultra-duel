@@ -42,7 +42,18 @@ def main():
     assert state['requests'][0]['id']==a['id']
     api('/friends/accept','POST',{'id':a['id']},b['token'])
     assert api('/state',token=a['token'])['friends'][0]['online']
+    api('/presence','POST',{'activity':'In duel'},b['token'])
+    assert api('/state',token=a['token'])['friends'][0]['activity']=='In duel'
+    api('/admin/players',token=a['token'],expected=403)
+    for n in range(2):
+        nonce=secrets.token_hex(16)
+        api('/games/start','POST',{'nonce':nonce,'deck':'API fixture','opponent':'Fixture'},a['token'])
+        for _ in range(2):api('/games/finish','POST',{'nonce':nonce,'result':'WIN','turns':3},a['token'])
+    for _ in range(2):api('/pass/claim','POST',{},a['token'])
+    profile=api('/profile',token=a['token'])
+    assert profile['xp']==200 and profile['gems']==100
     print('PASS register, login, authentication, friend requests, acceptance and presence',flush=True)
+    print('PASS public account XP/gems, idempotent win/claim, in-duel presence and unauthorized admin denial',flush=True)
     def frames(client):
         data=bytearray()
         while True:
@@ -72,6 +83,10 @@ def main():
         return struct.pack('<II',len(main),len(side))+struct.pack('<'+'I'*(len(main)+len(side)),*(main+side))
     for mode,cap in [('TCG',100),('Genesys',100),('Genesys',0)]:
         room=api('/rooms','POST',{'format':mode,'cap':cap},a['token'])
+        api('/invites','POST',{'id':b['id'],'room':room['id']},a['token'])
+        assert any(i['room']==room['id'] for i in api('/state',token=b['token'])['invites'])
+        api('/invites','POST',{'id':c['id'],'room':room['id']},a['token'],expected=403)
+
         try:
             api('/rooms/'+room['id']+'/join','POST',{},c['token'],403)
             assert not api('/state',token=c['token'])['rooms']

@@ -286,6 +286,7 @@ namespace MDPro3.Servant
             command = command.Replace("'", "\"");
             if (lockHand)
                 command += " Hand=1";
+            if(ip=="127.0.0.1" || RoomServant.FromUltraHost)command+=" NativeChainProtocol=true";
             command += " Host=" + ip;
             command += " Port=" + port;
             command += " HostInfo=" + password;

@@ -167,12 +167,12 @@ namespace MDPro3.Duel
         protected override async UniTask GameMessage_Start(BinaryReader reader)
         {
             ResetState();
-            if (condition == Condition.Duel && !RoomServant.FromHandTest && !inPuzzle) UltraProgress.BeginDuel();
             duelBGManager.BackgroundFieldInitialize();
 
             playerType = reader.ReadByte();
             isFirst = (playerType & 0xF) == 0;
             isObserver = (playerType & 0xF0) > 0;
+            if (condition == Condition.Duel && !isObserver && !RoomServant.FromHandTest && !inPuzzle) UltraProgress.BeginDuel();
             if (reader.BaseStream.Length > 17)
                 MasterRule = reader.ReadByte() + 1;
             var engineLife0 = reader.ReadInt32();
@@ -593,8 +593,11 @@ namespace MDPro3.Duel
                 }
             }
 
-            if (condition == Condition.Duel && !isObserver && !RoomServant.FromHandTest && !inPuzzle && player == 0 && UltraProgress.Win())
-                MessageManager.Cast("Victory! +100 Duel Pass XP");
+            if (condition == Condition.Duel && !isObserver && !RoomServant.FromHandTest && !inPuzzle)
+            {
+                UltraProgress.Finish(player,turns);
+                if(player==0)MessageManager.Cast("Victory! +100 Duel Pass XP");
+            }
 
             duelBGManager.DuelEndEvent();
             //防止对方在更换副卡组时拔螺丝
@@ -668,7 +671,12 @@ namespace MDPro3.Duel
             await duelBGManager.ShowDuelResultText(duelText);
 
             MessageManager.Cast(endingReason);
-            if (condition != Condition.Replay)
+            if(condition==Condition.Duel && !isObserver && !RoomServant.FromHandTest && !inPuzzle && UltraProgress.LastMatch?.result!=null)
+            {
+                TcpHelper.SaveRecord("Ultra-"+System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")+"-"+UltraProgress.LastMatch.id.Substring(0,6));
+                UltraResultsScreen.Show(Core.GetUI<OcgCoreUI>().transform,UltraProgress.LastMatch,()=>Core.OnDuelResultConfirmed());
+            }
+            else if (condition != Condition.Replay)
                 Core.GetUI<OcgCoreUI>().ShowSaveReplay();
             else
                 Core.NotifyReplayPlaybackEnded();
@@ -717,6 +725,7 @@ namespace MDPro3.Duel
             var from = reader.ReadGPS();
             var to = reader.ReadGPS();
             var reason = reader.ReadUInt32();
+            if(from.controller==1 && from.InLocation(CardLocation.MonsterZone) && (reason&1)!=0)UltraProgress.Destroyed();
 
             var card = Core.GCS_Get(from);
             if(card == null)
@@ -915,7 +924,10 @@ namespace MDPro3.Duel
             }
 
             if(gps.InMyControl())
+            {
                 mySpSummonCount++;
+                UltraProgress.SpecialSummon();
+            }
             else
                 opSpSummonCount++;
             Core.GetUI<OcgCoreUI>().RefreshBgDetail();
@@ -1083,6 +1095,7 @@ namespace MDPro3.Duel
             }
 
             card.SetCode(code);
+            if(gps.InMyControl() && card.GetData().HasType(CardType.Spell))UltraProgress.Spell();
             cardsInChain.Add(card);
             codesInChain.Add(code);
             controllerInChain.Add(gps.controller);
@@ -1522,6 +1535,7 @@ namespace MDPro3.Duel
             var player = LocalPlayer(enginePlayer);
             var value = reader.ReadInt32();
 
+            if(currentMessage==GameMessage.Damage)UltraProgress.Damage(player,value);
             if(player == 0)
             {
                 life0 -= value;
@@ -2083,8 +2097,7 @@ namespace MDPro3.Duel
         protected override async UniTask GameMessage_ConfirmCards(BinaryReader reader)
         {
             /*var player = LocalPlayer(*/reader.ReadByte()/*)*/;
-            if (condition != Condition.Replay || CurrentReplayUseYRP2)
-                reader.ReadByte();
+            if((reader.BaseStream.Length-reader.BaseStream.Position)%7==2)reader.ReadByte();
 
             var count = reader.ReadByte();
             var listShow = false;
@@ -2118,7 +2131,7 @@ namespace MDPro3.Duel
             }
             else
             {
-                await UniTask.WaitForSeconds(sequence.Duration() + 0.1f);
+                await UniTask.WaitForSeconds((sequence?.Duration() ?? 0f) + 0.1f);
             }
         }
 
@@ -2791,36 +2804,19 @@ namespace MDPro3.Duel
                 return;
             duelBGManager.SetPlayableGuide(true);
 
-            /*var player = LocalPlayer(*/reader.ReadChar()/*)*/;
-            var count = reader.ReadByte();
-            int spcount = reader.ReadByte();
-            var hint0 = reader.ReadInt32();
-            var hint1 = reader.ReadInt32();
-            var chainCards = new List<GameCard>();
-            var forceCount = 0;
-            for (var i = 0; i < count; i++)
+            var prompt=global::YGOSharp.Network.ChainPrompt.Read(reader,condition==Condition.Replay?CurrentReplayNativePrompts:(DuelFormat.LocalSession || RoomServant.FromHandTest || inPuzzle));
+            int spcount=prompt.SpecialCount;
+            int hint0=prompt.Hint0,hint1=prompt.Hint1;
+            var chainCards=new List<GameCard>();
+            int forceCount=0;
+            foreach(var entry in prompt.Entries)
             {
-                var flag = reader.ReadChar();
-                var forced = reader.ReadByte();
-                forceCount += forced;
-                var code = reader.ReadInt32() % 1000000000;
-                var gps = reader.ReadGPS();
-                var desc = StringHelper.Get(reader.ReadInt32());
-                var card = Core.GCS_Get(gps);
-                if (card == null)
-                    card = Core.GCS_Create(gps, true);
-
-                if (!chainCards.Contains(card))
-                    chainCards.Add(card);
-                card.SetCode(code);
-                var eff = new Effect
-                {
-                    flag = flag,
-                    ptr = i,
-                    desc = desc,
-                    forced = forced > 0
-                };
-                card.effects.Add(eff);
+                if(entry.Forced)forceCount++;
+                var gps=new GPS{controller=(uint)LocalPlayer(entry.Controller),location=entry.Location,sequence=entry.Sequence,position=entry.Subsequence};
+                var card=Core.GCS_Get(gps)??Core.GCS_Create(gps,true);
+                if(!chainCards.Contains(card))chainCards.Add(card);
+                card.SetCode(entry.Code%1000000000);
+                card.effects.Add(new Effect{flag=entry.Flag,ptr=prompt.Entries.IndexOf(entry),desc=StringHelper.Get(entry.Description),forced=entry.Forced});
             }
 
             var handleFlag = 0;

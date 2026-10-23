@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Net;
@@ -79,6 +79,7 @@ namespace WindBot
             Info.Name = Config.GetString("Name", Info.Name);
             Info.Deck = Config.GetString("Deck", Info.Deck);
             Info.DeckFile = Config.GetString("DeckFile", Info.DeckFile);
+            Info.NativeChainProtocol=Config.GetBool("NativeChainProtocol",false);
             Info.Dialog = Config.GetString("Dialog", Info.Dialog);
             Info.Host = Config.GetString("Host", Info.Host);
             Info.Port = Config.GetInt("Port", Info.Port);

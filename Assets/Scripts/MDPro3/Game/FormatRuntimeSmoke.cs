@@ -184,6 +184,24 @@ namespace MDPro3
             Debug.Log("FORMAT_SMOKE_MENU_READY");
             yield return Capture("menu");
             var commandLine = Environment.GetCommandLineArgs();
+            if(commandLine.Contains("--solo-ai-audit"))
+            {
+                deadline=Time.realtimeSinceStartup+7200;
+                yield return SoloAiRuntimeAudit.Run(output);
+                yield break;
+            }
+            if(commandLine.Contains("--ultra-ui-pages"))
+            {
+                var home=Program.instance.menu.GetUI<MainMenuUI>();
+                foreach(string page in new[]{"ShowGameStart","OpenProfile","OpenPass","OpenShop","OpenHistory","OpenMissions"})
+                {
+                    typeof(MainMenuUI).GetMethod(page,System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                    yield return Capture(page);
+                    typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                }
+                var results=UltraResultsScreen.Show(home.transform,new UltraProgress.Match{result="WIN",damageDealt=3400,spells=2,summons=1,gemsEarned=25,xpEarned=100},null);
+                yield return Capture("duel-results-layout");Destroy(results);
+            }
             int remoteIndex = Array.IndexOf(commandLine, "--ultra-remote-room");
             if (remoteIndex >= 0)
             {
@@ -318,6 +336,23 @@ namespace MDPro3
             Debug.Log("FORMAT_SMOKE_DUEL_READY " + mode);
             yield return CheckHandMovement();
             yield return CheckDamageDisplay();
+            if(Environment.GetCommandLineArgs().Contains("--ultra-result-check"))
+            {
+                int xp=UltraProgress.Data.xp,gems=UltraProgress.Data.gems;
+                var win=new Package{Function=(int)GameMessage.Win};
+                win.Data.writer.Write((byte)OcgCore.LocalPlayer(0));win.Data.writer.Write((byte)0);
+                OcgCore.currentMessage=GameMessage.Win;
+                yield return Program.instance.ocgcore.messageDispatcher.Process(win).ToCoroutine();
+                if(UltraProgress.Data.xp!=xp+100 || UltraProgress.Data.gems!=gems+25)throw new Exception("Duel result rewards were not awarded exactly once.");
+                UltraProgress.Finish(0,OcgCore.turns);
+                if(UltraProgress.Data.xp!=xp+100 || UltraProgress.Data.gems!=gems+25)throw new Exception("Duplicate duel result awarded twice.");
+                string replay=UltraProgress.LastMatch.replay;
+                if(string.IsNullOrEmpty(replay) || !File.Exists(Program.PATH_REPLAY+replay+Program.EXPANSION_YRP3D))throw new Exception("Completed duel replay was not saved.");
+                if(!File.Exists(Program.PATH_REPLAY+replay+Program.EXPANSION_YRP3D+".protocol"))throw new Exception("Saved replay protocol metadata was not written.");
+                yield return Capture("post-duel-results");
+                Debug.Log("ULTRA_RESULTS_PASSED rewards, idempotency, match history and automatic replay");
+            }
+
             File.WriteAllText(Path.Combine(output, "passed.txt"), mode + " menu, selection, deck, local AI duel rendered.");
             Application.Quit(0);
         }

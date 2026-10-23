@@ -13,13 +13,13 @@ Genesys 0 and custom point caps. The server enforces the chosen rules.
 Build from the repository root:
 
 ```sh
-docker build -f Server/Dockerfile -t ultra-duel-service:0.1.2 .
+docker build -f Server/Dockerfile -t ultra-duel-service:0.1.3 .
 mkdir -p state
 chmod 700 state
 docker run -d --name ultra-duel-service --restart unless-stopped --init \
   -p 9444:9444 -p 7911-7922:7911-7922 \
   -v "$PWD/state:/state" --memory 2g --cpus 2 --pids-limit 128 \
-  ultra-duel-service:0.1.2
+  ultra-duel-service:0.1.3
 ```
 
 The container runs as UID 1001; the state directory must be writable by that UID.
@@ -40,6 +40,25 @@ the main file while WAL writes are active. Back up the certificate and private
 key separately with private permissions. Stop this container before restoring
 its state, then restart it. Other VPS services do not need to be stopped.
 
-The free Duel Pass is local to each game installation and is stored in
-`Progress/profile.json`. It is not a shared competitive currency or leaderboard.
-Updaters and installers preserve it, along with deck files, settings and sessions.
+Signed-in accounts have a server-side cosmetic wallet, pass progress and owned inventory.
+Offline play retains local progression in `Progress/profile.json`. The two wallets
+are separate. Wins earn 100 pass XP and 25 cosmetic gems; each 200 XP unlocks a
+free grade awarding another 50 gems. There is one free track and no paid tier.
+Game outcomes are client-reported for this casual cosmetic system; they are not
+an authoritative competitive rating. Purchases, balance changes and claims are
+serialized by SQLite transactions and duplicate game IDs cannot award twice.
+
+Owner access is an allowlist in the private state volume: `state/admins.json`
+contains an array of existing account names. It is absent from release packages.
+While signed in on the allowlisted account, type `ultraadmin` on the home screen.
+Every admin request checks the authenticated account on the server; the keyboard
+sequence itself grants no permissions. Gem grants are recorded in the `grants`
+table with actor, recipient, amount, reason and timestamp.
+
+Accepted friends can receive five-minute duel invitations, and presence records
+Home, In duel, In room, Solo or Deck editing. Rooms remain two-player games with
+the complete bundled card engine. A four-player free-for-all is not implemented;
+the engine's two-field assumptions require a separate core/protocol project.
+
+Updaters and installers preserve decks, replay files, local progress, settings and
+account sessions. Keep the persistent state volume when upgrading the service.

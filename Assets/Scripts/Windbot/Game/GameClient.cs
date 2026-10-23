@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,6 +14,7 @@ namespace WindBot.Game
         public string Username;
         public string Deck;
         public string DeckFile;
+        public bool NativeChainProtocol;
         public string Dialog;
         public int Hand;
         public bool Debug;
@@ -25,12 +26,14 @@ namespace WindBot.Game
         private string _roomInfo;
 
         private GameBehavior _behavior;
+        public GameBehavior Behavior => _behavior;
 
         public GameClient(WindBotInfo Info)
         {
             Username = Info.Name;
             Deck = Info.Deck;
             DeckFile = Info.DeckFile;
+            NativeChainProtocol=Info.NativeChainProtocol;
             Dialog = Info.Dialog;
             Hand = Info.Hand;
             Debug = Info.Debug;

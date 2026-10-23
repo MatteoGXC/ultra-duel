@@ -160,3 +160,30 @@ cumulative update against the original public 0.1.0 archives; both 0.1.0 and
 0.1.1 installations can apply it directly. The full installer reuses the
 original versioned base archives and applies the cumulative update last.
 Do not replace the immutable original release assets.
+
+
+## v0.1.3 player update
+
+The home page keeps the selectable wallpaper clear on the right and moves news
+into Updates. It opens from Game Start and provides a profile card, animated mate,
+statistics, one free Duel Pass track, earned-gem accessories, a friends drawer,
+private invitations, room tables, match history and post-duel rewards.
+`Data/shop-catalog.json` must accompany the player build. Four hundred forty-four
+existing cosmetics are catalogued; a field set includes its matching base and
+parts, using starter components where no matching component exists. Accessories
+are available for preview in the shop and require ownership in the appearance
+picker. Starter items and wallpapers remain available.
+
+The bundled native core's chain prompt puts a forced byte in the header, whereas
+the MDPro protocol puts it on each candidate. `ChainPrompt` handles both forms;
+the one-candidate equal-length case uses the known native server flag. Card
+confirmation messages also accept both headers. These fixes cover the reported
+Sage freeze and reveal/search exceptions without changing the card recipes.
+All 29 published Solo entries passed actual mirrored TCP checks through turn 7
+or earlier duel completion, with no freezes or protocol exceptions.
+This checks execution and protocol progress, not optimal play of every combo.
+
+Run `Tests/UltraPlayerFeaturesTests.py` for account/ownership/authorization checks
+and compile `Tests/ChainPromptTests.cs` together with `ChainPrompt.cs` for packet
+layout tests. The packaged player accepts opt-in `--format-smoke <folder> TCG
+--solo-ai-audit` to exercise every published AI list through the native server.

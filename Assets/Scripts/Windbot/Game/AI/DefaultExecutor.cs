@@ -8,7 +8,7 @@ using WindBot.Game.AI;
 
 namespace WindBot.Game.AI
 {
-    public abstract class DefaultExecutor : Executor
+    public abstract partial class DefaultExecutor : Executor
     {
         protected class _CardId
         {

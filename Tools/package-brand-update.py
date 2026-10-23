@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT.parent / 'release-work/windows-v0.1.0'
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 OUT = ROOT.parent / ('release-work/windows-v'+VERSION)
 PLAYER = ROOT / 'release/Solo-mode-update'
 
@@ -34,7 +34,7 @@ def main():
     names += ['Data/script.zip', 'Data/lflist.conf', 'Data/lflist_genesys.conf',
               'Data/format-data-sources.json', 'Data/card-update-audit.json',
               'Data/pack/zz-ultra-tcg.db', 'Data/ultra-services.json', 'Data/burst-protocol-index.json',
-              'Data/solo-published-decks.json', 'Data/solo-decks-audit.json']
+              'Data/solo-published-decks.json', 'Data/solo-decks-audit.json', 'Data/shop-catalog.json']
     names += [p.relative_to(PLAYER).as_posix() for p in (PLAYER/'Data/locales').glob('*/cards.cdb')]
     audit = json.loads((ROOT/'Data/card-update-audit.json').read_text(encoding='utf-8'))
     names += ['Picture/Art/'+str(row['id'])+'.jpg' for row in audit['art']

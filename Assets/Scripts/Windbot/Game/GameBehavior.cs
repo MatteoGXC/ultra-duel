@@ -26,6 +26,7 @@ namespace WindBot.Game
 
         private Room _room;
         private Duel _duel;
+        public int AuditTurns, AuditSummons, AuditActivations;
         private int _hand;
         private bool _debug;
         private int _select_hint;
@@ -62,6 +63,9 @@ namespace WindBot.Game
             if (id == StocMessage.GameMsg)
             {
                 GameMessage msg = (GameMessage)packet.ReadByte();
+                if(msg==GameMessage.NewTurn)AuditTurns++;
+                if(msg==GameMessage.Summoned || msg==GameMessage.SpSummoned || msg==GameMessage.FlipSummoned)AuditSummons++;
+                if(msg==GameMessage.Chaining)AuditActivations++;
                 if (_messages.ContainsKey(msg))
                     _messages[msg](packet);
                 _lastMessage = msg;
@@ -640,7 +644,7 @@ namespace WindBot.Game
                 if (card != null)
                 {
                     if (_debug)
-                        Logger.WriteLine("(" + previousControler.ToString() + " 's " + (card.Name ?? "UnKnowCard") + " deattach " + (NamedCard.Get(cardId)?.Name) + ")");
+                        Logger.WriteLine("(" + previousControler.ToString() + " 's " + (card?.Name ?? "Unknown card") + " deattach " + (NamedCard.Get(cardId)?.Name) + ")");
                     card.Overlays.Remove(cardId);
                 }
                 previousLocation = 0; // the card is removed when it go to overlay, so here we treat it as a new card
@@ -655,7 +659,7 @@ namespace WindBot.Game
                 if (card != null)
                 {
                     if (_debug)
-                        Logger.WriteLine("(" + previousControler.ToString() + " 's " + (card.Name ?? "UnKnowCard") + " overlay " + (NamedCard.Get(cardId)?.Name) + ")");
+                        Logger.WriteLine("(" + previousControler.ToString() + " 's " + (card?.Name ?? "Unknown card") + " overlay " + (NamedCard.Get(cardId)?.Name) + ")");
                     card.Overlays.Add(cardId);
                 }
             }
@@ -674,7 +678,7 @@ namespace WindBot.Game
                     if (card != null && previousLocation != currentLocation)
                         card.IsSpecialSummoned = false;
                     if (_debug && card != null)
-                        Logger.WriteLine("(" + previousControler.ToString() + " 's " + (card.Name ?? "UnKnowCard")
+                        Logger.WriteLine("(" + previousControler.ToString() + " 's " + (card?.Name ?? "Unknown card")
                         + " from " +
                         (CardLocation)previousLocation + " move to " + (CardLocation)currentLocation + ")");
                 }
@@ -759,7 +763,7 @@ namespace WindBot.Game
                 if ((pp & (int) CardPosition.FaceUp) > 0 && (cp & (int) CardPosition.FaceDown) > 0)
                     card.ClearCardTargets();
                 if (_debug)
-                    Logger.WriteLine("(" + (card.Name ?? "UnKnowCard") + " change position to " + (CardPosition)cp + ")");
+                    Logger.WriteLine("(" + (card?.Name ?? "Unknown card") + " change position to " + (CardPosition)cp + ")");
             }
         }
 
@@ -777,7 +781,7 @@ namespace WindBot.Game
             packet.ReadInt16(); // trigger location + trigger sequence
             int desc = packet.ReadInt32();
             if (_debug)
-                if (card != null) Logger.WriteLine("(" + cc.ToString() + " 's " + (card.Name ?? "UnKnowCard") + " activate effect from " + (CardLocation)pcl + ")");
+                if (card != null) Logger.WriteLine("(" + cc.ToString() + " 's " + (card?.Name ?? "Unknown card") + " activate effect from " + (CardLocation)pcl + ")");
             _duel.LastChainLocation = (CardLocation)pcl;
             _ai.OnChaining(card, cc);
             //_duel.ChainTargets.Clear();
@@ -948,7 +952,7 @@ namespace WindBot.Game
                 ClientCard card = _duel.GetCard(player, (CardLocation)loc, seq);
                 if (card == null) continue;
                 if (_debug)
-                    Logger.WriteLine("(" + (CardLocation)loc + " 's " + (card.Name ?? "UnKnowCard") + " become target)");
+                    Logger.WriteLine("(" + (CardLocation)loc + " 's " + (card?.Name ?? "Unknown card") + " become target)");
                 _duel.ChainTargets.Add(card);
                 _duel.LastChainTargets.Add(card);
                 _duel.ChainTargetOnly.Add(card);
@@ -1175,41 +1179,18 @@ namespace WindBot.Game
 
         private void OnSelectChain(BinaryReader packet)
         {
-            packet.ReadByte(); // player
-            int count = packet.ReadByte();
-            packet.ReadByte(); // specount
-            int hint1 = packet.ReadInt32(); // hint1
-            int hint2 = packet.ReadInt32(); // hint2
-
-            // TODO: use ChainInfo?
-            IList<ClientCard> cards = new List<ClientCard>();
-            IList<int> descs = new List<int>();
-            IList<bool> forces = new List<bool>();
-
-            for (int i = 0; i < count; ++i)
+            var prompt=YGOSharp.Network.ChainPrompt.Read(packet,Game.NativeChainProtocol);
+            int hint1=prompt.Hint0,hint2=prompt.Hint1;
+            IList<ClientCard> cards=new List<ClientCard>();
+            IList<int> descs=new List<int>();
+            IList<bool> forces=new List<bool>();
+            foreach(var entry in prompt.Entries)
             {
-                packet.ReadByte(); // flag
-                bool forced = packet.ReadByte() != 0;
-
-                int id = packet.ReadInt32();
-                int con = GetLocalPlayer(packet.ReadByte());
-                int loc = packet.ReadByte();
-                int seq = packet.ReadByte();
-                int sseq = packet.ReadByte();
-
-                int desc = packet.ReadInt32();
-                if (desc == 221) // trigger effect
-                {
-                    desc = 0;
-                }
-
-                ClientCard card = _duel.GetCard(con, loc, seq, sseq);
-                if (card.Id == 0)
-                    card.SetId(id);
-
-                cards.Add(card);
-                descs.Add(desc);
-                forces.Add(forced);
+                int con=GetLocalPlayer(entry.Controller);
+                var card=_duel.GetCard(con,entry.Location,entry.Sequence,entry.Subsequence);
+                if(card==null)card=new ClientCard(entry.Code,(CardLocation)entry.Location,entry.Sequence);
+                else if(card.Id==0)card.SetId(entry.Code);
+                cards.Add(card);descs.Add(entry.Description==221?0:entry.Description);forces.Add(entry.Forced);
             }
 
             if (cards.Count == 0)
@@ -2007,7 +1988,8 @@ namespace WindBot.Game
         private void OnConfirmCards(BinaryReader packet)
         {
             /*int playerid = */packet.ReadByte();
-            /*int skip_panel = */packet.ReadByte();
+            // Native core omits MDPro's optional skip-panel header byte.
+            if((packet.BaseStream.Length-packet.BaseStream.Position)%7==2)packet.ReadByte();
             int count = packet.ReadByte();
             for (int i = 0; i < count; ++ i)
             {
@@ -2016,9 +1998,9 @@ namespace WindBot.Game
                 int loc = packet.ReadByte();
                 int seq = packet.ReadByte();
                 ClientCard card = _duel.GetCard(player, (CardLocation)loc, seq);
-                if (cardId > 0) card.SetId(cardId);
+                if (cardId > 0 && card!=null) card.SetId(cardId);
                 if (_debug)
-                    Logger.WriteLine("(Confirm " + player.ToString() + "'s " + (CardLocation)loc + " card: " + (card.Name ?? "UnKnowCard") + ")");
+                    Logger.WriteLine("(Confirm " + player.ToString() + "'s " + (CardLocation)loc + " card: " + (card?.Name ?? "Unknown card") + ")");
             }
         }
 

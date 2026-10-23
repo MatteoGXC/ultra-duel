@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.2'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.3'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -33,18 +33,20 @@ def main():
             'New players: download **Ultra-Duel-Setup.exe**. Setup downloads and verifies the complete game.\n\n'
             'Already have Matteo Duel: download **Ultra-Duel-Updater.zip**, extract beside Matteo-Duel.exe, '
             'close the game, then run Update-Ultra-Duel.cmd. Only changed files download; decks and settings are preserved.\n\n'
-            '## Included in v0.1.2\n\n'
-            '- 300 missing card IDs added, 204 availability flags corrected, updated card scripts and 466 artwork sources.\n'
-            '- Complete English Burst Protocol pack index (101 official database entries).\n'
-            '- Angular home screen with Duel, Deck, Solo, Shop, profile, missions and Duel Pass.\n'
-            '- Friends accounts, requests, presence and private VPS-hosted TCG/Genesys rooms, including Genesys 0 and custom caps.\n'
-            '- Free Duel Pass: 100 XP per win, 20 tiers, cosmetic gems, titles and profile frames. Progress is saved on this PC.\n'
-            '- Ultra Duel release and main-branch push notifications; the old MDPro app-update checker is removed.\n\n'
-            '## Multiplayer\n\n'
-            'Create an account in FRIENDS, add a friend by username, then create a room from DUEL. '
-            'Your friend opens DUEL and joins your room. The room format and point cap are enforced by the hosted server. '
-            'Both players must update to v0.1.2. The server runs on the project owner’s VPS; no router forwarding is required for players.\n\n'
-            'All 29 published Solo lists remain unchanged and have been revalidated. Existing game shortcuts remain compatible.\n\n'
+            '## Included in v0.1.3\n\n'
+            '- Master Duel inspired player screens: Game Start, a clear home wallpaper, profile card, free pass, accessory shop, friends drawer, room table and match history.\n'
+            '- One free Duel Pass track. Wins award 100 XP and 25 cosmetic gems; every 200 XP unlocks a grade with 50 more gems. No paid tier.\n'
+            '- 444 accessories with previews, ownership and gem purchases. Duel field sets include the matching base and parts. Starter accessories and wallpapers stay available.\n'
+            '- Player statistics, friend invitations, online/in-duel presence, account wallets, and authorized owner tools.\n'
+            '- Post-duel scores, rewards, level progress and automatic saved replays. Offline progression is preserved separately from signed-in accounts.\n'
+            '- Fixed the native chain-prompt and card-reveal packet mismatches responsible for AI effect/search freezes. All 29 unchanged published Solo entries passed actual TCP checks through turn 7 or earlier duel completion, with no freezes or protocol exceptions.\n'
+            '- Expanded AI support for newer cards in published recipes. Opening-turn tests verify execution; they do not establish optimal play of every combination.\n'
+            '- Includes the v0.1.2 card update: 300 missing entries, 204 availability corrections, updated scripts, 466 artwork sources, and the 101-entry English Burst Protocol index.\n\n'
+            '## Playing with friends\n\n'
+            'Sign in from FRIENDS, add a friend by username and use their invite action or create a room from DUEL. '
+            'The server enforces TCG or Genesys rules, including zero/custom caps. Both players should update to v0.1.3.\n\n'
+            'Four independent players with full card effects are not included: the bundled engine currently supports two opposing fields. '
+            'This release keeps the existing two-player rules intact.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:

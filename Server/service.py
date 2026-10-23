@@ -21,6 +21,7 @@ import subprocess
 import sys
 import threading
 import time
+import player_features
 
 STATE = Path(os.environ.get('ULTRA_STATE', '/state'))
 HOST = os.environ.get('ULTRA_HOST', '69.48.201.156')
@@ -51,6 +52,7 @@ def initialize():
         create table if not exists friends(sender integer not null references users(id), recipient integer not null references users(id),
             accepted integer not null default 0, primary key(sender,recipient), check(sender<>recipient));
         ''')
+        player_features.initialize(db)
     cert, key = STATE/'certificate.pem', STATE/'private-key.pem'
     if not cert.exists() or not key.exists():
         subprocess.run(['openssl','req','-x509','-newkey','rsa:3072','-sha256','-days','3650','-nodes',
@@ -83,7 +85,7 @@ def public_room(room):
     return {key:room[key] for key in ('id','host','hostId','format','cap','port','expires')}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'UltraDuel/0.1.2'
+    server_version = 'UltraDuel/0.1.3'
     def log_message(self, *_): pass # Passwords, tokens and private room secrets never enter access logs.
     def reply(self, data, status=200):
         body=json.dumps(data,separators=(',',':')).encode()
@@ -119,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.2'}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.3'}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')
@@ -142,6 +144,8 @@ class Handler(BaseHTTPRequestHandler):
             (hashlib.sha256(token.encode()).hexdigest(),now)).fetchone()
         if not user: raise Problem('Please sign in again.',401)
         uid=user['id']; db.execute('update users set seen=? where id=?',(now,uid))
+        feature = player_features.route(self,db,method,path,body,now,user,(STATE,Problem,are_friends,ROOMS,LOCK))
+        if feature is not None: return feature
         if path=='/logout' and method=='POST':
             db.execute('delete from sessions where token=?',(hashlib.sha256(token.encode()).hexdigest(),))
             return {'ok':True}
@@ -150,12 +154,13 @@ class Handler(BaseHTTPRequestHandler):
             for row in db.execute('''select f.sender,f.recipient,f.accepted,u.id,u.name,u.seen from friends f
                 join users u on u.id=case when f.sender=? then f.recipient else f.sender end
                 where f.sender=? or f.recipient=? order by u.name''',(uid,uid,uid)):
-                record={'id':row['id'],'name':row['name'],'online':row['seen']>now-120}
+                activity=db.execute('select activity,mate from profiles where user=?',(row['id'],)).fetchone()
+                record={'id':row['id'],'name':row['name'],'online':row['seen']>now-120,'activity':activity[0] if activity and row['seen']>now-120 else ('Online' if row['seen']>now-120 else 'Offline'),'mate':activity[1] if activity else 1000001}
                 (friends if row['accepted'] else sent if row['sender']==uid else requests).append(record)
             with LOCK:
                 clean_rooms()
                 rooms=[public_room(r) for r in ROOMS.values() if r['hostId']==uid or are_friends(db,uid,r['hostId'])]
-            return {'id':uid,'name':user['name'],'friends':friends,'requests':requests,'sent':sent,'rooms':rooms}
+            return {'id':uid,'name':user['name'],'friends':friends,'requests':requests,'sent':sent,'rooms':rooms,'admin':player_features.is_admin(STATE,user['name']),'profile':player_features.profile(db,uid),'invites':[dict(r) for r in db.execute('select i.room,u.name,i.sender from invites i join users u on u.id=i.sender where i.recipient=? and i.expires>?',(uid,now))]}
         if path=='/friends/request' and method=='POST':
             target=db.execute('select id from users where name=?',(str(body.get('name','')).strip(),)).fetchone()
             if not target: raise Problem('No player has that username.',404)

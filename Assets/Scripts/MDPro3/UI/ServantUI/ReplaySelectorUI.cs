@@ -95,6 +95,7 @@ namespace MDPro3.UI.ServantUI
                 if (!File.Exists(fileName))
                     return;
             }
+            OcgCore.CurrentReplayNativePrompts=File.Exists(fileName+".protocol") && File.ReadAllText(fileName+".protocol").Trim()=="native";
             bool yrp3d = fileName.Length > 6 && fileName.ToLower().Substring(fileName.Length - 6, 6) == Program.EXPANSION_YRP3D;
             try
             {
@@ -370,6 +371,11 @@ namespace MDPro3.UI.ServantUI
                 File.Move(Program.PATH_REPLAY + replay, Program.PATH_REPLAY + newName + Program.EXPANSION_YRP);
             else
                 File.Move(Program.PATH_REPLAY + replay + Program.EXPANSION_YRP3D, Program.PATH_REPLAY + newName + Program.EXPANSION_YRP3D);
+            string oldMeta=Program.PATH_REPLAY+replay+(replay.EndsWith(Program.EXPANSION_YRP)?"":Program.EXPANSION_YRP3D)+".protocol";
+            string newMeta=Program.PATH_REPLAY+newName+(replay.EndsWith(Program.EXPANSION_YRP)?Program.EXPANSION_YRP:Program.EXPANSION_YRP3D)+".protocol";
+            if(File.Exists(oldMeta))File.Move(oldMeta,newMeta);
+            foreach(var game in UltraProgress.Data.matches)if(game.replay==replay)game.replay=newName;
+            UltraProgress.Save();
             Print();
         }
 

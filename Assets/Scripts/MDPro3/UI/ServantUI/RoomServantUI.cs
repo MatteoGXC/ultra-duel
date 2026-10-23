@@ -11,7 +11,7 @@ using static MDPro3.UI.ChatPanel;
 
 namespace MDPro3.UI.ServantUI
 {
-    public class RoomServantUI : ServantUI
+    public partial class RoomServantUI : ServantUI
     {
 
         #region Elements
@@ -235,6 +235,7 @@ namespace MDPro3.UI.ServantUI
             else
                 ButtonReady.gameObject.SetActive(true);
 
+            RefreshFriendRoom();
         }
 
         public void RefreshDeckSelector()

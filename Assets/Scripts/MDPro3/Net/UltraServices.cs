@@ -16,7 +16,7 @@ namespace MDPro3.Net
 {
     public static class UltraServices
     {
-        public const string Version = "0.1.2";
+        public const string Version = "0.1.3";
         public const string Repository = "https://github.com/MatteoGXC/ultra-duel";
         const string SessionPath = "Data/friends-session.json";
         public static string Token { get; private set; } = "";
@@ -111,11 +111,17 @@ namespace MDPro3.Net
             finally { ClearSession(); }
         }
 
+        public static string CurrentRoomId { get; private set; }
+        public static void SetProfile(JObject profile)
+        {
+            if(State!=null)State["profile"]=profile;
+            Changed?.Invoke();
+        }
         public static async UniTask Refresh()
         {
             if (friendsBusy || string.IsNullOrEmpty(Token)) return;
             friendsBusy = true;
-            try { State = await Request("/state"); Changed?.Invoke(); }
+            try { State = await Request("/state"); Changed?.Invoke(); await UltraProgress.SyncPending(); }
             finally { friendsBusy = false; }
         }
 
@@ -123,12 +129,13 @@ namespace MDPro3.Net
         {
             Initialize();
             if (Time.realtimeSinceStartup < nextHeartbeat) return;
-            nextHeartbeat = Time.realtimeSinceStartup + 45;
-            try { await Refresh(); } catch { /* Presence retries without interrupting a duel. */ }
+            nextHeartbeat = Time.realtimeSinceStartup + 15;
+            try { if(!string.IsNullOrEmpty(Token)) await Request("/presence","POST",new{activity=UltraAccount.Activity,mate=UltraAccount.ProfileMate}); await Refresh(); } catch { /* Presence retries without interrupting a duel. */ }
         }
 
         public static async UniTask JoinRoom(JObject room)
         {
+            CurrentRoomId=(string)room["id"];
             DuelFormat.Set((string)room["format"] == "Genesys", (int)room["cap"]);
             var deck = new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK + Config.GetConfigDeckName() + Program.EXPANSION_YDK);
             if (!DuelFormat.Validate(deck, "Your Deck")) return;

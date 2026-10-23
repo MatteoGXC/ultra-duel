@@ -578,6 +578,7 @@ namespace MDPro3
             {
                 if (packagesInRecord.Count > 10)
                 {
+                    Directory.CreateDirectory(Program.PATH_REPLAY);
                     var write = false;
                     var i = 0;
                     var startI = 0;
@@ -623,6 +624,11 @@ namespace MDPro3
                         stream.Flush();
                         writer.Close();
                         stream.Close();
+                        if(OcgCore.condition==OcgCore.Condition.Duel)
+                        {
+                            UltraProgress.AttachReplay(replayName);
+                            File.WriteAllText(Program.PATH_REPLAY+replayName+Program.EXPANSION_YRP3D+".protocol",DuelFormat.LocalSession?"native":"mdpro");
+                        }
                         if (OcgCore.duelEnded)
                             packagesInRecord.Clear();
                     }

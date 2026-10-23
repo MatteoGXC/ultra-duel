@@ -154,6 +154,12 @@ namespace MDPro3.UI
 
         protected override void CallToggleOnEvent()
         {
+            if(Appearance.condition!=Appearance.Condition.Watch && Appearance.condition!=Appearance.Condition.Replay
+                && (Appearance.player=="0" || Appearance.condition==Appearance.Condition.DeckEditor) && !UltraAccount.CanEquip(itemID))
+            {
+                MessageManager.Cast("Locked cosmetic. Purchase it from SHOP > Accessories.");
+                return;
+            }
             base.CallToggleOnEvent();
             CallHoverOnEvent();
 
@@ -190,6 +196,7 @@ namespace MDPro3.UI
                     if (DeckEditor.Deck.Field != itemID)
                     {
                         DeckEditor.Deck.Field = itemID;
+                        UltraAccount.ApplyFieldBundle(itemID);
                         Program.instance.deckEditor.GetUI<DeckEditorUI>().DeckView.SetDirty(true);
                         Program.instance.deckEditor.GetUI<DeckEditorUI>().IconField.sprite = Icon.sprite;
                     }
@@ -225,6 +232,7 @@ namespace MDPro3.UI
             }
             else
             {
+                if(path.StartsWith("FieldIcon")) UltraAccount.ApplyFieldBundle(itemID);
                 if (AppearanceUI.currentContent == "Wallpaper")
                     Config.Set("Wallpaper", itemID.ToString());
                 else if (AppearanceUI.currentContent == "Mate")
