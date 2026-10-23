@@ -130,6 +130,7 @@ namespace MDPro3.Servant
 
         public override void OnExit()
         {
+            if (returnAction != null) { returnAction.Invoke(); return; }
             if (condition != Condition.DeckEditor)
             {
                 if (Program.instance.currentSubServant == this)

@@ -270,11 +270,11 @@ namespace MDPro3.UI.ServantUI
 
             if (condition != Condition.DeckEditor)
             {
-                Program.instance.setting.GetUI<SettingServantUI>().RefreshAppearanceModeText();
+                Program.instance.setting.GetUI<SettingServantUI>()?.RefreshAppearanceModeText();
 
-                if (UIManager.currentWallpaper != Config.Get("Wallpaper", Program.items.wallpapers[0].id.ToString()))
+                if (UIManager.currentWallpaper != Config.Get("Wallpaper", UIManager.DefaultWallpaper))
                 {
-                    UIManager.currentWallpaper = Config.Get("Wallpaper", Program.items.wallpapers[0].id.ToString());
+                    UIManager.currentWallpaper = Config.Get("Wallpaper", UIManager.DefaultWallpaper);
                     Program.instance.ui_.ChangeWallpaper(UIManager.currentWallpaper);
                 }
             }

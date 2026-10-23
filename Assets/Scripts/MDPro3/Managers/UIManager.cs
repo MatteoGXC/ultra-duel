@@ -32,6 +32,7 @@ namespace MDPro3
         public RectTransform popup;
         public RectTransform sidePanel;
         public RectTransform duelButton;
+        public const string DefaultWallpaper = "1130001"; // Blue-Eyes White Dragon
         public static string currentWallpaper;
 
         [Header("UI Handler")]
@@ -68,7 +69,7 @@ namespace MDPro3
 
             try
             {
-                currentWallpaper = Config.Get("Wallpaper", Program.items.wallpapers[0].id.ToString());
+                currentWallpaper = Config.Get("Wallpaper", DefaultWallpaper);
                 ChangeWallpaper(currentWallpaper);
                 InitializeLanguage();
             }

@@ -305,11 +305,29 @@ namespace MDPro3.UI.ServantUI
             if(UltraProgress.Data.frame==frame){modalStatus.text="This frame is already equipped.";return;}
             bool bought=UltraProgress.Buy(frame);OpenShop();modalStatus.text=bought?frame+" frame equipped.":"Earn more gems through the Duel Pass.";
         }
+        void OpenWallpaper()
+        {
+            CloseModal();
+            var appearance=Program.instance.appearance;
+            appearance.SwitchCondition(Appearance.Condition.Duel);
+            appearance.returnAction=()=>{appearance.returnAction=null;Program.instance.ShiftToServant(Program.instance.menu);};
+            Program.instance.ShiftToServant(appearance);
+            SelectWallpaperPage().Forget();
+        }
+        async UniTask SelectWallpaperPage()
+        {
+            var appearance=Program.instance.appearance;
+            await UniTask.WaitUntil(()=>appearance.servantUI!=null && appearance.servantUI.gameObject.activeInHierarchy);
+            await UniTask.Delay(600);
+            var page=appearance.GetUI<AppearanceUI>().GetComponentsInChildren<SelectionToggle_AppearanceGenre>(true);
+            foreach(var tab in page)
+                if(tab.name.Contains("Wallpaper")){tab.SetToggleOn();break;}
+        }
         void OpenMenu()
         {
             OpenModal("MENU","Ultra Duel  /  v"+UltraServices.Version,"menu");
             SmallButton(modal,"SETTINGS",()=>{CloseModal();OnSetting();},.055f,.61f,.42f,.10f);
-            SmallButton(modal,"CUSTOMIZE",()=>{CloseModal();OnMate();},.525f,.61f,.42f,.10f);
+            SmallButton(modal,"WALLPAPER",OpenWallpaper,.525f,.61f,.42f,.10f);
             SmallButton(modal,"REPLAYS",()=>{CloseModal();OnReplay();},.055f,.46f,.42f,.10f);
             SmallButton(modal,"PUZZLES",()=>{CloseModal();OnPuzzle();},.525f,.46f,.42f,.10f);
             SmallButton(modal,"CUT-INS",()=>{CloseModal();OnCutin();},.055f,.31f,.42f,.10f);
