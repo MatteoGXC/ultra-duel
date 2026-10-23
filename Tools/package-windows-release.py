@@ -6,6 +6,7 @@ import os
 import argparse
 from pathlib import Path
 import zipfile
+import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'release/MDPro3-TCG-Genesys'
@@ -59,9 +60,14 @@ def main():
         path = OUTPUT/name
         if args.resume and path.exists():
             with zipfile.ZipFile(path) as archive:
-                expected = {rel: size for _, rel, size in files}
-                if index == 0: expected['Data/config.conf'] = len(config.encode())
-                if {e.filename: e.file_size for e in archive.infolist()} != expected:
+                expected = {}
+                for source, rel, size in files:
+                    crc = 0
+                    with source.open('rb') as stream:
+                        for block in iter(lambda:stream.read(4*1024*1024), b''): crc = zlib.crc32(block, crc)
+                    expected[rel] = (size, crc)
+                if index == 0: expected['Data/config.conf'] = (len(config.encode()), zlib.crc32(config.encode()))
+                if {e.filename: (e.file_size, e.CRC) for e in archive.infolist()} != expected:
                     raise ValueError('Existing archive does not match this package: '+name)
         else:
             with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=1, allowZip64=True) as archive:
