@@ -40,6 +40,7 @@ uint32_t read_card(uint32_t code, card_data* data);
 uint32_t handle_message(void* pduel, uint32_t message_type);
 
 extern "C" DECL_DLLEXPORT intptr_t create_duel(uint_fast32_t seed);
+extern "C" DECL_DLLEXPORT uint32_t ocg_format_capabilities();
 extern "C" DECL_DLLEXPORT void start_duel(intptr_t pduel, uint32_t options);
 extern "C" DECL_DLLEXPORT void end_duel(intptr_t pduel);
 extern "C" DECL_DLLEXPORT void set_player_info(intptr_t pduel, int32_t playerid, int32_t lp, int32_t startcount, int32_t drawcount);

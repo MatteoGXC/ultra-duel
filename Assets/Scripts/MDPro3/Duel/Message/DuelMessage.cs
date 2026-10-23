@@ -174,8 +174,10 @@ namespace MDPro3.Duel
             isObserver = (playerType & 0xF0) > 0;
             if (reader.BaseStream.Length > 17)
                 MasterRule = reader.ReadByte() + 1;
-            life0 = reader.ReadInt32();
-            life1 = reader.ReadInt32();
+            var engineLife0 = reader.ReadInt32();
+            var engineLife1 = reader.ReadInt32();
+            life0 = isFirst ? engineLife0 : engineLife1;
+            life1 = isFirst ? engineLife1 : engineLife0;
             lpLimit = Mathf.Max(life0, life1);
             turns = 0;
 
@@ -1512,7 +1514,8 @@ namespace MDPro3.Duel
 
         protected override async UniTask GameMessage_Damage(BinaryReader reader)
         {
-            var player = LocalPlayer(reader.ReadByte());
+            var enginePlayer = reader.ReadByte();
+            var player = LocalPlayer(enginePlayer);
             var value = reader.ReadInt32();
 
             if(player == 0)
@@ -1539,6 +1542,11 @@ namespace MDPro3.Duel
             duelBGManager.OnLifePointsChanged(1, life1);
             AudioManager.PlaySE("SE_COST_DAMAGE");
             Core.SetLP(player, -value);
+            string owner = player == 0 ? "You" : "Opponent";
+            MessageManager.Cast(currentMessage == GameMessage.PayLpCost
+                ? owner + " paid " + value + " LP (card cost)."
+                : owner + " took " + value + " damage.");
+            Debug.Log($"DUEL_LP {currentMessage} enginePlayer={enginePlayer} localPlayer={player} amount={value} you={life0} opponent={life1}");
             await UniTask.WaitForSeconds(0.5f);
         }
 

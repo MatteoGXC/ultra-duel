@@ -1,5 +1,6 @@
 #include "config.h"
 #include "single_duel.h"
+#include "format_options.h"
 #include "netserver.h"
 #include "game.h"
 #include "data_manager.h"
@@ -358,6 +359,8 @@ void SingleDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 				deckerror = deckManager.CheckDeck(pdeck[dp->type], host_info.lflist, host_info.rule);
 			}
 		}
+		if (!deckerror && host_info.duel_rule == 8)
+			deckerror = deckManager.CheckGenesysDeck(pdeck[dp->type], get_local_genesys_point_cap());
 		if(deckerror) {
 			STOC_HS_PlayerChange scpc;
 			scpc.status = (dp->type << 4) | PLAYERCHANGE_NOTREADY;
@@ -577,7 +580,7 @@ void SingleDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 #ifdef YGOPRO_SERVER_MODE
 	preload_script(pduel, "./script/special.lua");
 #endif
-	unsigned int opt = (unsigned int)host_info.duel_rule << 16;
+	unsigned int opt = local_format_options(host_info.duel_rule);
 	if(host_info.no_shuffle_deck)
 		opt |= DUEL_PSEUDO_SHUFFLE;
 	last_replay.WriteInt32(host_info.start_lp, false);

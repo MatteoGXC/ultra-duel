@@ -1,0 +1,1395 @@
+{
+  "ruleFiles": {
+    "lflist.conf": "35ae24c6e49a85217c4fa5f7aa04927517c2ed574da70ed3ee555e4db68452b6",
+    "lflist_genesys.conf": "4be66f6dd34f3c8b46da48da5f25ef18db5a274fdcf2ae1125d96ce6c6c3d751"
+  },
+  "decks": [
+    {
+      "file": "Windbot/Decks/TCG/AI_Albaz.ydk",
+      "mode": "TCG",
+      "points": 410,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        65681983,
+        87746184,
+        87746184
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Albaz.ydk",
+      "mode": "Genesys",
+      "points": 609,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Altergeist.ydk",
+      "mode": "TCG",
+      "points": 277,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        68462976,
+        68462976,
+        61740673,
+        41420027,
+        50588353,
+        41999284,
+        41999284
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Altergeist.ydk",
+      "mode": "Genesys",
+      "points": 699,
+      "removed": [
+        85289965,
+        85289965,
+        49725936,
+        49725936,
+        1508649,
+        1508649,
+        1508649,
+        50588353,
+        41999284,
+        41999284,
+        41999284,
+        94259633,
+        94259633
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Apophis.ydk",
+      "mode": "TCG",
+      "points": 291,
+      "removed": [
+        6325660,
+        6325660,
+        6325660,
+        78114463,
+        78114463,
+        84815190,
+        84815190,
+        38354018
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Blackwing.ydk",
+      "mode": "TCG",
+      "points": 1,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Blackwing.ydk",
+      "mode": "Genesys",
+      "points": 1,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_BlueEyes.ydk",
+      "mode": "TCG",
+      "points": 150,
+      "removed": [
+        54447022,
+        58820923
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_BlueEyes.ydk",
+      "mode": "Genesys",
+      "points": 207,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_BlueEyesMaxDragon.ydk",
+      "mode": "TCG",
+      "points": 245,
+      "removed": [
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        24224830,
+        74997493,
+        65330383,
+        41999284,
+        75732622,
+        3679218,
+        23002292,
+        23002292
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_BlueEyesMaxDragon.ydk",
+      "mode": "Genesys",
+      "points": 466,
+      "removed": [
+        31833038,
+        85289965,
+        74997493,
+        5043010,
+        65330383,
+        38342335,
+        2857636,
+        28776350,
+        75452921,
+        3987233,
+        3987233,
+        99111753,
+        98978921,
+        41999284,
+        41999284,
+        5821478,
+        77058170,
+        3679218
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Brave.ydk",
+      "mode": "TCG",
+      "points": 443,
+      "removed": [
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        65681983,
+        65681983,
+        84815190,
+        27548199,
+        44097050,
+        50588353,
+        70369116,
+        94145021,
+        94145021
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Brave.ydk",
+      "mode": "Genesys",
+      "points": 698,
+      "removed": [
+        44097050,
+        50588353,
+        70369116,
+        98978921,
+        98978921,
+        60303245
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Burn.ydk",
+      "mode": "TCG",
+      "points": 3,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Burn.ydk",
+      "mode": "Genesys",
+      "points": 3,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_ChainBurn.ydk",
+      "mode": "TCG",
+      "points": 69,
+      "removed": [
+        59750328,
+        91623717,
+        41999284,
+        41999284
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_ChainBurn.ydk",
+      "mode": "Genesys",
+      "points": 43,
+      "removed": [
+        41999284,
+        41999284,
+        41999284
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_CyberDragon.ydk",
+      "mode": "TCG",
+      "points": 100,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_CyberDragon.ydk",
+      "mode": "Genesys",
+      "points": 100,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_DarkMagician.ydk",
+      "mode": "TCG",
+      "points": 88,
+      "removed": [
+        23434538,
+        50954680
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_DarkMagician.ydk",
+      "mode": "Genesys",
+      "points": 120,
+      "removed": [
+        58074177,
+        90036274,
+        71384012,
+        71384012,
+        71384012,
+        1482001
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Dogmatika.ydk",
+      "mode": "TCG",
+      "points": 570,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        65681983,
+        74586817,
+        79606837
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Dogmatika.ydk",
+      "mode": "Genesys",
+      "points": 909,
+      "removed": [
+        2220237,
+        24842059,
+        60303245
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Dragun.ydk",
+      "mode": "TCG",
+      "points": 240,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        97631303,
+        97631303,
+        97631303,
+        1845204,
+        24224830,
+        24224830,
+        24224830,
+        37818794,
+        37818794,
+        37818794,
+        50588353,
+        70369116,
+        70369116
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Dragun.ydk",
+      "mode": "Genesys",
+      "points": 853,
+      "removed": [
+        50588353,
+        70369116,
+        70369116,
+        98978921,
+        98978921,
+        31226177,
+        31226177,
+        60303245,
+        60303245,
+        60303245
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Dragunity.ydk",
+      "mode": "TCG",
+      "points": 77,
+      "removed": [
+        50954680,
+        50954680
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Dragunity.ydk",
+      "mode": "Genesys",
+      "points": 77,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Evilswarm.ydk",
+      "mode": "TCG",
+      "points": 142,
+      "removed": [
+        23434538,
+        23434538,
+        5851097,
+        58921041,
+        58921041,
+        58921041,
+        21044178
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Evilswarm.ydk",
+      "mode": "Genesys",
+      "points": 674,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Exosister.ydk",
+      "mode": "TCG",
+      "points": 193,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        84211599,
+        24224830,
+        24224830
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Exosister.ydk",
+      "mode": "Genesys",
+      "points": 379,
+      "removed": [
+        8728498
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_FamiliarPossessed.ydk",
+      "mode": "TCG",
+      "points": 527,
+      "removed": [
+        23434538,
+        23434538,
+        61740673,
+        82732705,
+        41420027,
+        65330383,
+        41999284
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_FamiliarPossessed.ydk",
+      "mode": "Genesys",
+      "points": 791,
+      "removed": [
+        31833038,
+        85289965,
+        65330383,
+        38342335,
+        2857636,
+        9839945,
+        30674956,
+        48815792,
+        73309655,
+        97661969,
+        75452921,
+        98978921,
+        41999284,
+        41999284
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Frog.ydk",
+      "mode": "TCG",
+      "points": 75,
+      "removed": [
+        1357146,
+        1357146,
+        73628505
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Frog.ydk",
+      "mode": "Genesys",
+      "points": 143,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Gravekeeper.ydk",
+      "mode": "TCG",
+      "points": 41,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Gravekeeper.ydk",
+      "mode": "Genesys",
+      "points": 41,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Graydle.ydk",
+      "mode": "TCG",
+      "points": 212,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        82732705,
+        82732705,
+        52687916
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Graydle.ydk",
+      "mode": "Genesys",
+      "points": 505,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_GrenMajuThunderBoarder.ydk",
+      "mode": "TCG",
+      "points": 235,
+      "removed": [
+        23434538,
+        23434538,
+        59750328,
+        58921041,
+        41420027,
+        24094258,
+        50588353,
+        41999284,
+        41999284,
+        24207889,
+        61740673,
+        23002292
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_GrenMajuThunderBoarder.ydk",
+      "mode": "Genesys",
+      "points": 657,
+      "removed": [
+        31833038,
+        85289965,
+        30194529,
+        38342335,
+        2857636,
+        24094258,
+        75452921,
+        50588353,
+        3987233,
+        3987233,
+        63288573,
+        41999284,
+        41999284,
+        41999284
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Horus.ydk",
+      "mode": "TCG",
+      "points": 16,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Horus.ydk",
+      "mode": "Genesys",
+      "points": 16,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Kashtira.ydk",
+      "mode": "TCG",
+      "points": 457,
+      "removed": [
+        91800273,
+        91800273,
+        23434538,
+        23434538,
+        84211599,
+        24224830,
+        24224830,
+        65681983,
+        27548199,
+        48626373,
+        48626373,
+        95474755,
+        95474755,
+        95474755,
+        10389142,
+        44097050
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Kashtira.ydk",
+      "mode": "Genesys",
+      "points": 952,
+      "removed": [
+        21887175,
+        44097050,
+        22423493,
+        65741786
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Labrynth.ydk",
+      "mode": "TCG",
+      "points": 317,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        83326048
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Labrynth.ydk",
+      "mode": "Genesys",
+      "points": 546,
+      "removed": [
+        29479265,
+        93084621,
+        93084621,
+        24269961,
+        24269961,
+        24269961,
+        67680512,
+        67680512,
+        29301450,
+        71607202,
+        94259633
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Level8.ydk",
+      "mode": "TCG",
+      "points": 177,
+      "removed": [
+        24224830,
+        24224830,
+        24224830,
+        27548199,
+        50954680,
+        74586817,
+        90590303,
+        50588353,
+        34408491
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Level8.ydk",
+      "mode": "Genesys",
+      "points": 483,
+      "removed": [
+        21887175,
+        47363932,
+        47363932,
+        50588353,
+        26692769
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Lightsworn.ydk",
+      "mode": "TCG",
+      "points": 70,
+      "removed": [
+        52687916,
+        74586817
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Lightsworn.ydk",
+      "mode": "Genesys",
+      "points": 183,
+      "removed": [
+        1861629,
+        3987233
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_LightswornShaddoldinosour.ydk",
+      "mode": "TCG",
+      "points": 313,
+      "removed": [
+        23434538,
+        23434538,
+        11110587,
+        11110587,
+        50954680,
+        74997493,
+        50588353,
+        50588353
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_LightswornShaddoldinosour.ydk",
+      "mode": "Genesys",
+      "points": 440,
+      "removed": [
+        74997493,
+        50588353,
+        50588353
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Maliss.ydk",
+      "mode": "TCG",
+      "points": 203,
+      "removed": [
+        68337209,
+        24224830,
+        24224830,
+        23434538,
+        23434538,
+        32061192,
+        32061192,
+        69272449,
+        69272449,
+        65681983,
+        4280258,
+        95454996,
+        59859086,
+        30342076
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Maliss.ydk",
+      "mode": "Genesys",
+      "points": 337,
+      "removed": [
+        39138610,
+        5043010,
+        86066372,
+        4280258,
+        21848500,
+        46947713,
+        95454996,
+        68059897,
+        29301450,
+        59859086,
+        52698008,
+        98978921,
+        30342076,
+        24842059,
+        60303245
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_MalissOCG.ydk",
+      "mode": "TCG",
+      "points": 208,
+      "removed": [
+        91800273,
+        91800273,
+        69272449,
+        69272449,
+        32061192,
+        32061192,
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        68337209,
+        95454996,
+        59859086,
+        30342076
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_MalissOCG.ydk",
+      "mode": "Genesys",
+      "points": 340,
+      "removed": [
+        64211118,
+        39138610,
+        21848500,
+        68059897,
+        95454996,
+        46947713,
+        59859086,
+        9763474,
+        52698008,
+        30342076
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Mathmech.ydk",
+      "mode": "TCG",
+      "points": 164,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Mathmech.ydk",
+      "mode": "Genesys",
+      "points": 164,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_MokeyMokey.ydk",
+      "mode": "TCG",
+      "points": 0,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_MokeyMokey.ydk",
+      "mode": "Genesys",
+      "points": 0,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_MokeyMokeyKing.ydk",
+      "mode": "TCG",
+      "points": 0,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_MokeyMokeyKing.ydk",
+      "mode": "Genesys",
+      "points": 0,
+      "removed": [
+        67598234,
+        67598234,
+        67598234
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Nekroz.ydk",
+      "mode": "TCG",
+      "points": 123,
+      "removed": [
+        52687916,
+        74586817,
+        79606837,
+        79606837,
+        79606837
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Nekroz.ydk",
+      "mode": "Genesys",
+      "points": 386,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_OldSchool.ydk",
+      "mode": "TCG",
+      "points": 1,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_OldSchool.ydk",
+      "mode": "Genesys",
+      "points": 1,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Orcust.ydk",
+      "mode": "TCG",
+      "points": 220,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        24224830,
+        27548199,
+        50588353,
+        3679218
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Orcust.ydk",
+      "mode": "Genesys",
+      "points": 375,
+      "removed": [
+        85289965,
+        76145142,
+        26692769,
+        2857636,
+        30741503,
+        30741503,
+        30741503,
+        50588353,
+        63288573,
+        3679218,
+        60303245
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Phantasm.ydk",
+      "mode": "TCG",
+      "points": 266,
+      "removed": [
+        59750328,
+        59750328,
+        53334471,
+        53334471,
+        82732705,
+        65330383,
+        50588353,
+        41999284,
+        24094258
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Phantasm.ydk",
+      "mode": "Genesys",
+      "points": 527,
+      "removed": [
+        5821478,
+        31833038,
+        85289965,
+        65330383,
+        72529749,
+        61665245,
+        38342335,
+        2857636,
+        75452921,
+        50588353,
+        3987233,
+        98978921,
+        41999284,
+        41999284,
+        24094258
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_PureWinds.ydk",
+      "mode": "TCG",
+      "points": 416,
+      "removed": [
+        50954680,
+        50954680,
+        50954680,
+        94145021,
+        94145021,
+        58921041,
+        58921041,
+        23002292,
+        23002292
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_PureWinds.ydk",
+      "mode": "Genesys",
+      "points": 756,
+      "removed": [
+        30674956,
+        90512490
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Qliphort.ydk",
+      "mode": "TCG",
+      "points": 261,
+      "removed": [
+        59750328,
+        83326048,
+        83326048,
+        83326048,
+        5851097,
+        82732705,
+        82732705
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Rainbow.ydk",
+      "mode": "TCG",
+      "points": 148,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Rank5.ydk",
+      "mode": "TCG",
+      "points": 236,
+      "removed": [
+        1845204,
+        1845204
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Rank5.ydk",
+      "mode": "Genesys",
+      "points": 400,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Ryzeal.ydk",
+      "mode": "TCG",
+      "points": 433,
+      "removed": [
+        8633261,
+        35844557,
+        34022970,
+        34022970,
+        23434538,
+        23434538,
+        25311006,
+        24224830,
+        24224830,
+        65681983,
+        34909328,
+        90590303,
+        21044178,
+        66011101,
+        20292186,
+        19613556,
+        83326048,
+        83326048,
+        83326048,
+        41420027,
+        41420027
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Ryzeal.ydk",
+      "mode": "Genesys",
+      "points": 1382,
+      "removed": [
+        8728498
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Salamangreat.ydk",
+      "mode": "TCG",
+      "points": 135,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        24224830,
+        41420027
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Salamangreat.ydk",
+      "mode": "Genesys",
+      "points": 335,
+      "removed": [
+        87871125,
+        87871125,
+        87871125,
+        31833038,
+        14812471,
+        14812471,
+        14812471,
+        41463182,
+        41463182,
+        48815792,
+        2857636,
+        85289965
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_SkyStriker.ydk",
+      "mode": "TCG",
+      "points": 229,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        63166095,
+        52340444,
+        52340444,
+        50588353
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_SkyStriker.ydk",
+      "mode": "Genesys",
+      "points": 336,
+      "removed": [
+        5821478,
+        61665245,
+        38342335,
+        2857636,
+        50588353,
+        8491308,
+        8491308,
+        63288573,
+        63288573,
+        63288573,
+        90673288,
+        90673288,
+        90673288,
+        41999284
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_ST1732.ydk",
+      "mode": "TCG",
+      "points": 30,
+      "removed": [
+        83326048
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_ST1732.ydk",
+      "mode": "Genesys",
+      "points": 112,
+      "removed": [
+        1861629,
+        1861629,
+        1861629,
+        6622715,
+        6622715,
+        6622715,
+        32617464,
+        32617464,
+        34472920,
+        34472920,
+        79016563,
+        79016563,
+        98978921,
+        98978921,
+        98978921
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_SuperheavySamurai.ydk",
+      "mode": "TCG",
+      "points": 191,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        38814750,
+        94145021,
+        94145021,
+        84815190,
+        27548199,
+        74586817,
+        27381364,
+        33918636,
+        33918636,
+        33918636
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Swordsoul.ydk",
+      "mode": "TCG",
+      "points": 205,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        65681983,
+        84815190
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Swordsoul.ydk",
+      "mode": "Genesys",
+      "points": 462,
+      "removed": [
+        78917791,
+        32519092,
+        32519092,
+        32519092
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Tearlaments.ydk",
+      "mode": "TCG",
+      "points": 610,
+      "removed": [
+        572850,
+        572850,
+        25926710,
+        25926710,
+        25926710,
+        99937011,
+        99937011,
+        62320425,
+        62320425,
+        62320425,
+        63542003,
+        37961969,
+        37961969,
+        74078255,
+        74078255,
+        92731385,
+        92731385,
+        84815190,
+        33158448,
+        21044178,
+        27381364
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Tearlaments.ydk",
+      "mode": "Genesys",
+      "points": 1287,
+      "removed": [
+        98127546,
+        21887175,
+        38342335,
+        27381364,
+        65741786
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_ThunderDragon.ydk",
+      "mode": "TCG",
+      "points": 324,
+      "removed": [
+        6637331,
+        33854624,
+        23434538,
+        23434538,
+        23434538,
+        99266988,
+        99266988,
+        24224830,
+        24224830,
+        21044178,
+        4280258,
+        83152482,
+        50277355,
+        70369116
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_ThunderDragon.ydk",
+      "mode": "Genesys",
+      "points": 624,
+      "removed": [
+        98127546,
+        21887175,
+        86066372,
+        4280258,
+        38342335,
+        83152482,
+        65741786,
+        50277355,
+        70369116,
+        73539069,
+        41999284
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Timethief.ydk",
+      "mode": "TCG",
+      "points": 243,
+      "removed": [
+        23434538,
+        23434538,
+        41420027,
+        41420027
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Timethief.ydk",
+      "mode": "Genesys",
+      "points": 326,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_ToadallyAwesome.ydk",
+      "mode": "TCG",
+      "points": 172,
+      "removed": [
+        1357146,
+        1357146,
+        1357146,
+        79606837,
+        79606837,
+        79606837
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_ToadallyAwesome.ydk",
+      "mode": "Genesys",
+      "points": 421,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Trickstar.ydk",
+      "mode": "TCG",
+      "points": 201,
+      "removed": [
+        23434538,
+        23434538,
+        23434538,
+        41999284,
+        41999284,
+        50588353,
+        50588353,
+        34408491
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Trickstar.ydk",
+      "mode": "Genesys",
+      "points": 419,
+      "removed": [
+        41999284,
+        41999284,
+        41999284,
+        3987233,
+        3987233,
+        2857636,
+        50588353,
+        50588353,
+        31833038,
+        99111753,
+        38342335
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Witchcraft.ydk",
+      "mode": "TCG",
+      "points": 219,
+      "removed": [
+        38814750,
+        38814750,
+        23434538,
+        11110587,
+        58577036,
+        58577036,
+        24224830,
+        24224830,
+        24224830,
+        65681983,
+        65681983,
+        65681983,
+        27548199,
+        74586817,
+        50588353
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Witchcraft.ydk",
+      "mode": "Genesys",
+      "points": 522,
+      "removed": [
+        85289965,
+        38342335,
+        2857636,
+        2857636,
+        8802510,
+        50588353,
+        60303245,
+        94259633,
+        94259633,
+        94259633
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Yosenju.ydk",
+      "mode": "TCG",
+      "points": 81,
+      "removed": [
+        59750328,
+        5851097,
+        21044178
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Yosenju.ydk",
+      "mode": "Genesys",
+      "points": 245,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Yubel.ydk",
+      "mode": "TCG",
+      "points": 273,
+      "removed": [
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        65681983,
+        70636044,
+        79559912,
+        71818935
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Yubel.ydk",
+      "mode": "Genesys",
+      "points": 479,
+      "removed": [
+        24269961,
+        67680512,
+        12067160,
+        29301450,
+        29479265,
+        71818935,
+        2463794,
+        60303245
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Zefra.ydk",
+      "mode": "TCG",
+      "points": 169,
+      "removed": [
+        38814750,
+        38814750,
+        23434538,
+        23434538,
+        23434538,
+        24224830,
+        24224830,
+        27548199,
+        74586817,
+        33158448,
+        79606837,
+        88581108,
+        74997493,
+        44097050,
+        24094258,
+        50588353
+      ]
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_ZexalWeapons.ydk",
+      "mode": "TCG",
+      "points": 171,
+      "removed": [
+        1845204,
+        1845204
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_ZexalWeapons.ydk",
+      "mode": "Genesys",
+      "points": 335,
+      "removed": []
+    },
+    {
+      "file": "Windbot/Decks/TCG/AI_Zoodiac.ydk",
+      "mode": "TCG",
+      "points": 231,
+      "removed": [
+        78872731,
+        78872731,
+        73628505,
+        73628505,
+        581014,
+        85115440,
+        85115440,
+        85115440
+      ]
+    },
+    {
+      "file": "Windbot/Decks/Genesys/AI_Zoodiac.ydk",
+      "mode": "Genesys",
+      "points": 431,
+      "removed": []
+    }
+  ]
+}

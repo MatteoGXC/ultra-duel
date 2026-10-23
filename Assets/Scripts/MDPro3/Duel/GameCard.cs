@@ -997,6 +997,7 @@ namespace MDPro3
 
         public static bool InPendulumZoneIf(GPS p, int code)
         {
+            if (MasterRule == 8) return false;
             var data = CardsManager.Get(code);
             if ((p.location & (uint)CardLocation.SpellZone) == 0)
                 return false;
@@ -3369,7 +3370,9 @@ namespace MDPro3
 
             if (show)
             {
-                face.GetComponent<Animator>().SetBool("Show", true);
+                // Some bundled card models have no face-preview animator. This
+                // cosmetic feature must not abort the authoritative card move.
+                face.GetComponent<Animator>()?.SetBool("Show", true);
                 face.transform.localEulerAngles = new Vector3(180f, 0f, 0f);
                 face.material.SetTexture("_LoadingTex", back.material.mainTexture);
                 back.gameObject.SetActive(false);
@@ -3377,9 +3380,9 @@ namespace MDPro3
             else
             {
                 back.gameObject.SetActive(true);
-                face.GetComponent<Animator>().SetBool("Show", false);
+                face.GetComponent<Animator>()?.SetBool("Show", false);
                 face.transform.localEulerAngles = new Vector3(180f, 0f, -180f);
-                manager.GetElement("EffectDisquiet").SetActive(false);
+                manager.GetElement("EffectDisquiet")?.SetActive(false);
             }
         }
 

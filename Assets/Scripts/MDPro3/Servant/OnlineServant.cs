@@ -119,6 +119,13 @@ namespace MDPro3.Servant
 
         public void CreateServer(List<string> serverArgs)
         {
+            // Hand-test uses its own permissive setup and is not a tournament duel.
+            if (!DuelFormat.RequireNativeRules()) return;
+            if (!DuelFormat.Genesys && DuelFormat.TcgBanlist == null)
+            {
+                MessageManager.Toast("TCG Forbidden & Limited List unavailable. Refresh rules data first.");
+                return;
+            }
             int port = 7911;
             while (!TcpHelper.IsPortAvailable(port))
             {
@@ -129,11 +136,11 @@ namespace MDPro3.Servant
 
             string args = string.Format("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11}",
                 port.ToString(),
-                BanlistManager.GetIndexByName(serverArgs[1]),
-                GetPoolCodeByName(serverArgs[2]),
+                DuelFormat.Genesys ? -1 : BanlistManager.GetIndexByName(DuelFormat.TcgBanlist.Name),
+                "1", // TCG card pool for both formats.
                 GetModeCodeByName(serverArgs[3]),
-                "F",
-                serverArgs[4],
+                DuelFormat.MasterRule,
+                "F", // Tournament format checks cannot be bypassed by the practice toggle.
                 serverArgs[5],
                 serverArgs[7],
                 serverArgs[8],

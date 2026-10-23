@@ -3,6 +3,7 @@
 #include "data_manager.h"
 #include "network.h"
 #include "game.h"
+#include <fstream>
 
 namespace ygo {
 
@@ -149,6 +150,47 @@ int DeckManager::CheckDeck(Deck& deck, int lfhash, int rule) {
 	}
 	return 0;
 }
+int DeckManager::CheckGenesysDeck(Deck& deck, unsigned int point_cap) {
+	if (deck.main.size() < DECK_MIN_SIZE || deck.main.size() > DECK_MAX_SIZE)
+		return ((unsigned)DECKERROR_MAINCOUNT << 28) + deck.main.size();
+	if (deck.extra.size() > EXTRA_MAX_SIZE)
+		return ((unsigned)DECKERROR_EXTRACOUNT << 28) + deck.extra.size();
+	if (deck.side.size() > SIDE_MAX_SIZE)
+		return ((unsigned)DECKERROR_SIDECOUNT << 28) + deck.side.size();
+	std::ifstream input("Data/lflist_genesys.conf");
+	if (!input) return ((unsigned)DECKERROR_LFLIST << 28);
+	std::unordered_map<int, unsigned int> points;
+	std::string line;
+	while (std::getline(input, line)) {
+		std::istringstream row(line);
+		int id, value;
+		std::string key;
+		if ((row >> id >> key >> value) && key == "$genesys" && value >= 0)
+			points[id] = static_cast<unsigned int>(value);
+	}
+	if (points.empty()) return ((unsigned)DECKERROR_LFLIST << 28);
+	std::unordered_map<int, int> counts;
+	uint64_t total = 0;
+	const std::vector<code_pointer>* sections[] = { &deck.main, &deck.extra, &deck.side };
+	for (int section = 0; section < 3; ++section) {
+		for (const auto& card : *sections[section]) {
+			int id = card->first;
+			const auto& data = card->second;
+			if (!(data.ot & AVAIL_TCG)) return ((unsigned)DECKERROR_NOTAVAIL << 28) + id;
+			if (data.type & (TYPE_LINK | TYPE_PENDULUM | TYPE_TOKEN)) return ((unsigned)DECKERROR_LFLIST << 28) + id;
+			if ((section == 0 && (data.type & TYPES_EXTRA_DECK)) || (section == 1 && !(data.type & TYPES_EXTRA_DECK)))
+				return ((unsigned)DECKERROR_EXTRACOUNT << 28) + id;
+			int canonical = data.alias ? data.alias : id;
+			if (++counts[canonical] > 3) return ((unsigned)DECKERROR_CARDCOUNT << 28) + id;
+			auto cost = points.find(id);
+			if (cost == points.end()) cost = points.find(canonical);
+			if (cost != points.end()) total += cost->second;
+			if (total > point_cap) return ((unsigned)DECKERROR_LFLIST << 28) + id;
+		}
+	}
+	return 0;
+}
+
 int DeckManager::LoadDeck(Deck& deck, int* dbuf, int mainc, int sidec, bool is_packlist) {
 	deck.clear();
 	int code;

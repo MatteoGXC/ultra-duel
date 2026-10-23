@@ -62,6 +62,9 @@ uint32_t default_card_reader(uint32_t code, card_data* data) {
 uint32_t default_message_handler(intptr_t pduel, uint32_t message_type) {
 	return 0;
 }
+extern "C" DECL_DLLEXPORT uint32_t ocg_format_capabilities() {
+	return 3; // TCG trigger ordering and Genesys five-zone field.
+}
 extern "C" DECL_DLLEXPORT intptr_t create_duel(uint_fast32_t seed) {
 	duel* pduel = new duel();
 	duel_set.insert(pduel);

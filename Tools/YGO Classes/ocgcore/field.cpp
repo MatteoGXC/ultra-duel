@@ -570,6 +570,10 @@ card* field::get_field_card(uint8_t playerid, uint32_t general_location, uint8_t
 int32_t field::is_location_useable(uint8_t playerid, uint32_t general_location, uint8_t sequence) const {
 	if (!check_playerid(playerid))
 		return FALSE;
+	if ((core.duel_options & DUEL_GENESYS_FIELD)
+		&& ((general_location == LOCATION_MZONE && sequence >= 5)
+			|| general_location == LOCATION_PZONE))
+		return FALSE;
 	uint32_t flag = player[playerid].disabled_location | player[playerid].used_location;
 	if (general_location == LOCATION_MZONE) {
 		if (sequence >= (int32_t)player[playerid].list_mzone.size())
@@ -632,7 +636,7 @@ int32_t field::get_useable_count_fromex(card* pcard, uint8_t playerid, uint8_t u
 		pcard->current.location = LOCATION_EXTRA;
 	}
 	int32_t useable_count = 0;
-	if(core.duel_rule >= NEW_MASTER_RULE)
+	if(core.duel_rule >= NEW_MASTER_RULE && !(core.duel_options & DUEL_GENESYS_FIELD))
 		useable_count = get_useable_count_fromex_rule4(pcard, playerid, uplayer, zone, list);
 	else
 		useable_count = get_useable_count_other(pcard, playerid, LOCATION_MZONE, uplayer, LOCATION_REASON_TOFIELD, zone, list);
@@ -662,7 +666,7 @@ int32_t field::get_spsummonable_count_fromex(card* pcard, uint8_t playerid, uint
 		pcard->current.location = LOCATION_EXTRA;
 	}
 	int32_t spsummonable_count = 0;
-	if(core.duel_rule >= NEW_MASTER_RULE)
+	if(core.duel_rule >= NEW_MASTER_RULE && !(core.duel_options & DUEL_GENESYS_FIELD))
 		spsummonable_count = get_spsummonable_count_fromex_rule4(pcard, playerid, uplayer, zone, list);
 	else
 		spsummonable_count = get_tofield_count(pcard, playerid, LOCATION_MZONE, uplayer, LOCATION_REASON_TOFIELD, zone, list);
@@ -752,7 +756,7 @@ int32_t field::get_mzone_limit(uint8_t playerid, uint8_t uplayer, uint32_t reaso
 	used_flag = used_flag & 0x1f;
 	int32_t max = 5;
 	int32_t used_count = field_used_count[used_flag];
-	if(core.duel_rule >= NEW_MASTER_RULE) {
+	if(core.duel_rule >= NEW_MASTER_RULE && !(core.duel_options & DUEL_GENESYS_FIELD)) {
 		max = 7;
 		if(player[playerid].list_mzone[5])
 			++used_count;
@@ -811,6 +815,8 @@ uint32_t field::get_linked_zone(int32_t playerid) {
 	return zones;
 }
 uint32_t field::get_rule_zone_fromex(int32_t playerid, card* pcard) {
+	if (core.duel_options & DUEL_GENESYS_FIELD)
+		return 0x1f;
 	if(core.duel_rule >= NEW_MASTER_RULE) {
 		if(core.duel_rule >= MASTER_RULE_2020 && pcard && (pcard->data.type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ))
 			&& (pcard->is_position(POS_FACEDOWN) || !(pcard->data.type & TYPE_PENDULUM)))
@@ -3573,6 +3579,10 @@ int32_t field::check_cteffect_hint(effect* peffect, uint8_t playerid) {
 int32_t field::check_nonpublic_trigger(chain& ch) {
 	effect* peffect = ch.triggering_effect;
 	card* phandler = peffect->get_handler();
+	// TCG optional hand triggers join the simultaneous-trigger chain instead of
+	// waiting for the OCG private-location fast-effect window.
+	if (core.duel_options & DUEL_TCG_SEGOC)
+		return TRUE;
 	if(!peffect->is_flag(EFFECT_FLAG_FIELD_ONLY)
 		&& ((peffect->type & EFFECT_TYPE_SINGLE) && !peffect->is_flag(EFFECT_FLAG_SINGLE_RANGE)
 			&& phandler->is_has_relation(ch) && (ch.triggering_location & (LOCATION_HAND | LOCATION_DECK))
@@ -3606,6 +3616,8 @@ int32_t field::check_trigger_effect(const chain& ch) const {
 	}
 }
 int32_t field::check_spself_from_hand_trigger(const chain& ch) const {
+	if (core.duel_options & DUEL_TCG_SEGOC)
+		return TRUE;
 	effect* peffect = ch.triggering_effect;
 	uint8_t tp = ch.triggering_player;
 	if((peffect->status & EFFECT_STATUS_SPSELF) && (ch.flag & CHAIN_HAND_TRIGGER)) {

@@ -1,0 +1,308 @@
+using System;
+using System.Collections;
+using System.IO;
+using System.Linq;
+using MDPro3.Duel.YGOSharp;
+using MDPro3.Servant;
+using MDPro3.UI;
+using MDPro3.UI.ServantUI;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using Cysharp.Threading.Tasks;
+
+namespace MDPro3
+{
+    // Opt-in diagnostics for the packaged player; inactive during ordinary play.
+    public sealed class FormatRuntimeSmoke : MonoBehaviour
+    {
+        private string output;
+        private string mode;
+        private float deadline;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void Install()
+        {
+            var args = Environment.GetCommandLineArgs();
+            int index = Array.IndexOf(args, "--format-smoke");
+            if (index < 0 || index + 2 >= args.Length) return;
+            var target = new GameObject("FormatRuntimeSmoke");
+            DontDestroyOnLoad(target);
+            var smoke = target.AddComponent<FormatRuntimeSmoke>();
+            smoke.output = Path.GetFullPath(args[index + 1]);
+            smoke.mode = args[index + 2];
+            Directory.CreateDirectory(smoke.output);
+            smoke.deadline = Time.realtimeSinceStartup + 180;
+            smoke.StartCoroutine(smoke.Run());
+        }
+
+        private void Update()
+        {
+            if (deadline > 0 && Time.realtimeSinceStartup > deadline)
+            {
+                Debug.LogError("FORMAT_SMOKE_TIMEOUT " + mode);
+                Application.Quit(2);
+            }
+        }
+
+        private IEnumerator Capture(string name)
+        {
+            yield return new WaitForSecondsRealtime(2);
+            string path = Path.Combine(output, name + ".png");
+            var cameras = Program.instance.camera_;
+            var camera = cameras.cameraMain.gameObject.activeInHierarchy ? cameras.cameraMain : cameras.camera2D;
+            var target = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.ARGB32);
+            target.Create();
+            UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(camera,
+                new UnityEngine.Rendering.RenderPipeline.StandardRequest { destination = target });
+            var previous = RenderTexture.active;
+            RenderTexture.active = target;
+            var scene = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false);
+            scene.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+            scene.Apply();
+            File.WriteAllBytes(Path.Combine(output, name + "-scene.png"), scene.EncodeToPNG());
+            RenderTexture.active = previous;
+            // UI uses an Overlay camera. Render it to the same diagnostic target as
+            // a standalone Base camera, then restore its normal stack membership.
+            var uiData = cameras.cameraUI.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+            var renderType = uiData.renderType;
+            var clear = cameras.cameraUI.clearFlags;
+            var background = cameras.cameraUI.backgroundColor;
+            uiData.renderType = UnityEngine.Rendering.Universal.CameraRenderType.Base;
+            cameras.cameraUI.clearFlags = CameraClearFlags.SolidColor;
+            cameras.cameraUI.backgroundColor = Color.clear;
+            UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(cameras.cameraUI,
+                new UnityEngine.Rendering.Universal.UniversalRenderPipeline.SingleCameraRequest { destination = target });
+            uiData.renderType = renderType;
+            cameras.cameraUI.clearFlags = clear;
+            cameras.cameraUI.backgroundColor = background;
+            RenderTexture.active = target;
+            var texture = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false);
+            texture.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+            texture.Apply();
+            var foreground = texture.GetPixels32();
+            var back = scene.GetPixels32();
+            for (int i = 0; i < foreground.Length; ++i)
+            {
+                float alpha = foreground[i].a / 255f;
+                foreground[i] = new Color32(
+                    (byte)(foreground[i].r * alpha + back[i].r * (1f-alpha)),
+                    (byte)(foreground[i].g * alpha + back[i].g * (1f-alpha)),
+                    (byte)(foreground[i].b * alpha + back[i].b * (1f-alpha)), 255);
+            }
+            texture.SetPixels32(foreground);
+            texture.Apply();
+            File.WriteAllBytes(path, texture.EncodeToPNG());
+            RenderTexture.active = previous;
+            target.Release();
+            Destroy(target);
+            Destroy(texture);
+            Destroy(scene);
+        }
+
+        private IEnumerator Run()
+        {
+            while (Program.instance == null || Program.instance.menu.servantUI == null || !TextureManager.loaded)
+                yield return null;
+            Debug.Log("FORMAT_SMOKE_MENU_READY");
+            yield return Capture("menu");
+            CheckDeckProfiles();
+            Program.instance.menu.GetUI<MainMenuUI>().OnDeck();
+            yield return new WaitForSecondsRealtime(2);
+            if (Program.instance.currentServant != Program.instance.deckSelector || Program.instance.ui_.currentPopupB != null)
+                throw new Exception("Opening My Decks unexpectedly prompted for a format.");
+            Debug.Log("FORMAT_SMOKE_DECK_BROWSER_WITHOUT_PROMPT_PASSED");
+            Program.instance.ShiftToServant(Program.instance.menu);
+            yield return new WaitForSecondsRealtime(1);
+            DuelFormat.Select(() => Debug.Log("FORMAT_SMOKE_SELECTED " + DuelFormat.DisplayName));
+            yield return Capture("format-options");
+            var buttons = FindObjectsByType<SelectionButton>(FindObjectsSortMode.None);
+            var option = buttons.FirstOrDefault(b => b.isActiveAndEnabled && b.GetButtonText() ==
+                (mode == "Genesys" ? "Genesys · 100 points" : "TCG Advanced"));
+            if (option == null) throw new Exception("Format selection button was not rendered.");
+            EventSystem.current.SetSelectedGameObject(option.gameObject);
+            option.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return new WaitForSecondsRealtime(2);
+            if (DuelFormat.Genesys != (mode == "Genesys") || !DuelFormat.RequireNativeRules())
+                throw new Exception("Selected format/native capabilities did not match.");
+            string deckName = mode == "Genesys" ? "Starter - Genesys" : "Starter - TCG";
+            Config.SetConfigDeck(deckName);
+            if (!DuelFormat.ValidateSelectedDeck()) throw new Exception("Starter deck failed validation.");
+            Program.instance.deckEditor.SwitchCondition(DeckEditor.Condition.EditDeck);
+            Program.instance.ShiftToServant(Program.instance.deckEditor);
+            while (Program.instance.deckEditor.servantUI == null) yield return null;
+            yield return Capture("deck");
+            Debug.Log("FORMAT_SMOKE_DECK_READY " + mode);
+            // Exercise the real local-server/AI path, including both deck validators.
+            var solo = Program.instance.solo;
+            Program.instance.ShiftToServant(solo);
+            while (solo.servantUI == null) yield return null;
+            Config.Set("AutoRPS", "1");
+            int checkedBots = 0;
+            foreach (var bot in SoloSelector.bots)
+            {
+                if (bot.command.StartsWith("Random=") || bot.flags.Contains("SELECT_DECKFILE")) continue;
+                if (!DuelFormat.ValidateBotCommand(bot.command))
+                    throw new Exception("An incompatible AI is offered: " + bot.name);
+                if (!DuelFormat.Genesys && bot.command.Contains("DeckFile="))
+                {
+                    var deckToken = Tools.SplitWithPreservedQuotes(bot.command.Replace("'", "\""))
+                        .Last(t => t.StartsWith("DeckFile="));
+                    var ai = new Deck(deckToken.Substring(9).Trim('"'));
+                    if (ai.Main.Concat(ai.Extra).Concat(ai.Side).Contains(23434538))
+                        throw new Exception("Maxx C leaked into the TCG Solo library.");
+                }
+                checkedBots++;
+            }
+            if (checkedBots == 0) throw new Exception("No compatible Solo opponents offered.");
+            Debug.Log("FORMAT_SMOKE_SOLO_LIBRARY_PASSED " + mode + " opponents=" + checkedBots);
+            yield return Capture("solo-library");
+            string command;
+            if (!DuelFormat.PrepareSoloBot(mode == "Genesys" ? "Deck=CyberDragon Name=SmokeAI Dialog=default"
+                : "Deck=Dragunity Name=SmokeAI Dialog=default", out command))
+                throw new Exception("The format-specific AI build could not be prepared.");
+            solo.Launch(command, false, false, true);
+            bool readied = false, started = false;
+            while (Program.instance.currentServant != Program.instance.ocgcore)
+            {
+                if (Program.instance.currentServant == Program.instance.room && Program.instance.room.servantUI != null)
+                {
+                    if (!readied && RoomServant.players[RoomServant.SelfType] != null)
+                    {
+                        Program.instance.room.GetUI<RoomServantUI>().OnReady();
+                        readied = true;
+                    }
+                    if (!started && RoomServant.players.Count(p => p != null && p.ready) >= 2)
+                    {
+                        Program.instance.room.GetUI<RoomServantUI>().OnStart();
+                        started = true;
+                    }
+                }
+                var turnChoice = Program.instance.ui_.currentPopupB as MDPro3.UI.Popup.PopupYesOrNo;
+                if (turnChoice != null && turnChoice.isActiveAndEnabled && started)
+                {
+                    turnChoice.decideAction?.Invoke();
+                    turnChoice.Hide();
+                }
+                yield return null;
+            }
+            yield return new WaitForSecondsRealtime(12);
+            yield return Capture("duel");
+            Debug.Log("FORMAT_SMOKE_DUEL_READY " + mode);
+            yield return CheckHandMovement();
+            yield return CheckDamageDisplay();
+            File.WriteAllText(Path.Combine(output, "passed.txt"), mode + " menu, selection, deck, local AI duel rendered.");
+            Application.Quit(0);
+        }
+
+        private void CheckDeckProfiles()
+        {
+            string name = "__format-smoke-" + Guid.NewGuid().ToString("N");
+            string path = Program.PATH_DECK + name + Program.EXPANSION_YDK;
+            try
+            {
+                foreach (int cap in new[] { 100, 0, 237 })
+                {
+                    var deck = new Deck { Format = "Genesys", FormatPointCap = cap };
+                    deck.Main.Add(123);
+                    File.WriteAllText(path, deck.GetYDK());
+                    DuelFormat.ApplyDeckFormat(name);
+                    if (!DuelFormat.Genesys || DuelFormat.PointCap != cap)
+                        throw new Exception("Deck format/cap was not restored.");
+                    DuelFormat.SaveDeckFormat(name);
+                    var saved = new Deck(path);
+                    if (saved.Format != "Genesys" || saved.FormatPointCap != cap || saved.Main.Single() != 123)
+                        throw new Exception("Saving deck format changed its cards or profile.");
+                }
+                File.WriteAllText(path, new Deck { Format = "TCG" }.GetYDK());
+                DuelFormat.ApplyDeckFormat(name);
+                if (DuelFormat.Genesys) throw new Exception("Switching to a TCG deck retained Genesys.");
+                Debug.Log("FORMAT_SMOKE_PER_DECK_PROFILES_PASSED");
+            }
+            finally { if (File.Exists(path)) File.Delete(path); }
+        }
+
+        private IEnumerator CheckHandMovement()
+        {
+            var core = Program.instance.ocgcore;
+            OcgCore.pause = true;
+            var hand = OcgCore.cards.First(c => c.p.controller == 1 && c.p.InLocation(CardLocation.Hand));
+            var original = hand.p.Copy();
+            int before = core.GetLocationCardCount(CardLocation.Hand, 1);
+            var move = new Package { Function = (int)GameMessage.Move };
+            move.Data.writer.Write(12482652);
+            move.Data.writer.Write((byte)OcgCore.LocalPlayer(1));
+            move.Data.writer.Write((byte)CardLocation.Hand);
+            move.Data.writer.Write((byte)original.sequence);
+            move.Data.writer.Write((byte)original.position);
+            move.Data.writer.Write((byte)OcgCore.LocalPlayer(1));
+            move.Data.writer.Write((byte)CardLocation.MonsterZone);
+            move.Data.writer.Write((byte)0);
+            move.Data.writer.Write((byte)CardPosition.FaceUpAttack);
+            move.Data.writer.Write((uint)CardReason.SUMMON);
+            OcgCore.currentMessage = GameMessage.Move;
+            yield return core.messageDispatcher.Process(move).ToCoroutine();
+            if (!hand.p.InLocation(CardLocation.MonsterZone)
+                || core.GetLocationCardCount(CardLocation.Hand, 1) != before - 1)
+                throw new Exception("Opponent summon remained in hand.");
+            testedOpponentCard = hand;
+            Debug.Log("FORMAT_SMOKE_HAND_TO_FIELD_PASSED");
+        }
+
+        private GameCard testedOpponentCard;
+
+        private IEnumerator CheckDamageDisplay()
+        {
+            var core = Program.instance.ocgcore;
+            OcgCore.pause = true;
+            var handBeforeDamage = OcgCore.cards.Where(c => c.p.controller == 1 && c.p.InLocation(CardLocation.Hand)).ToArray();
+            bool originalFirst = OcgCore.isFirst;
+            foreach (bool first in new[] { true, false })
+            {
+                OcgCore.isFirst = first;
+                OcgCore.life0 = OcgCore.life1 = 8000;
+                core.SetLP(0, 0, true);
+                var damage = new Package { Function = (int)GameMessage.Damage };
+                damage.Data.writer.Write((byte)(first ? 1 : 0));
+                damage.Data.writer.Write(400);
+                OcgCore.currentMessage = GameMessage.Damage;
+                yield return core.messageDispatcher.duel.Process(damage).ToCoroutine();
+                yield return new WaitForSecondsRealtime(3);
+                var ui = core.GetUI<OcgCoreUI>();
+                if (OcgCore.life0 != 8000 || OcgCore.life1 != 7600
+                    || ui.TextPlayer0LP.text != "8000" || ui.TextPlayer1LP.text != "7600")
+                    throw new Exception("400 damage went to the wrong player/LP display, first=" + first);
+                Debug.Log("FORMAT_SMOKE_DAMAGE_400_PASSED first=" + first);
+            }
+            // A second message arrives while the first count is still active.
+            OcgCore.life1 = 7200;
+            core.SetLP(1, -400);
+            yield return new WaitForSecondsRealtime(1.3f);
+            OcgCore.life1 = 6800;
+            core.SetLP(1, -400);
+            yield return new WaitForSecondsRealtime(3);
+            if (core.GetUI<OcgCoreUI>().TextPlayer1LP.text != "6800")
+                throw new Exception("An older LP animation overwrote the latest total.");
+            Debug.Log("FORMAT_SMOKE_OVERLAPPING_LP_PASSED");
+            OcgCore.isFirst = originalFirst;
+            if (!handBeforeDamage.SequenceEqual(OcgCore.cards.Where(c => c.p.controller == 1 && c.p.InLocation(CardLocation.Hand))))
+                throw new Exception("Damage changed the opponent hand.");
+            var destroy = new Package { Function = (int)GameMessage.Move };
+            destroy.Data.writer.Write(testedOpponentCard.GetData().Id);
+            foreach (var location in new[] { CardLocation.MonsterZone, CardLocation.Grave })
+            {
+                destroy.Data.writer.Write((byte)OcgCore.LocalPlayer(1));
+                destroy.Data.writer.Write((byte)location);
+                destroy.Data.writer.Write((byte)(location == CardLocation.MonsterZone ? (int)testedOpponentCard.p.sequence : core.GetLocationCardCount(CardLocation.Grave, 1)));
+                destroy.Data.writer.Write((byte)CardPosition.FaceUpAttack);
+            }
+            destroy.Data.writer.Write((uint)(CardReason.DESTROY | CardReason.BATTLE));
+            OcgCore.currentMessage = GameMessage.Move;
+            yield return core.messageDispatcher.Process(destroy).ToCoroutine();
+            if (!testedOpponentCard.p.InLocation(CardLocation.Grave)
+                || handBeforeDamage.Any(c => !c.p.InLocation(CardLocation.Hand)))
+                throw new Exception("Battle destruction removed an opponent hand card.");
+            Debug.Log("FORMAT_SMOKE_FIELD_DESTRUCTION_PRESERVES_HAND_PASSED");
+            yield return Capture("damage-verified");
+        }
+    }
+}

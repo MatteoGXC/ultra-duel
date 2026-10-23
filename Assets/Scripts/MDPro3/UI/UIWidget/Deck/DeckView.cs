@@ -999,6 +999,8 @@ namespace MDPro3.UI
             }
 
             deck.Pickup = Deck.Pickup;
+            deck.Format = Deck.Format;
+            deck.FormatPointCap = Deck.FormatPointCap;
             deck.Protector = Deck.Protector;
             deck.Case = Deck.Case;
             deck.Field = Deck.Field;

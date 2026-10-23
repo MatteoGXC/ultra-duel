@@ -83,6 +83,8 @@ namespace MDPro3.Servant
         protected override void ApplyShowArrangement(int preDepth)
         {
             base.ApplyShowArrangement(preDepth);
+            lastSoloItem = null;
+            LoadBots();
             if (retryLastSoloDuelWhenShown)
                 StartCoroutine(RetryLastSoloDuelWhenReady());
         }
@@ -120,7 +122,7 @@ namespace MDPro3.Servant
         private void ReadBots(string confPath)
         {
             bots.Clear();
-            StreamReader reader = new(new FileStream(confPath, FileMode.Open, FileAccess.Read));
+            using StreamReader reader = new(new FileStream(confPath, FileMode.Open, FileAccess.Read));
             while (!reader.EndOfStream)
             {
                 string line = reader.ReadLine().Trim();
@@ -134,6 +136,16 @@ namespace MDPro3.Servant
                     };
                     line = reader.ReadLine().Trim();
                     newBot.flags = line.Split(' ');
+
+                    if (condition == Condition.ForSolo || DuelFormat.LocalSession)
+                    {
+                        if (System.Array.IndexOf(newBot.flags, "SELECT_DECKFILE") < 0)
+                        {
+                            if (!DuelFormat.PrepareSoloBot(newBot.command, out var prepared)) continue;
+                            newBot.command = prepared;
+                            newBot.desc = DuelFormat.DisplayName + " build\n" + newBot.desc;
+                        }
+                    }
 
                     newBot.main0 = DEFAULT_CARD;
                     try
@@ -153,6 +165,25 @@ namespace MDPro3.Servant
                     bots.Add(newBot);
                 }
             }
+            // Random picks must have an eligible opponent in the current library.
+            if ((condition == Condition.ForSolo || DuelFormat.LocalSession) && File.Exists("Data/solo-executors.conf"))
+                foreach (string entry in File.ReadAllLines("Data/solo-executors.conf"))
+                {
+                    var parts = entry.Split('|');
+                    if (parts.Length != 2 || bots.Exists(bot => DuelFormat.SoloBotExecutor(bot.command) == parts[0])) continue;
+                    string command = "Deck=\"" + parts[0] + "\" Name=\"" + parts[0] + "\" Dialog=Universal.EN";
+                    if (!DuelFormat.PrepareSoloBot(command, out var prepared)) continue;
+                    string path = Path.Combine("Data", "Windbot", "Decks", DuelFormat.Genesys ? "Genesys" : "TCG", parts[1] + ".ydk");
+                    var deck = new Deck(path);
+                    bots.Add(new BotInfo {
+                        name = Regex.Replace(parts[0], "(?<=[a-z])(?=[A-Z])", " "), command = prepared,
+                        desc = DuelFormat.DisplayName + " build\nPractice against " + parts[0] + ".",
+                        flags = new[] { "AI_LV3", "SUPPORT_MASTER_RULE_2020" },
+                        main0 = deck.Main.Count > 0 ? deck.Main[0] : DEFAULT_CARD
+                    });
+                }
+            bots.RemoveAll(bot => bot.command.StartsWith("Random=") &&
+                !bots.Exists(candidate => System.Array.IndexOf(candidate.flags, bot.command.Substring(7)) >= 0));
         }
 
         private void Print()
@@ -212,6 +243,7 @@ namespace MDPro3.Servant
             string aiCommand = GetWindBotCommand(aiCode, diyDeck);
             if (!string.IsNullOrEmpty(aiCommand))
             {
+                if (DuelFormat.LocalSession && !DuelFormat.ValidateBotCommand(aiCommand)) return;
                 StartWindBot(aiCommand, TcpHelper.joinedAddress, TcpHelper.joinedPort, TcpHelper.joinedPassword, GetUI<SoloSelectorUI>().IsLockHand(), 600);
                 Program.instance.ShiftToServant(Program.instance.room);
             }
@@ -257,9 +289,11 @@ namespace MDPro3.Servant
                     if (!File.Exists(WINDBOT_DIALOG_PATH + path + ".json"))
                     {
                         var config = Language.GetConfig();
-                        if (config == "en-US")//WindBot use en-US as default;
-                            config = "default";
-                        args[i] = "Dialog=" + config;
+                        // This client ships named localized dialogue files rather than default.json.
+                        string fallback = "Universal." + config.Substring(0, 2).ToUpperInvariant();
+                        if (!File.Exists(WINDBOT_DIALOG_PATH + fallback + ".json"))
+                            fallback = "Universal.EN";
+                        args[i] = "Dialog=" + fallback;
                     }
                     break;
                 }
@@ -316,12 +350,15 @@ namespace MDPro3.Servant
         private void LaunchWithConfig(string command, int duelPort, int duelLp, int duelHand, int duelDraw
             , bool lockHand, bool noCheck, bool noShuffle)
         {
+            if (!DuelFormat.RequireNativeRules() || !DuelFormat.ValidateSelectedDeck()
+                || !DuelFormat.ValidateBotCommand(command)) return;
             port = duelPort.ToString();
 
             string lp = duelLp.ToString();
             string hand = duelHand.ToString();
             string draw = duelDraw.ToString();
-            string args = port + " -1 5 0 F " + (noCheck ? "T " : "F ") + (noShuffle ? "T " : "F ") + lp + " " + hand + " " + draw + " 0 0";
+            int list = DuelFormat.Genesys ? -1 : BanlistManager.GetIndexByName(DuelFormat.TcgBanlist.Name);
+            string args = port + " " + list + " 1 0 " + DuelFormat.MasterRule + " F " + (noShuffle ? "T " : "F ") + lp + " " + hand + " " + draw + " 0 0";
             if (TcpHelper.IsPortAvailable(duelPort))
             {
                 YgoServer.StartServer(args);

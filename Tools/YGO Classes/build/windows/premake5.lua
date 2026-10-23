@@ -4,6 +4,10 @@ workspace "YGO Classes"
     language "C++"
     platforms { "x64" }
     configurations { "Debug", "Release" }
+    cppdialect "C++17"
+    systemversion "latest"
+    targetdir "build/bin/%{cfg.platform}/%{cfg.buildcfg}"
+    objdir "build/obj/%{prj.name}/%{cfg.platform}/%{cfg.buildcfg}"
 
     defines { "WIN32", "_WIN32", "BUILD_LUA", "_CRT_SECURE_NO_WARNINGS"}
     include "../../lua"

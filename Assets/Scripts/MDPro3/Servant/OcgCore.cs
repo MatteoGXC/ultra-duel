@@ -1679,10 +1679,18 @@ namespace MDPro3.Servant
                 CloseCharaFace();
         }
 
+        private readonly Sequence[] lpAnimations = new Sequence[2];
+        private readonly Tween[] lpCounters = new Tween[2];
+
         public void SetLP(int player, int val, bool first = false)
         {
             if (first)
             {
+                for (int i = 0; i < 2; i++)
+                {
+                    lpAnimations[i]?.Kill();
+                    lpCounters[i]?.Kill();
+                }
                 GetUI<OcgCoreUI>().TextPlayer0LP.text = life0.ToString();
                 GetUI<OcgCoreUI>().TextPlayer1LP.text = life1.ToString();
             }
@@ -1694,6 +1702,10 @@ namespace MDPro3.Servant
 
         private Sequence AnimationLpChange(int player, int val)
         {
+            // Messages can arrive before the previous count finishes. An older
+            // tween must never overwrite the newer, authoritative LP total.
+            lpAnimations[player]?.Kill();
+            lpCounters[player]?.Kill();
             TextMeshProUGUI text;
             int targetLP;
             if (player == 0)
@@ -1709,7 +1721,11 @@ namespace MDPro3.Servant
 
             int origin = targetLP - val;
             var sequence = DOTween.Sequence();
+            lpAnimations[player] = sequence;
             var obj = ABLoader.LoadMasterDuelGameObject("DuelLpText");
+            sequence.OnKill(() => { if (obj != null) Destroy(obj); });
+            text.transform.localScale = Vector3.one;
+            text.color = Color.white;
             obj.GetComponent<TextMeshProUGUI>().text = Math.Abs(val).ToString();
             obj.transform.SetParent(GetUI<OcgCoreUI>().RectPopup, false);
             var uiWidth = Screen.width * (float)1080 / Screen.height;
@@ -1756,8 +1772,9 @@ namespace MDPro3.Servant
             sequence.Join(obj.GetComponent<TextMeshProUGUI>().DOFade(0, 0.2f).OnComplete(() =>
             {
                 AudioManager.PlaySE("SE_LP_" + seType + (player == 0 ? "_PLAYER" : "_RIVAL"));
-                float flp = origin;
-                DOTween.To(() => flp, x => { flp = x; text.text = ((int)flp).ToString(); }, targetLP < 0 ? 0 : targetLP, 1.2f); // TODO: tween in tween
+                int displayed;
+                float flp = int.TryParse(text.text, out displayed) ? displayed : origin;
+                lpCounters[player] = DOTween.To(() => flp, x => { flp = x; text.text = ((int)flp).ToString(); }, Mathf.Max(0, targetLP), 1.2f);
                 Destroy(obj);
             }));
 

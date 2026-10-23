@@ -33,17 +33,17 @@ namespace MDPro3.Duel
             {
                 await log.Process(p);
             } 
-            catch(Exception e) { UnityEngine.Debug.Log(e.Message); }
+            catch(Exception e) { UnityEngine.Debug.LogException(e); }
             try
             {
                 await voice.Process(p);
             }
-            catch (Exception e) { UnityEngine.Debug.Log(e.Message); }
+            catch (Exception e) { UnityEngine.Debug.LogException(e); }
             try
             {
                 await duel.Process(p);
             }
-            catch (Exception e) { UnityEngine.Debug.Log(e.Message); }
+            catch (Exception e) { UnityEngine.Debug.LogException(e); }
         }
 
         public async UniTask RetryMessage()

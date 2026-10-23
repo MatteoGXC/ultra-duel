@@ -97,7 +97,7 @@ namespace MDPro3.UI.ServantUI
             switch (SoloSelector.condition)
             {
                 case SoloSelector.Condition.ForSolo:
-                    ToggleNoCheck.gameObject.SetActive(true);
+                    ToggleNoCheck.gameObject.SetActive(false);
                     ToggleNoShuffle.gameObject.SetActive(true);
                     InputPort.gameObject.SetActive(true);
                     InputLP.gameObject.SetActive(true);
@@ -119,8 +119,11 @@ namespace MDPro3.UI.ServantUI
             ButtonDeck.SetButtonText(Config.GetConfigDeckName());
         }
 
+        private int printRevision;
+
         public void Print()
         {
+            int revision = ++printRevision;
             superScrollView?.Clear();
             List<string[]> tasks = new();
 
@@ -135,6 +138,11 @@ namespace MDPro3.UI.ServantUI
             var handle = Addressables.LoadAssetAsync<GameObject>("UI/ItemSolo.prefab");
             handle.Completed += (result) =>
             {
+                if (this == null || revision != printRevision)
+                {
+                    Addressables.Release(result);
+                    return;
+                }
                 var itemHeight = PropertyOverrider.NeedMobileLayout() ? 180f : 150f;
                 float topPadding = PropertyOverrider.NeedMobileLayout() ? 148f : 134f;
                 float space = itemHeight - (PropertyOverrider.NeedMobileLayout() ? 152f : 122f);

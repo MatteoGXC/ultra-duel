@@ -18,7 +18,7 @@ namespace MDPro3.Servant
         public static Deck Deck { get; set; }
         public static string DeckName { get; set; }
         public static bool DeckIsFromLocal;
-        public static Banlist Banlist => cardInfoType == CardInfoType.Genesys ? BanlistManager.currentGenesysBanList : BanlistManager.currentBanList;
+        public static Banlist Banlist => (condition == Condition.EditDeck ? DuelFormat.Genesys : cardInfoType == CardInfoType.Genesys) ? BanlistManager.currentGenesysBanList : BanlistManager.currentBanList;
         public static List<int> historyCards;
         public static bool UseMobileLayout => PropertyOverrider.NeedMobileLayout();
         public static string onlineDeckID;
@@ -34,11 +34,14 @@ namespace MDPro3.Servant
         public void SwitchCondition(Condition condition, string deckName = "", Deck deck = null)
         {
             DeckEditor.condition = condition;
+            cardInfoType = DuelFormat.Genesys ? CardInfoType.Genesys : CardInfoType.Pool;
             switch (condition)
             {
                 case Condition.EditDeck:
                     returnServant = Program.instance.deckSelector;
                     DeckName = Config.GetConfigDeckName();
+                    DuelFormat.ApplyDeckFormat(DeckName);
+                    cardInfoType = DuelFormat.Genesys ? CardInfoType.Genesys : CardInfoType.Pool;
 
                     var deckPath = Program.PATH_DECK + DeckName + Program.EXPANSION_YDK;
 

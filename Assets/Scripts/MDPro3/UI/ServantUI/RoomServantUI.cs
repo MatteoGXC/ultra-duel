@@ -243,7 +243,9 @@ namespace MDPro3.UI.ServantUI
                 var deckPath = Program.PATH_DECK + Config.GetConfigDeckName() + Program.EXPANSION_YDK;
                 if (File.Exists(deckPath))
                 {
-                    TcpHelper.CtosMessage_UpdateDeck(new Deck(deckPath));
+                    var selectedDeck = new Deck(deckPath);
+                    if (DuelFormat.LocalSession && !DuelFormat.Validate(selectedDeck, "Your Deck")) return;
+                    TcpHelper.CtosMessage_UpdateDeck(selectedDeck);
                     TcpHelper.CtosMessage_HsReady();
                 }
                 else

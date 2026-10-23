@@ -25,6 +25,10 @@ namespace MDPro3.Net
 
         private static async UniTask InitializeGenesysLflist()
         {
+            // Preserve the verified official offline snapshot. The upstream feed may
+            // contain a different region or an older list; refresh via the source helper.
+            if (File.Exists(Program.PATH_DATA + "format-data-sources.json")
+                && File.Exists(Program.PATH_DATA + BanlistManager.FILE_NAME_GENESYS)) return;
             var eTag = await GetETagAsync(URL_GENESYS_LFLIST);
             if (string.IsNullOrEmpty(eTag))
                 return;

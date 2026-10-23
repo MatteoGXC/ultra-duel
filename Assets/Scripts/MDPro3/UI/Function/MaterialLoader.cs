@@ -71,8 +71,8 @@ namespace MDPro3
             cardMatShineRD3D = UnityEngine.Object.Instantiate(cardMatShine3D);
             SetMaterialToRD(cardMatShineRD3D);
 
-            cardMatShineOFUI = ABLoader.LoadMasterDuelMaterial("ShineStyleOFUI");
-            cardMatShineOF3D = ABLoader.LoadMasterDuelMaterial("ShineStyleOF3D");
+            cardMatShineOFUI = ABLoader.LoadMasterDuelMaterial("ShineStyleOFUI") ?? cardMatShineUI;
+            cardMatShineOF3D = ABLoader.LoadMasterDuelMaterial("ShineStyleOF3D") ?? cardMatShine3D;
             cardMatShineOFRDUI = UnityEngine.Object.Instantiate(cardMatShineOFUI);
             SetMaterialToRD(cardMatShineOFRDUI);
             cardMatShineOFRD3D = UnityEngine.Object.Instantiate(cardMatShineOF3D);
@@ -102,7 +102,7 @@ namespace MDPro3
             cardMatMillenniumRD3D = UnityEngine.Object.Instantiate(cardMatMillennium3D);
             SetMaterialToRD(cardMatMillenniumRD3D);
 
-            cardMatRoyalOFUI = ABLoader.LoadMasterDuelMaterial("RoyalStyleOFUI");
+            cardMatRoyalOFUI = ABLoader.LoadMasterDuelMaterial("RoyalStyleOFUI") ?? cardMatRoyalUI;
             cardMatGoldOFUI = UnityEngine.Object.Instantiate(cardMatRoyalOFUI);
             SetMaterialToGold(cardMatGoldOFUI);
             cardMatMillenniumOFUI = UnityEngine.Object.Instantiate(cardMatRoyalOFUI);
@@ -113,7 +113,7 @@ namespace MDPro3
             SetMaterialToRD(cardMatGoldOFRDUI);
             cardMatMillenniumOFRDUI = UnityEngine.Object.Instantiate(cardMatMillenniumOFUI);
             SetMaterialToRD(cardMatMillenniumOFRDUI);
-            cardMatRoyalOF3D = ABLoader.LoadMasterDuelMaterial("RoyalStyleOF3D");
+            cardMatRoyalOF3D = ABLoader.LoadMasterDuelMaterial("RoyalStyleOF3D") ?? cardMatRoyal3D;
             cardMatGoldOF3D = UnityEngine.Object.Instantiate(cardMatRoyalOF3D);
             SetMaterialToGold(cardMatGoldOF3D);
             cardMatMillenniumOF3D = UnityEngine.Object.Instantiate(cardMatRoyalOF3D);

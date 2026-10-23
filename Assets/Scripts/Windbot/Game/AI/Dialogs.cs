@@ -2,7 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
+using Newtonsoft.Json;
 
 namespace WindBot.Game.AI
 {
@@ -63,11 +63,11 @@ namespace WindBot.Game.AI
         public Dialogs(GameClient game)
         {
             _game = game;
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(DialogsData));
             string dialogfilename = game.Dialog;
             using (FileStream fs = Program.ReadFile("Dialogs", dialogfilename, "json"))
+            using (var reader = new StreamReader(fs))
             {
-                DialogsData data = (DialogsData)serializer.ReadObject(fs);
+                DialogsData data = JsonConvert.DeserializeObject<DialogsData>(reader.ReadToEnd());
                 _welcome = data.welcome;
                 _deckerror = data.deckerror;
                 _duelstart = data.duelstart;

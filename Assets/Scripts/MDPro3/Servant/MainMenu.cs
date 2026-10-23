@@ -27,7 +27,6 @@ namespace MDPro3.Servant
             Program.instance.currentServant = this;
             Program.instance.depth = 0;
 
-            StartCoroutine(CheckUpdateAsync());
             LoadUI();
         }
 
@@ -51,7 +50,6 @@ namespace MDPro3.Servant
         {
             base.FirstLoadEvent();
             servantUI.ResetUI();
-            StartCoroutine(LoadMyCardNewsAsync());
 
             EnsureButtonsWidth();
             Program.instance.ReadParams();

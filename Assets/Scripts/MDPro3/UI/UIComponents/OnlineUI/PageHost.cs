@@ -163,7 +163,7 @@ namespace MDPro3.UI
 
         public void OnHostCreate()
         {
-            Program.instance.online.CreateServer(GerHostArgs());
+            DuelFormat.Select(() => Program.instance.online.CreateServer(GerHostArgs()));
         }
 
         private List<string> GerHostArgs()

@@ -21,7 +21,9 @@ namespace MDPro3.Duel.YGOSharp
         public int Stand;
         public int Mate;
 
-        public const string deckHint = "#created by MDPro3";
+        public const string deckHint = "#created by Matteo Duel";
+        public string Format = "TCG";
+        public int FormatPointCap = 100;
         public string userId;
         public string deckId;
 
@@ -80,7 +82,14 @@ namespace MDPro3.Duel.YGOSharp
                     continue;
                 }
 
-                if (line.StartsWith("#main"))
+                if (line.StartsWith("#matteo-format:"))
+                {
+                    var profile = line.Split(':');
+                    Format = profile.Length > 1 && profile[1] == "Genesys" ? "Genesys" : "TCG";
+                    if (profile.Length > 2 && int.TryParse(profile[2], out int cap) && cap >= 0)
+                        FormatPointCap = cap;
+                }
+                else if (line.StartsWith("#main"))
                     flag = 1;
                 else if (line.StartsWith( "#extra"))
                     flag = 2;
@@ -332,7 +341,7 @@ namespace MDPro3.Duel.YGOSharp
 
         public string GetYDK()
         {
-            var value = deckHint + "\r\n#main";
+            var value = deckHint + "\r\n#matteo-format:" + Format + ":" + FormatPointCap + "\r\n#main";
             for (var i = 0; i < Main.Count; i++)
                 value += $"\r\n{Main[i]}";
             value += "\r\n#extra";

@@ -204,8 +204,10 @@ namespace MDPro3.Duel
             isFirst = (reader.ReadByte() & 0xF) == 0;
             if (reader.BaseStream.Length > 17)
                 MasterRule = reader.ReadByte() + 1;
-            life0 = reader.ReadInt32();
-            life1 = reader.ReadInt32();
+            var engineLife0 = reader.ReadInt32();
+            var engineLife1 = reader.ReadInt32();
+            life0 = isFirst ? engineLife0 : engineLife1;
+            life1 = isFirst ? engineLife1 : engineLife0;
             turns = 0;
 
             VoiceData data = new();

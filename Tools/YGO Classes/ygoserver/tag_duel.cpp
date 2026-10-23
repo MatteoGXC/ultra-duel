@@ -1,5 +1,6 @@
 #include "config.h"
 #include "tag_duel.h"
+#include "format_options.h"
 #include "netserver.h"
 #include "game.h"
 #include "data_manager.h"
@@ -344,6 +345,8 @@ void TagDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 				deckerror = deckManager.CheckDeck(pdeck[dp->type], host_info.lflist, host_info.rule);
 			}
 		}
+		if (!deckerror && host_info.duel_rule == 8)
+			deckerror = deckManager.CheckGenesysDeck(pdeck[dp->type], get_local_genesys_point_cap());
 		if(deckerror) {
 			STOC_HS_PlayerChange scpc;
 			scpc.status = (dp->type << 4) | PLAYERCHANGE_NOTREADY;
@@ -557,7 +560,7 @@ void TagDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 #endif
 	set_player_info(pduel, 0, host_info.start_lp, host_info.start_hand, host_info.draw_count);
 	set_player_info(pduel, 1, host_info.start_lp, host_info.start_hand, host_info.draw_count);
-	unsigned int opt = (unsigned int)host_info.duel_rule << 16;
+	unsigned int opt = local_format_options(host_info.duel_rule);
 	if(host_info.no_shuffle_deck)
 		opt |= DUEL_PSEUDO_SHUFFLE;
 	opt |= DUEL_TAG_MODE;

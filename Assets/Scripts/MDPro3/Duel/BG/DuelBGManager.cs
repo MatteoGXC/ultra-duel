@@ -450,7 +450,7 @@ namespace MDPro3.Duel
                 };
                 CreatePlaceSelector(gps);
 
-                for (uint s = 0; s < (c == 0 ? 7 : 5); s++)
+                for (uint s = 0; s < (c == 0 && MasterRule != 8 ? 7 : 5); s++)
                 {
                     gps = new()
                     {

@@ -28,6 +28,9 @@ namespace MDPro3
 
         private void Start()
         {
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(Application.dataPath));
+#endif
             Application.targetFrameRate = 0;
 
 #if !UNITY_EDITOR && (UNITY_ANDROID || UNITY_IOS)

@@ -220,6 +220,7 @@ namespace MDPro3.UI
                 }
                 else if (DeckSelector.condition == DeckSelector.Condition.ForSolo)
                 {
+                    DuelFormat.ApplyDeckFormat(Config.GetConfigDeckName());
                     Program.instance.ShiftToServant(Program.instance.solo);
                 }
             }

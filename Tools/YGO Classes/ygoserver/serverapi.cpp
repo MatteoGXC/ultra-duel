@@ -1,6 +1,18 @@
 #include "serverapi.h"
+#include "ocgapi.h"
+#include <atomic>
 
 namespace ygo {
+	static std::atomic<unsigned int> local_point_cap{100};
+	extern "C" DECL_DLLEXPORT void set_local_genesys_point_cap(unsigned int cap) {
+		local_point_cap.store(cap);
+	}
+	extern "C" unsigned int get_local_genesys_point_cap() {
+		return local_point_cap.load();
+	}
+	extern "C" DECL_DLLEXPORT int get_server_format_capabilities() {
+		return static_cast<int>(ocg_format_capabilities());
+	}
 	extern "C" DECL_DLLEXPORT int start_server(const char* args) {
 		int argc = 1;
 		char** argv = new char* [13];

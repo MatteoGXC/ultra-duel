@@ -62,6 +62,8 @@ Data/ur.ydk
 /Assets/StreamingAssets/
 /Assets/Wallpaper/
 Data/lflist_genesys.conf
+!Data/lflist_genesys.conf
+/release/
 Data/mycard_apps.json
 Data/Rarity.json
 

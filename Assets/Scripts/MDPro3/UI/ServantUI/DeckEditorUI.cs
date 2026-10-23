@@ -204,6 +204,7 @@ namespace MDPro3.UI.ServantUI
             }
 
             UIManager.SetCanvasMatch(Program.instance.deckEditor.GetCanvasMatch(), 0.45f);
+            SetCardInfoType(cardInfoType);
         }
 
         protected override void HideEvent()
@@ -721,7 +722,7 @@ namespace MDPro3.UI.ServantUI
 
         private void InitializeHeader()
         {
-            ButtonRegulation.SetButtonText(DeckEditor.Banlist.Name);
+            ButtonRegulation.SetButtonText(condition == Condition.EditDeck ? "Format: " + DuelFormat.DisplayName : DeckEditor.Banlist.Name);
 
             if (condition == Condition.ChangeSide)
             {
@@ -761,7 +762,7 @@ namespace MDPro3.UI.ServantUI
             DeckView.SetCardInfoType(type);
             CardCollectionView.SetCardInfoType();
             CardDetailView.RefreshRegulation();
-            ButtonRegulation.SetButtonText(DeckEditor.Banlist.Name);
+            ButtonRegulation.SetButtonText(condition == Condition.EditDeck ? "Format: " + DuelFormat.DisplayName : DeckEditor.Banlist.Name);
         }
 
         private void RefreshRegulationIcons()
@@ -775,6 +776,19 @@ namespace MDPro3.UI.ServantUI
 
         public void OnRegulation()
         {
+            if (condition == Condition.EditDeck)
+            {
+                if (!DeckView.deckLoaded) return;
+                DuelFormat.Select(() => {
+                    DuelFormat.SaveDeckFormat(DeckName);
+                    DeckEditor.Deck.Format = DeckView.Deck.Format = DuelFormat.Genesys ? "Genesys" : "TCG";
+                    DeckEditor.Deck.FormatPointCap = DeckView.Deck.FormatPointCap = DuelFormat.PointCap;
+                    Program.instance.deckEditor.SetCardInfoType(DuelFormat.Genesys ? CardInfoType.Genesys : CardInfoType.Pool);
+                    ButtonRegulation.SetButtonText("Format: " + DuelFormat.DisplayName);
+                    RefreshRegulationIcons();
+                }, DeckName);
+                return;
+            }
             AudioManager.PlaySE("SE_MENU_DECIDE");
             List<string> selections = new()
             {
@@ -834,6 +848,11 @@ namespace MDPro3.UI.ServantUI
                     OnClearDeck
                 });
             }
+            menus.Add("Check " + DuelFormat.DisplayName + " Deck");
+            actions.Add(() => {
+                if (DuelFormat.Validate(DeckView.FromObjectDeckToCodedDeck(), "Deck check"))
+                    UIManager.ShowPopupConfirm(new List<string> { "Deck check passed", "This Deck meets " + DuelFormat.DisplayName + " construction rules for the installed card database and rules snapshot." });
+            });
             UIManager.ShowSubMenu(menus, actions);
         }
 
@@ -994,7 +1013,9 @@ namespace MDPro3.UI.ServantUI
 
         public void OnChangeSideComplete()
         {
-            TcpHelper.CtosMessage_UpdateDeck(DeckView.FromObjectDeckToCodedDeck());
+            var sidedDeck = DeckView.FromObjectDeckToCodedDeck();
+            if (DuelFormat.LocalSession && !DuelFormat.Validate(sidedDeck, "Your Deck")) return;
+            TcpHelper.CtosMessage_UpdateDeck(sidedDeck);
         }
 
         private void ShowBackButton()
