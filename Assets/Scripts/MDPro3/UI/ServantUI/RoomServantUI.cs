@@ -101,6 +101,7 @@ namespace MDPro3.UI.ServantUI
         public override void AfterShowEvent()
         {
             base.AfterShowEvent();
+            if(RoomServant.FromUltraHost)Program.instance.ui_.chatPanel.Hide();
             if (Program.instance.currentServant != Program.instance.room)
             {
                 ShutDown();

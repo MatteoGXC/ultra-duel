@@ -28,9 +28,9 @@ namespace MDPro3.UI.ServantUI
         }
         Button B(Transform p,string s,UnityEngine.Events.UnityAction action,float x,float y,float w,float h)
         {
-            var r=R(s,p,x,y,w,h);var image=P(r,new Color(.05f,.10f,.15f));image.raycastTarget=true;
+            var r=R(s,p,x,y,w,h);var image=r.gameObject.AddComponent<UltraChrome>();image.color=new Color(.02f,.025f,.035f);image.rimColor=new Color(.65f,.68f,.71f);image.raycastTarget=true;
             var b=r.gameObject.AddComponent<Button>();b.targetGraphic=image;b.onClick.AddListener(action);
-            var t=T(r,s,23,.04f,.1f,.92f,.8f);t.alignment=TextAlignmentOptions.Center;
+            var t=T(r,s,23,.04f,.1f,.92f,.8f);t.alignment=TextAlignmentOptions.Center;t.color=new Color(.78f,1,0);
             var colors=b.colors;colors.highlightedColor=colors.selectedColor=new Color(.7f,1,.15f);b.colors=colors;return b;
         }
         void RefreshFriendRoom()
@@ -38,10 +38,10 @@ namespace MDPro3.UI.ServantUI
             if(!RoomServant.FromUltraHost){if(friendRoom!=null)friendRoom.gameObject.SetActive(false);return;}
             if(friendRoom==null)
             {
-                friendRoom=R("Ultra Friend Room",Root,0,0,1,1);P(friendRoom,new Color(.015f,.025f,.055f,.98f)).raycastTarget=true;
-                var diagonal=R("Diagonal",friendRoom,.34f,0,.65f,1).gameObject.AddComponent<UltraHomeShape>();diagonal.slash=true;diagonal.color=new Color(.09f,.12f,.23f);diagonal.raycastTarget=false;
-                B(friendRoom,"<",()=>Program.instance.room.OnExit(),.025f,.90f,.045f,.065f);
+                friendRoom=R("Ultra Friend Room",Root,0,0,1,1);friendRoom.gameObject.AddComponent<UltraScreenBackdrop>().raycastTarget=true;
                 T(friendRoom,"ROOM MATCH",33,.09f,.90f,.35f,.065f);
+                P(R("Header rule",friendRoom,.02f,.875f,.96f,.002f),new Color(.5f,.55f,.6f));
+                B(friendRoom,"CHAT",()=>Program.instance.ui_.chatPanel.Switch(),.08f,.075f,.22f,.07f);
                 membersLabel=T(friendRoom,"",22,.51f,.90f,.44f,.065f);
                 var table=R("Table 1",friendRoom,.08f,.49f,.56f,.32f);P(table,new Color(.18f,.20f,.27f));
                 P(R("Table header",table,0,.85f,1,.15f),new Color(.65f,.68f,.73f));
