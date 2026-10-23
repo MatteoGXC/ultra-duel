@@ -4,7 +4,7 @@ A local Yu-Gi-Oh! practice client based on [MDPro3](https://github.com/daominah/
 
 ## Playing
 
-- **My Decks** opens your deck library directly. Each deck has its own **Format** button in the editor; TCG or Genesys and its point cap are saved inside the YDK file.
+- **My Decks** opens your deck library directly. Corner badges show each deck's saved format: TCG, Genesys (100 points), Genesys 0, or its custom point cap. Each deck has its own **Format** button in the editor; the format and cap are saved inside the YDK file.
 - **Play Solo** starts with the selected deck's saved format and has its own format/point-cap switch and player-deck selector. TCG and Genesys use separate AI deck libraries. Opponents incompatible with the current format or point cap are excluded, including from Random selection.
 - Solo offers 14 TCG and 15 Genesys published lists, with a mix of Casual, Standard, and Hard practice opponents. Difficulty labels are estimates, not tournament rankings. Sources and exact card arrays are recorded in `Data/solo-published-decks.json`. Cards are imported unchanged; there is no automatic rebuilding, substitution, trimming, or staple filling. Custom AI decks are validated before play.
 - The home screen prioritizes Solo and Decks. LP notifications distinguish damage from activation costs. Optional card-preview visuals cannot interrupt a monster's movement from hand to field.

@@ -29,6 +29,8 @@ namespace MDPro3.UI
         protected IEnumerator enumeratorCase;
         private readonly List<Tweener> pickupTweens = new();
         private readonly List<Tweener> pickdownTweens = new();
+        private Image formatBadge;
+        private TextMeshProUGUI formatBadgeLabel;
 
         protected override void Awake()
         {
@@ -43,6 +45,7 @@ namespace MDPro3.UI
 
         public override void Refresh()
         {
+            RefreshFormatBadge();
             if(index == 0)
             {
                 Manager.GetElement("DeckCaseIcon").SetActive(false);
@@ -77,6 +80,58 @@ namespace MDPro3.UI
             refreshed = false;
             if (pickuping)
                 StartRefresh();
+        }
+
+        private void RefreshFormatBadge()
+        {
+            // Deck tiles are pooled: always refresh the profile and hide it on Add Deck.
+            var decks = Program.instance.deckSelector.GetUI<DeckSelectorUI>().decks;
+            if (index == 0 || !decks.TryGetValue(deckName, out var deck))
+            {
+                if (formatBadge != null) formatBadge.gameObject.SetActive(false);
+                return;
+            }
+
+            if (formatBadge == null)
+            {
+                var badge = new GameObject("Deck format badge", typeof(RectTransform), typeof(Image));
+                badge.layer = gameObject.layer;
+                var rect = badge.GetComponent<RectTransform>();
+                rect.SetParent(transform, false);
+                rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one;
+                rect.anchoredPosition = new Vector2(-10, -10);
+                formatBadge = badge.GetComponent<Image>();
+                formatBadge.raycastTarget = false;
+
+                var text = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+                text.layer = gameObject.layer;
+                var textRect = text.GetComponent<RectTransform>();
+                textRect.SetParent(rect, false);
+                textRect.anchorMin = Vector2.zero;
+                textRect.anchorMax = Vector2.one;
+                textRect.offsetMin = new Vector2(8, 3);
+                textRect.offsetMax = new Vector2(-8, -3);
+                formatBadgeLabel = text.GetComponent<TextMeshProUGUI>();
+                formatBadgeLabel.font = Manager.GetElement<TextMeshProUGUI>("TextDeckName").font;
+                formatBadgeLabel.fontSize = 20;
+                formatBadgeLabel.enableAutoSizing = true;
+                formatBadgeLabel.fontSizeMin = 15;
+                formatBadgeLabel.fontSizeMax = 20;
+                formatBadgeLabel.alignment = TextAlignmentOptions.Center;
+                formatBadgeLabel.textWrappingMode = TextWrappingModes.NoWrap;
+                formatBadgeLabel.color = Color.white;
+                formatBadgeLabel.raycastTarget = false;
+            }
+
+            bool genesys = deck.Format == "Genesys";
+            string label = !genesys ? "TCG" : deck.FormatPointCap == 100 ? "Genesys" : "Genesys " + deck.FormatPointCap;
+            formatBadgeLabel.text = label;
+            formatBadge.color = !genesys ? new Color(.13f, .37f, .76f, .98f)
+                : deck.FormatPointCap == 0 ? new Color(.02f, .46f, .42f, .98f)
+                : new Color(.57f, .19f, .88f, .98f);
+            formatBadge.rectTransform.sizeDelta = new Vector2(label.Length > 10 ? 172 : label.Length > 7 ? 132 : 108, 36);
+            formatBadge.transform.SetAsLastSibling();
+            formatBadge.gameObject.SetActive(true);
         }
 
         protected virtual void StartRefresh()

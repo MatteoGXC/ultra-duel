@@ -111,6 +111,13 @@ namespace MDPro3
             if (Program.instance.currentServant != Program.instance.deckSelector || Program.instance.ui_.currentPopupB != null)
                 throw new Exception("Opening My Decks unexpectedly prompted for a format.");
             Debug.Log("FORMAT_SMOKE_DECK_BROWSER_WITHOUT_PROMPT_PASSED");
+            yield return Capture("deck-library");
+            if (Environment.GetCommandLineArgs().Contains("--deck-badges-only"))
+            {
+                File.WriteAllText(Path.Combine(output, "passed.txt"), "Deck library rendered without a format prompt.");
+                Application.Quit(0);
+                yield break;
+            }
             Program.instance.ShiftToServant(Program.instance.menu);
             yield return new WaitForSecondsRealtime(1);
             DuelFormat.Select(() => Debug.Log("FORMAT_SMOKE_SELECTED " + DuelFormat.DisplayName));
