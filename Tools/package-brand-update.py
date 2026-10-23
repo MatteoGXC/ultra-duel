@@ -27,7 +27,7 @@ def main():
     if not baseline:
         raise RuntimeError('Original release archives are required for a cumulative patch.')
     names = ['Matteo-Duel.exe', 'Ultra-Duel.exe', 'UnityPlayer.dll', 'UnityCrashHandler64.exe',
-             'build-info.json', 'Matteo-Duel_Data', 'MonoBleedingEdge', 'D3D12',
+             'build-info.json', 'Data/installed-version.json', 'Matteo-Duel_Data', 'MonoBleedingEdge', 'D3D12',
              'Update-Ultra-Duel.ps1', 'Update-Ultra-Duel.cmd',
              'Update-Matteo-Duel.ps1', 'Update-Matteo-Duel.cmd']
     changed = []
