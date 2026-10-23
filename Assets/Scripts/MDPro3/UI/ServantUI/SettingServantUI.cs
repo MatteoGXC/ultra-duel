@@ -2380,33 +2380,11 @@ namespace MDPro3.UI.ServantUI
         }
         public void OnAboutUpdate()
         {
-            var address = Language.UseChinese() ? "AboutUpdate" : "AboutUpdate_en";
-            var handle = Addressables.LoadAssetAsync<TextAsset>(address);
-            handle.Completed += (result) =>
-            {
-                var selections = new List<string>()
-                {
-                    InterString.Get("关于更新"),
-                    GetAboutText(result.Result.text)
-                };
-                if (Language.UseChinese())
-                    UIManager.ShowPopupText(selections);
-                else
-                    UIManager.ShowPopupText(selections, TMPro.HorizontalAlignmentOptions.Left);
-            };
+            MDPro3.Net.UltraServices.CheckUpdates(true);
         }
         public void OnUpdateContent()
         {
-            var handle = Addressables.LoadAssetAsync<TextAsset>("UpdateContent");
-            handle.Completed += (result) =>
-            {
-                var selections = new List<string>()
-                {
-                    InterString.Get("更新内容"),
-                    result.Result.text
-                };
-                UIManager.ShowPopupText(selections, TMPro.HorizontalAlignmentOptions.Left);
-            };
+            Application.OpenURL(MDPro3.Net.UltraServices.Repository + "/releases/latest");
         }
 
         #endregion

@@ -107,6 +107,7 @@ namespace MDPro3.Servant
                 return;
             }
 
+            RoomServant.FromUltraHost = false;
             RoomServant.FromSolo = false;
             RoomServant.FromLocalHost = false;
             RoomServant.FromHandTest = false;
@@ -148,6 +149,7 @@ namespace MDPro3.Servant
                 serverArgs[6],
                 "0");
 
+            RoomServant.FromUltraHost = false;
             RoomServant.FromSolo = false;
             RoomServant.FromLocalHost = true;
             RoomServant.FromHandTest = false;

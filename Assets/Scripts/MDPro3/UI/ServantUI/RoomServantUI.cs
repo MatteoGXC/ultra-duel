@@ -137,9 +137,19 @@ namespace MDPro3.UI.ServantUI
                 roomInfo += InterString.Get("端口：") + Language.GetBlankIfNeed() + "7911" + rn;
             }
             roomInfo += StringHelper.GetUnsafe(1227) + Language.GetBlankIfNeed() + StringHelper.GetUnsafe(1244 + RoomServant.Mode) + rn;//决斗模式：
+            if (DuelFormat.LocalSession)
+            {
+                roomInfo += "Format: " + DuelFormat.DisplayName + rn;
+                roomInfo += "Allowed cards: TCG" + rn;
+                roomInfo += DuelFormat.Genesys ? "No Link or Pendulum cards" + rn
+                    : "Forbidden List: " + (DuelFormat.TcgBanlist?.Name ?? "TCG Advanced") + rn;
+            }
+            else
+            {
             roomInfo += StringHelper.GetUnsafe(1236) + Language.GetBlankIfNeed() + StringHelper.GetUnsafe(1259 + OcgCore.MasterRule) + rn;//规则：
             roomInfo += StringHelper.GetUnsafe(1225) + Language.GetBlankIfNeed() + StringHelper.GetUnsafe(1481 + RoomServant.Rule) + rn;//卡片允许：
             roomInfo += StringHelper.GetUnsafe(1226) + Language.GetBlankIfNeed() + BanlistManager.GetName(RoomServant.LFList) + rn;//禁限卡表
+            }
             roomInfo += StringHelper.GetUnsafe(1231) + Language.GetBlankIfNeed() + RoomServant.StartLp + rn;//初始基本分：
             roomInfo += StringHelper.GetUnsafe(1232) + Language.GetBlankIfNeed() + RoomServant.StartHand + rn;//初始手卡数：
             roomInfo += StringHelper.GetUnsafe(1233) + Language.GetBlankIfNeed() + RoomServant.DrawCount + rn;//每回合抽卡：

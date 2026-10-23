@@ -89,7 +89,9 @@ namespace MDPro3.Utility
 
             try
             {
-                if (cachedArts.TryGetValue(code, out var entry))
+                if (cachedArts.TryGetValue(code, out var entry) && entry.Texture == null && entry.LoadingTask == null)
+                    cachedArts.TryRemove(code, out _);
+                if (cachedArts.TryGetValue(code, out entry))
                 {
 
                     if (entry.LoadingTask != null)
@@ -126,7 +128,7 @@ namespace MDPro3.Utility
                         throw ex;
                     }
                     if (newEntry.Texture == null)
-                        Debug.LogError($"{code} art is null");
+                        cachedArts.TryRemove(code, out _);
 
                     newEntry.LoadingTask = null;
                     return newEntry.Texture;
@@ -144,7 +146,7 @@ namespace MDPro3.Utility
             finally
             {
                 lockObj.Release();
-                artLoadingLocks.TryRemove(code, out _);
+
             }
         }
 
@@ -203,7 +205,9 @@ namespace MDPro3.Utility
             {
                 if (!CardRenderer.CardHasVideoArt(code) || forceTexture)
                 {
-                    if (cachedCards.TryGetValue(code, out var entry))
+                    if (cachedCards.TryGetValue(code, out var entry) && entry.Texture == null && entry.LoadingTask == null)
+                        cachedCards.TryRemove(code, out _);
+                    if (cachedCards.TryGetValue(code, out entry))
                     {
                         if (entry.LoadingTask != null)
                             await entry.LoadingTask.AsUniTask().AttachExternalCancellation(token);
@@ -236,6 +240,7 @@ namespace MDPro3.Utility
                             throw ex;
                         }
                         newEntry.LoadingTask = null;
+                        if (newEntry.Texture == null) cachedCards.TryRemove(code, out _);
                         return newEntry.Texture;
                     }
                     else
@@ -307,7 +312,7 @@ namespace MDPro3.Utility
             finally
             {
                 lockObj.Release();
-                cardLoadingLocks.TryRemove(code, out _);
+
             }
         }
 
@@ -403,6 +408,7 @@ namespace MDPro3.Utility
 
             try
             {
+                await InitializeArtFileListAsync();
                 var path = GetArtFilePath(code);
                 if (string.IsNullOrEmpty(path))
                 {
@@ -721,24 +727,28 @@ namespace MDPro3.Utility
 
         #region Art File List Cache
 
-        private static readonly List<int> artFileList = new();
+        private static readonly Dictionary<int, string> artFileList = new();
         private static readonly Dictionary<int, string> artAltFileList = new();
         private static bool artFileListInitialized;
+        private static bool artFileListInitializing;
 
         private static async UniTask InitializeArtFileListAsync()
         {
             if (artFileListInitialized) return;
+            if (artFileListInitializing) { await UniTask.WaitUntil(() => artFileListInitialized); return; }
+            artFileListInitializing = true;
             //await UniTask.SwitchToThreadPool();
             await UniTask.Yield();
 
             var path = Tools.GetPlatformPath(Program.PATH_ART);
             if (Directory.Exists(path))
             {
-                foreach (var file in Directory.GetFiles(path, "*.jpg"))
+                foreach (var file in Directory.GetFiles(path))
                 {
-                    var fileName = Path.GetFileNameWithoutExtension(file);
-                    if (int.TryParse(fileName, out var code))
-                        artFileList.Add(code);
+                    var extension = Path.GetExtension(file).ToLowerInvariant();
+                    if (extension != ".jpg" && extension != ".png" && extension != ".jpeg") continue;
+                    if (int.TryParse(Path.GetFileNameWithoutExtension(file), out var code))
+                        artFileList[code] = extension;
                 }
             }
 
@@ -768,8 +778,8 @@ namespace MDPro3.Utility
             string path = string.Empty;
             if (artAltFileList.ContainsKey(code))
                 path = Program.PATH_ALT_ART + code + artAltFileList[code];
-            else if (artFileList.Contains(code))
-                path = Program.PATH_ART + code + Program.EXPANSION_JPG;
+            else if (artFileList.TryGetValue(code, out var extension))
+                path = Program.PATH_ART + code + extension;
 
             if (!string.IsNullOrEmpty(path))
                 path = Tools.GetPlatformFilePath(path);

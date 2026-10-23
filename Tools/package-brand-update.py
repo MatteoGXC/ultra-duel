@@ -1,4 +1,4 @@
-"""Cumulative Ultra Duel branding patch against the original public Windows build."""
+"""Cumulative Ultra Duel update against the original public Windows build."""
 import hashlib
 import json
 import subprocess
@@ -8,7 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT.parent / 'release-work/windows-v0.1.0'
-OUT = ROOT.parent / 'release-work/windows-v0.1.1'
+VERSION = '0.1.2'
+OUT = ROOT.parent / ('release-work/windows-v'+VERSION)
 PLAYER = ROOT / 'release/Solo-mode-update'
 
 def sha(path):
@@ -30,6 +31,15 @@ def main():
              'build-info.json', 'Data/installed-version.json', 'Matteo-Duel_Data', 'MonoBleedingEdge', 'D3D12',
              'Update-Ultra-Duel.ps1', 'Update-Ultra-Duel.cmd',
              'Update-Matteo-Duel.ps1', 'Update-Matteo-Duel.cmd']
+    names += ['Data/script.zip', 'Data/lflist.conf', 'Data/lflist_genesys.conf',
+              'Data/format-data-sources.json', 'Data/card-update-audit.json',
+              'Data/pack/zz-ultra-tcg.db', 'Data/ultra-services.json', 'Data/burst-protocol-index.json',
+              'Data/solo-published-decks.json', 'Data/solo-decks-audit.json']
+    names += [p.relative_to(PLAYER).as_posix() for p in (PLAYER/'Data/locales').glob('*/cards.cdb')]
+    audit = json.loads((ROOT/'Data/card-update-audit.json').read_text(encoding='utf-8'))
+    names += ['Picture/Art/'+str(row['id'])+'.jpg' for row in audit['art']
+              if (PLAYER/'Picture/Art'/f"{row['id']}.jpg").is_file()]
+    if (PLAYER/'Expansions/ultra-card-art.zip').exists(): names += ['Expansions/ultra-card-art.zip']
     changed = []
     for name in names:
         path = PLAYER / name
@@ -53,17 +63,17 @@ def main():
         for source, relative in changed:
             archive.write(source, relative)
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-    manifest = dict(version='0.1.1', minimumVersion='0.1.0', sourceCommit=commit,
+    manifest = dict(version=VERSION, minimumVersion='0.1.0', sourceCommit=commit,
                     asset=archive_path.name, sha256=sha(archive_path),
                     files=[dict(path=relative, sha256=sha(source)) for source, relative in changed])
     (OUT/'update-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
     windows = json.loads((BASE/'windows-manifest.json').read_text())
-    windows.update(version='0.1.1', buildCommit=commit)
+    windows.update(version=VERSION, buildCommit=commit)
     for part in windows['parts']:
         part['url'] = part['url'].replace('/matteo-duel/', '/ultra-duel/')
     windows['parts'].append(dict(name=archive_path.name, size=archive_path.stat().st_size,
         sha256=manifest['sha256'],
-        url='https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.1/'+archive_path.name))
+        url='https://github.com/MatteoGXC/ultra-duel/releases/download/v'+VERSION+'/'+archive_path.name))
     windows['installedBytes'] += sum(p.stat().st_size for p, _ in changed)
     (OUT/'windows-manifest.json').write_text(json.dumps(windows, indent=2)+'\n')
     with zipfile.ZipFile(OUT/'Ultra-Duel-Updater.zip','w',zipfile.ZIP_DEFLATED) as archive:

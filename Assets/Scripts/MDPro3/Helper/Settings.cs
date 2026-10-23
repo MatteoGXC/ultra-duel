@@ -40,7 +40,6 @@ namespace MDPro3
         public string PrereleasePackUrl_TW;
         public string PrereleasePackVersionUrl_TW;
 
-        public string MDPro3VersionUrl;
         public bool CardRenderPassword;
         public int[] SavedCardSize;
         public string SavedCardFormat;
@@ -127,7 +126,6 @@ namespace MDPro3
             PrereleasePackUrl_TW = "https://github.com/ElderLich/TransSuperpre/raw/main/ZH-TW/ygopro-super-pre.ypk";
             PrereleasePackVersionUrl_TW = "https://github.com/ElderLich/TransSuperpre/raw/main/ZH-TW/version.txt";
 
-            MDPro3VersionUrl = "https://cdn02.moecube.com:444/mdpro3-data/Version.txt";
             CardRenderPassword = true;
             SavedCardSize = new int[] { 704, 1024 };
             SavedCardFormat = Program.EXPANSION_JPG;
@@ -139,9 +137,6 @@ namespace MDPro3
     public static class Settings
     {
         private const string PATH_JSON = Program.PATH_DATA + "Settings.json";
-        private const string MDPRO3_VERSION_URL_OLD = "https://code.moenext.com/sherry_chaos/MDPro3/-/raw/master/Version.txt";
-        private const string MDPRO3_VERSION_URL_FALSE = "https://code.moenext.com/sherry_chaos/MDPro3/-/raw/master/version.txt";
-        private const string MDPRO3_VERSION_URL_DEFAULT = "https://cdn02.moecube.com:444/mdpro3-data/Version.txt";
 
         private static SettingData _data;
         public static SettingData Data
@@ -224,13 +219,6 @@ namespace MDPro3
             var missingFields = GetMissingFields<SettingData>(jObject);
             if (missingFields.Count > 0)
                 needOverwrite = true;
-
-            if(data.MDPro3VersionUrl == MDPRO3_VERSION_URL_OLD
-                || data.MDPro3VersionUrl == MDPRO3_VERSION_URL_FALSE)
-            {
-                data.MDPro3VersionUrl = MDPRO3_VERSION_URL_DEFAULT;
-                needOverwrite = true;
-            }
 
             if (needOverwrite)
                 SaveSettings(data);

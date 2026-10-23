@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.1'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.2'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -33,10 +33,25 @@ def main():
             'New players: download **Ultra-Duel-Setup.exe**. Setup downloads and verifies the complete game.\n\n'
             'Already have Matteo Duel: download **Ultra-Duel-Updater.zip**, extract beside Matteo-Duel.exe, '
             'close the game, then run Update-Ultra-Duel.cmd. Only changed files download; decks and settings are preserved.\n\n'
-            'This release renames the game and launcher to **Ultra Duel**. Existing shortcuts remain compatible. '
-            'The internal Matteo-Duel.exe and runtime folder remain to support existing installations. '
-            'This is a branding update; card refresh, friends, remote hosting and Duel Pass are still in development.\n\n'
+            '## Included in v0.1.2\n\n'
+            '- 300 missing card IDs added, 204 availability flags corrected, updated card scripts and 466 artwork sources.\n'
+            '- Complete English Burst Protocol pack index (101 official database entries).\n'
+            '- Angular home screen with Duel, Deck, Solo, Shop, profile, missions and Duel Pass.\n'
+            '- Friends accounts, requests, presence and private VPS-hosted TCG/Genesys rooms, including Genesys 0 and custom caps.\n'
+            '- Free Duel Pass: 100 XP per win, 20 tiers, cosmetic gems, titles and profile frames. Progress is saved on this PC.\n'
+            '- Ultra Duel release and main-branch push notifications; the old MDPro app-update checker is removed.\n\n'
+            '## Multiplayer\n\n'
+            'Create an account in FRIENDS, add a friend by username, then create a room from DUEL. '
+            'Your friend opens DUEL and joins your room. The room format and point cap are enforced by the hosted server. '
+            'Both players must update to v0.1.2. The server runs on the project owner’s VPS; no router forwarding is required for players.\n\n'
+            'All 29 published Solo lists remain unchanged and have been revalidated. Existing game shortcuts remain compatible.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
+    try: reference = api(REPO+'/git/ref/tags/'+tag)
+    except urllib.error.HTTPError as error:
+        if error.code != 404: raise
+        reference = api(REPO+'/git/refs', 'POST', {'ref':'refs/tags/'+tag, 'sha':manifest['buildCommit']})
+    if reference['object']['sha'] != manifest['buildCommit']:
+        raise RuntimeError('Release tag points at another commit.')
     try: release = api(REPO+'/releases/tags/'+tag)
     except urllib.error.HTTPError as error:
         if error.code != 404: raise

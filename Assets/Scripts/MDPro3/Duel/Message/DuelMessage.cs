@@ -167,6 +167,7 @@ namespace MDPro3.Duel
         protected override async UniTask GameMessage_Start(BinaryReader reader)
         {
             ResetState();
+            if (condition == Condition.Duel && !RoomServant.FromHandTest && !inPuzzle) UltraProgress.BeginDuel();
             duelBGManager.BackgroundFieldInitialize();
 
             playerType = reader.ReadByte();
@@ -591,6 +592,9 @@ namespace MDPro3.Duel
                     endingReason = InterString.Get("游戏败北，原因：[?]", winReason);
                 }
             }
+
+            if (condition == Condition.Duel && !isObserver && !RoomServant.FromHandTest && !inPuzzle && player == 0 && UltraProgress.Win())
+                MessageManager.Cast("Victory! +100 Duel Pass XP");
 
             duelBGManager.DuelEndEvent();
             //防止对方在更换副卡组时拔螺丝

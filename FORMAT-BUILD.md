@@ -132,3 +132,31 @@ MDPro3 and its dependencies retain their original licenses and credits. The
 earlier MDPro3 mirror includes GPL v3; bundled libraries have their own notices.
 Konami/Shueisha artwork and audio remain the property of their respective owners.
 This local fan modification is not affiliated with or endorsed by Konami.
+
+
+## Ultra Duel v0.1.2
+
+The home screen is built by `UltraHomeUI.cs`. Friends and private remote rooms
+use the separately deployed service in `Server/`; see `Server/README.md`.
+`UltraProgress.cs` awards the free local Duel Pass only on actual duel wins,
+excluding spectators, replays, puzzles and hand tests. The profile lives in
+`Progress/profile.json` and must never be included in an update archive.
+
+`Tools/refresh-card-data.py` uses pinned BabelCDB and compatible Fluorohydride
+script snapshots, keeps existing translations and legacy artwork IDs, corrects
+release availability and rebuilds the English Burst Protocol index. The audit
+and provenance are in `Data/card-update-audit.json`; scripts were initialized
+through the real engine for all 14,625 non-token entries, with zero errors.
+`Tests/UltraServiceTests.py` tests HTTPS accounts/friends and two-player public
+native rooms. `Tests/UltraRemoteUnityPeer.py` pairs the packaged Windows client
+with a remote peer, including Genesys 0. `--ultra-features --ultra-online` on the
+existing format smoke test exercises card loading, artwork, TLS pinning, account
+creation, pass claims, persistence and the home panels in the real player.
+
+Build the player with `WindowsFormatBuild.RecompilePlayer`, then run
+`Tools/Build-Ultra-Launcher.ps1`. Keep `build-info.json` and
+`Data/installed-version.json` current. `Tools/package-brand-update.py` creates a
+cumulative update against the original public 0.1.0 archives; both 0.1.0 and
+0.1.1 installations can apply it directly. The full installer reuses the
+original versioned base archives and applies the cumulative update last.
+Do not replace the immutable original release assets.

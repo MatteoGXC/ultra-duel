@@ -18,6 +18,9 @@
 namespace ygo {
 	extern "C" DECL_DLLEXPORT int start_server(const char* args);
 	extern "C" DECL_DLLEXPORT void stop_server();
+	extern "C" DECL_DLLEXPORT void configure_remote_room(const char* secret);
+	extern bool remote_room;
+	extern std::string remote_secret;
 	extern "C" DECL_DLLEXPORT int get_server_format_capabilities();
 	extern "C" DECL_DLLEXPORT void set_local_genesys_point_cap(unsigned int cap);
 	extern "C" unsigned int get_local_genesys_point_cap();

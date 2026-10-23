@@ -99,12 +99,112 @@ namespace MDPro3
             Destroy(scene);
         }
 
+        private IEnumerator CheckUltraFeatures()
+        {
+            var audit = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText("Data/card-update-audit.json"));
+            foreach (int id in audit["addedIds"].Select(v => (int)v))
+                if (CardsManager.GetCardRaw(id) == null) throw new Exception("New card missing from runtime: " + id);
+            var pack = PacksManager.packs.FirstOrDefault(p => p.fullName.Contains("BURST PROTOCOL") && p.year == 2026);
+            if (pack == null) throw new Exception("English Burst Protocol pack is missing.");
+            int burstCount = CardsManager._cards.Values.Count(c => c.packFullName != null && c.packFullName.Contains("BURST PROTOCOL") && c.year == 2026);
+            if (burstCount < 100) throw new Exception("English Burst Protocol pack is incomplete: " + burstCount);
+            int[] newTcg = audit["addedIds"].Select(v => (int)v).Where(id => (CardsManager.GetCardRaw(id).Ot & 2) != 0).Take(3).ToArray();
+            foreach (int id in newTcg)
+            {
+                var art = MDPro3.Utility.CardImageLoader.LoadArtAsync(id).AsTask();
+                while (!art.IsCompleted) yield return null;
+                if (art.IsFaulted || art.Result == null) throw new Exception("New card art failed to load: " + id);
+                MDPro3.Utility.CardImageLoader.ReleaseArt(id);
+            }
+            var health = MDPro3.Net.UltraServices.Request("/health").AsTask();
+            while (!health.IsCompleted) yield return null;
+            if (health.IsFaulted || (bool?)health.Result["ok"] != true) throw new Exception("Unity could not reach the pinned HTTPS friends service.", health.Exception);
+            string original = File.Exists("Progress/profile.json") ? File.ReadAllText("Progress/profile.json") : null;
+            var fields = typeof(UltraProgress).GetField("profile", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            fields.SetValue(null, new UltraProgress.Profile());
+            try
+            {
+                UltraProgress.BeginDuel();
+                if (!UltraProgress.Win() || UltraProgress.Win() || UltraProgress.Data.xp != 100) throw new Exception("Win rewards duplicated.");
+                UltraProgress.BeginDuel(); UltraProgress.Win();
+                if (UltraProgress.Claim() != 1 || UltraProgress.Data.gems != 50 || UltraProgress.Claim() != 0) throw new Exception("Pass claim was not idempotent.");
+                if (UltraProgress.Buy("Violet")) throw new Exception("Shop allowed an unaffordable frame.");
+                for (int i=0;i<4;i++) { UltraProgress.BeginDuel(); UltraProgress.Win(); }
+                UltraProgress.Claim();
+                if (!UltraProgress.Buy("Violet") || UltraProgress.Data.gems != 0) throw new Exception("Frame purchase failed.");
+                if (!UltraProgress.Buy("Violet") || UltraProgress.Data.gems != 0) throw new Exception("Owned frame charged twice.");
+                var saved = File.ReadAllText("Progress/profile.json"); fields.SetValue(null, null);
+                if (UltraProgress.Data.frame != "Violet" || UltraProgress.Data.wins != 6) throw new Exception("Pass progress was not persisted.");
+            }
+            finally
+            {
+                if (original != null) File.WriteAllText("Progress/profile.json", original);
+                else if (File.Exists("Progress/profile.json")) File.Delete("Progress/profile.json");
+                fields.SetValue(null, null);
+            }
+            var home = Program.instance.menu.GetUI<MainMenuUI>();
+            foreach (string page in new[] { "OpenLogin", "OpenPass", "OpenShop", "OpenMissions" })
+            {
+                typeof(MainMenuUI).GetMethod(page, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(home, null);
+                yield return Capture(page);
+                if (page == "OpenLogin")
+                {
+                    var inputs = home.GetComponentsInChildren<TMPro.TMP_InputField>();
+                    if (inputs.Length != 2 || !inputs.Any(i => i.contentType == TMPro.TMP_InputField.ContentType.Password)) throw new Exception("Account form/password masking missing.");
+                }
+                typeof(MainMenuUI).GetMethod("CloseModal", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(home, null);
+            }
+            if (Environment.GetCommandLineArgs().Contains("--ultra-online"))
+            {
+                typeof(MainMenuUI).GetMethod("OpenLogin", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                var inputs = home.GetComponentsInChildren<TMPro.TMP_InputField>();
+                inputs.First(i => i.contentType != TMPro.TMP_InputField.ContentType.Password).text = "UT_UI_" + Guid.NewGuid().ToString("N").Substring(0,8);
+                inputs.First(i => i.contentType == TMPro.TMP_InputField.ContentType.Password).text = Guid.NewGuid().ToString("N");
+                var register = home.GetComponentsInChildren<UnityEngine.UI.Button>().First(b => b.GetComponentInChildren<TMPro.TextMeshProUGUI>()?.text == "CREATE ACCOUNT");
+                register.onClick.Invoke();
+                float end=Time.realtimeSinceStartup+20;
+                while (MDPro3.Net.UltraServices.State == null && Time.realtimeSinceStartup<end) yield return null;
+                if (MDPro3.Net.UltraServices.State == null) throw new Exception("In-game account creation did not complete.");
+                yield return Capture("friends-account");
+                typeof(MainMenuUI).GetMethod("OpenDuel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                yield return Capture("friends-rooms");
+                var logout=MDPro3.Net.UltraServices.SignOut().AsTask();
+                while(!logout.IsCompleted)yield return null;
+                if(logout.IsFaulted || !string.IsNullOrEmpty(MDPro3.Net.UltraServices.Token))throw new Exception("Account sign out failed.");
+                typeof(MainMenuUI).GetMethod("CloseModal", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                Debug.Log("ULTRA_ACCOUNT_UI_PASSED registration, HTTPS session, friend list, rooms and sign out");
+            }
+            Debug.Log("ULTRA_FEATURES_PASSED 300 cards, English Burst Protocol, artwork, pinned HTTPS, pass rewards, persistence and native account UI");
+        }
+
         private IEnumerator Run()
         {
             while (Program.instance == null || Program.instance.menu.servantUI == null || !TextureManager.loaded)
                 yield return null;
             Debug.Log("FORMAT_SMOKE_MENU_READY");
             yield return Capture("menu");
+            var commandLine = Environment.GetCommandLineArgs();
+            int remoteIndex = Array.IndexOf(commandLine, "--ultra-remote-room");
+            if (remoteIndex >= 0)
+            {
+                var room = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(commandLine[remoteIndex+1]));
+                string remoteDeckName = (string)room["format"] == "TCG" ? "Starter - TCG"
+                    : (int)room["cap"] == 0 ? "Starter - Genesys Zero" : "Starter - Genesys";
+                Config.SetConfigDeck(remoteDeckName);
+                var joining = MDPro3.Net.UltraServices.JoinRoom(room).AsTask();
+                while (!joining.IsCompleted) yield return null;
+                if (joining.IsFaulted) throw new Exception("Remote room join failed.", joining.Exception);
+                while (Program.instance.currentServant != Program.instance.room || Program.instance.room.servantUI == null
+                    || RoomServant.players.Count(p => p != null) < 2) yield return null;
+                Program.instance.room.GetUI<RoomServantUI>().OnReady();
+                while (RoomServant.players.Count(p => p != null && p.ready) < 2) yield return null;
+                yield return Capture("remote-room");
+                Debug.Log("ULTRA_REMOTE_UNITY_PASSED two players ready / " + (string)room["format"] + " / " + (int)room["cap"]);
+                File.WriteAllText(Path.Combine(output,"passed.txt"), "Unity connected to the public VPS and both players readied with server-enforced format.");
+                Application.Quit(0);
+                yield break;
+            }
+            if (Environment.GetCommandLineArgs().Contains("--ultra-features")) yield return CheckUltraFeatures();
             CheckDeckProfiles();
             Program.instance.menu.GetUI<MainMenuUI>().OnDeck();
             yield return new WaitForSecondsRealtime(2);

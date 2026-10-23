@@ -39,7 +39,7 @@ namespace MDPro3
         }
         // Private local-server format IDs; translated to MR2020 plus rule flags in native code.
         public static string MasterRule { get { return Genesys ? "8" : "7"; } }
-        public static bool LocalSession { get { return !RoomServant.FromHandTest && (RoomServant.FromSolo || RoomServant.FromLocalHost); } }
+        public static bool LocalSession { get { return !RoomServant.FromHandTest && (RoomServant.FromSolo || RoomServant.FromLocalHost || RoomServant.FromUltraHost); } }
 
         public static Banlist TcgBanlist
         {
@@ -80,7 +80,7 @@ namespace MDPro3
             });
         }
 
-        private static void Set(bool genesys, int cap)
+        public static void Set(bool genesys, int cap)
         {
             Config.Set("DuelFormat", genesys ? "Genesys" : "TCG");
             Config.Set("GenesysPointCap", cap.ToString());

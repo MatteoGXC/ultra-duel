@@ -1,5 +1,6 @@
 #include "config.h"
 #include "netserver.h"
+#include "serverapi.h"
 #include "single_duel.h"
 #include "tag_duel.h"
 #include "deck_manager.h"
@@ -92,7 +93,7 @@ bool NetServer::StartServer(unsigned short port) {
 	server_port = port;
 	sin.sin_family = AF_INET;
 #ifdef SERVER_PRO2_SUPPORT
-	sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	sin.sin_addr.s_addr = htonl(remote_room ? INADDR_ANY : INADDR_LOOPBACK);
 #else
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
 #endif
@@ -391,6 +392,20 @@ void NetServer::HandleCTOSPacket(DuelPlayer* dp, unsigned char* data, int len) {
 			return;
 		if (len < 1 + (int)sizeof(CTOS_JoinGame))
 			return;
+        if (remote_room) {
+            CTOS_JoinGame packet;
+            std::memcpy(&packet, pdata, sizeof packet);
+            bool valid = packet.pass[16] == 0;
+            for (size_t i = 0; i < 16; ++i)
+                valid = valid && packet.pass[i] == static_cast<unsigned char>(remote_secret[i]);
+            if (!valid) {
+                STOC_ErrorMsg error{};
+                error.msg = ERRMSG_JOINERROR; error.code = 1;
+                SendPacketToPlayer(dp, STOC_ERROR_MSG, error);
+                DisconnectPlayer(dp);
+                return;
+            }
+        }
 		duel_mode->JoinGame(dp, pdata, false);
 		break;
 	}

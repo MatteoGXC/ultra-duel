@@ -85,7 +85,7 @@ namespace MDPro3
 
             try
             {
-                Debug.LogFormat("Try Address: {0}, Port: {1}, Password: {2}", ipString, portString, pswString);
+                Debug.LogFormat("Connecting to {0}:{1}", ipString, portString);
 
                 tcpClient = new TcpClientWithTimeout(ipString, int.Parse(portString), 3000).Connect();
                 networkStream = tcpClient.GetStream();
@@ -102,7 +102,7 @@ namespace MDPro3
                 OcgCore.mycardDuel = joinedAddress == MyCard.duelUrl;
                 doWhenSuccess?.Invoke();
 
-                Debug.LogFormat("Joind Address: {0}, Port: {1}, Password: {2}", joinedAddress, joinedPort, joinedPassword);
+                Debug.LogFormat("Joined {0}:{1}", joinedAddress, joinedPort);
                 return true;
             }
             catch /*(Exception e)*/

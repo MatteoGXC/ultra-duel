@@ -3,6 +3,12 @@
 #include <atomic>
 
 namespace ygo {
+	bool remote_room = false;
+	std::string remote_secret;
+	extern "C" DECL_DLLEXPORT void configure_remote_room(const char* secret) {
+		remote_secret = secret ? secret : "";
+		remote_room = remote_secret.size() == 16;
+	}
 	static std::atomic<unsigned int> local_point_cap{100};
 	extern "C" DECL_DLLEXPORT void set_local_genesys_point_cap(unsigned int cap) {
 		local_point_cap.store(cap);

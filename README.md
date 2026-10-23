@@ -1,6 +1,6 @@
 # Ultra Duel
 
-A local Yu-Gi-Oh! practice client based on [MDPro3](https://github.com/daominah/mdpro3fork), with TCG Advanced and Genesys rules, AI opponents, a deck editor, and the original duel presentation.
+A Yu-Gi-Oh! practice and multiplayer client based on [MDPro3](https://github.com/daominah/mdpro3fork), with TCG Advanced and Genesys rules, AI opponents, a deck editor, and the original duel presentation.
 
 ## Download for Windows
 
@@ -10,14 +10,17 @@ Already installed Matteo Duel? Download [the small updater](https://github.com/M
 
 The internal `Matteo-Duel_Data` folder remains for compatibility with existing installations. Keep all runtime and asset folders together.
 
-Solo works offline after installation. The embedded room server currently binds to localhost: remote multiplayer hosting is not ready in this build. LAN hosting requires an explicit network listener; internet hosting additionally requires routing/firewall configuration or a hosted room service. No public lobby service is bundled.
+Solo works offline after installation. For online play, open **FRIENDS**, create an account, and add your friend by username. Accept the request, then open **DUEL** to create or join a private hosted room. Choose TCG Advanced or Genesys (100, 0, or a custom point cap). Both players connect to the Ultra Duel VPS; no router port forwarding is required. Both players need v0.1.2. Server setup and maintenance are documented in [Server/README.md](Server/README.md).
 
 ## Playing
 
-- **My Decks** opens your deck library directly. Corner badges show each deck's saved format: TCG, Genesys (100 points), Genesys 0, or its custom point cap. Each deck has its own **Format** button in the editor; the format and cap are saved inside the YDK file.
-- **Play Solo** starts with the selected deck's saved format and has its own format/point-cap switch and player-deck selector. TCG and Genesys use separate AI deck libraries. Opponents incompatible with the current format or point cap are excluded, including from Random selection.
+- **DECK** opens your deck library directly. Corner badges show each deck's saved format: TCG, Genesys (100 points), Genesys 0, or its custom point cap. Each deck has its own **Format** button in the editor; the format and cap are saved inside the YDK file.
+- **SOLO** starts with the selected deck's saved format and has its own format/point-cap switch and player-deck selector. TCG and Genesys use separate AI deck libraries. Opponents incompatible with the current format or point cap are excluded, including from Random selection.
 - Solo offers 14 TCG and 15 Genesys published lists, with a mix of Casual, Standard, and Hard practice opponents. Difficulty labels are estimates, not tournament rankings. Sources and exact card arrays are recorded in `Data/solo-published-decks.json`. Cards are imported unchanged; there is no automatic rebuilding, substitution, trimming, or staple filling. Custom AI decks are validated before play.
-- The home screen prioritizes Solo and Decks. LP notifications distinguish damage from activation costs. Optional card-preview visuals cannot interrupt a monster's movement from hand to field.
+- The angular home screen includes DUEL, DECK, SOLO, SHOP, friends, missions, a profile and a free Duel Pass. Each win awards 100 XP; every 200 XP unlocks a tier (20 tiers, no expiry). Claim cosmetic gems, titles and profile frames. Gems buy home-profile frames; no paid purchases are included. Progress is stored locally in `Progress/profile.json`, and installers/updaters preserve it.
+- v0.1.2 adds 300 missing card IDs, corrects 204 availability flags, updates maintained card scripts, supplies 466 missing artwork sources and indexes the English Burst Protocol set (101 official database entries). New cards are not automatically made TCG legal when they are still OCG only. [Data/card-update-audit.json](Data/card-update-audit.json) records the snapshot and sources.
+- The app checks this repository for new releases and main-branch pushes. Release notices point to the small updater; source pushes are identified as development changes until a Windows release exists.
+- LP notifications distinguish damage from activation costs. Optional card-preview visuals cannot interrupt a monster's movement from hand to field.
 
 ## Build and verification
 

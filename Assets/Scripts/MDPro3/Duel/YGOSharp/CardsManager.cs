@@ -2373,7 +2373,10 @@ namespace MDPro3.Duel.YGOSharp
         {
             if (Directory.Exists(PATH))
             {
+                packs.Clear();
+                pacDic.Clear();
                 var fileInfos = new DirectoryInfo(PATH).GetFiles();
+                Array.Sort(fileInfos, (a, b) => string.CompareOrdinal(a.Name, b.Name));
                 foreach (var file in fileInfos)
                     if (file.Name.ToLower().EndsWith(".db"))
                         LoadDataBase(PATH + Program.STRING_SLASH + file.Name);

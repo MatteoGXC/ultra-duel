@@ -13,7 +13,7 @@ using TMPro;
 
 namespace MDPro3.UI.ServantUI
 {
-    public class MainMenuUI : ServantUI
+    public partial class MainMenuUI : ServantUI
     {
         #region Elements
 
@@ -39,6 +39,7 @@ namespace MDPro3.UI.ServantUI
         {
             base.ShowEvent();
             RefreshHomeStatus();
+            RefreshUltraHome();
         }
 
         private void RefreshHomeStatus()
@@ -101,31 +102,7 @@ namespace MDPro3.UI.ServantUI
             return button;
         }
 
-        private void BuildHome()
-        {
-            // Keep the original wallpaper and callbacks; replace the crowded navigation.
-            foreach (Transform child in Root) child.gameObject.SetActive(false);
-            var home = HomeRect("Ultra Duel Home", Root, 0, 0, 1, 1);
-            HomePanel(HomeRect("Navigation backdrop", home, 0, 0, .49f, 1), new Color(.015f, .04f, .065f, .95f));
-            HomePanel(HomeRect("Gold rule", home, .045f, .83f, .405f, .002f), new Color(.80f, .66f, .37f));
-            HomeText(home, "ULTRA DUEL", 53, Color.white, .045f, .87f, .42f, .075f).fontStyle = FontStyles.Bold;
-            HomeText(home, "YOUR DECK. YOUR NEXT MOVE.", 19, new Color(.80f, .66f, .37f), .047f, .837f, .40f, .035f);
-            defaultSelectable = HomeButton(home, "PLAY SOLO   >", "Challenge the AI with your selected deck", OnSolo, .045f, .635f, .40f, .155f, true);
-            HomeButton(home, "MY DECKS", "Build, edit and check your cards", OnDeck, .045f, .49f, .40f, .12f);
-            HomeButton(home, "ONLINE", "Rooms & multiplayer", OnOnline, .045f, .365f, .19f, .10f);
-            HomeButton(home, "REPLAYS", "Revisit your duels", OnReplay, .255f, .365f, .19f, .10f);
-            HomeButton(home, "PUZZLES", "Practice your next move", OnPuzzle, .045f, .25f, .19f, .10f);
-            HomeButton(home, "CUSTOMIZE", "Mates & companions", OnMate, .255f, .25f, .19f, .10f);
-            HomeButton(home, "SETTINGS", "Make it yours", OnSetting, .045f, .135f, .19f, .10f);
-            HomeButton(home, "CUT-INS", "Card animations", OnCutin, .255f, .135f, .19f, .10f);
-            HomeButton(home, "EXIT", "Close game", OnExit, .325f, .035f, .12f, .075f);
-            HomeText(home, "TCG + GENESYS\nLOCAL DUEL PRACTICE", 17, new Color(.48f, .64f, .69f), .045f, .035f, .25f, .075f);
-            var status = HomeRect("Ready panel", home, .64f, .06f, .31f, .19f);
-            HomePanel(status, new Color(.015f, .04f, .065f, .92f));
-            HomeText(status, "READY WHEN YOU ARE", 18, new Color(.80f, .66f, .37f), .07f, .72f, .86f, .20f);
-            homeStatus = HomeText(status, "", 25, Color.white, .07f, .12f, .86f, .58f);
-            RefreshHomeStatus();
-        }
+        private void BuildHome() { BuildUltraHome(); }
 
         #region Button Function
 

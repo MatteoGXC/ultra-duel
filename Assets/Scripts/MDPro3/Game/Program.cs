@@ -327,6 +327,7 @@ namespace MDPro3
 
         private void Update()
         {
+            MDPro3.Net.UltraServices.Heartbeat();
             TcpHelper.PerFrameFunction();
             foreach (Manager manager in managers) 
                 manager.PerFrameFunction();

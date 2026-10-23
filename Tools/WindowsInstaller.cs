@@ -142,7 +142,13 @@ public class WindowsInstaller : Form
             if (!path.StartsWith(root, StringComparison.OrdinalIgnoreCase)) throw new IOException("Invalid archive path.");
             if (entry.FullName.EndsWith("/")) { Directory.CreateDirectory(path); continue; }
             bool preserve = entry.FullName.Equals("Data/config.conf", StringComparison.OrdinalIgnoreCase)
-                || entry.FullName.StartsWith("Deck/", StringComparison.OrdinalIgnoreCase);
+                || entry.FullName.Equals("Data/Settings.json", StringComparison.OrdinalIgnoreCase)
+                || entry.FullName.Equals("Data/mycard_apps.json", StringComparison.OrdinalIgnoreCase)
+                || entry.FullName.Equals("Data/profile.json", StringComparison.OrdinalIgnoreCase)
+                || entry.FullName.Equals("Data/friends-session.json", StringComparison.OrdinalIgnoreCase)
+                || entry.FullName.StartsWith("Deck/", StringComparison.OrdinalIgnoreCase)
+                || entry.FullName.StartsWith("Replay/", StringComparison.OrdinalIgnoreCase)
+                || entry.FullName.StartsWith("Progress/", StringComparison.OrdinalIgnoreCase);
             if (preserve && File.Exists(path)) continue;
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             entry.ExtractToFile(path, true);

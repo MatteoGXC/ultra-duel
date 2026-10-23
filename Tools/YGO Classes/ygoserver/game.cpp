@@ -87,7 +87,10 @@ void Game::MainServerLoop() {
 	dataManager.FileSystem = new irr::io::CFileSystem();
 #endif
 	deckManager.LoadLFList();
-	dataManager.LoadDB(L"cards.cdb");
+	if (!dataManager.LoadDB(L"cards.cdb")) {
+        fprintf(stderr, "Failed to load cards.cdb\n");
+        return;
+    }
 	LoadExpansions();
 #if defined SERVER_PRO2_SUPPORT || defined SERVER_PRO3_SUPPORT
 	dataManager.FileSystem->addFileArchive("data/script.zip", true, false, EFAT_ZIP);

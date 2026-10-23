@@ -1,0 +1,608 @@
+[
+  {
+    "name": "Rokket Loader",
+    "cid": 22107,
+    "id": 25554552,
+    "old": 25554552
+  },
+  {
+    "name": "Hollowrokket Dragon",
+    "cid": 22108,
+    "id": 51548207,
+    "old": 51548207
+  },
+  {
+    "name": "Rokket Detonator",
+    "cid": 22109,
+    "id": 98937206,
+    "old": 98937206
+  },
+  {
+    "name": "Tellusion the Magna Warrior",
+    "cid": 22110,
+    "id": 24431911,
+    "old": 24431911
+  },
+  {
+    "name": "Magnet Warrior Sigma Plus",
+    "cid": 22111,
+    "id": 51826619,
+    "old": 51826619
+  },
+  {
+    "name": "Magnet Warrior Sigma Minus",
+    "cid": 22112,
+    "id": 87814728,
+    "old": 87814728
+  },
+  {
+    "name": "Junk Warrior/Assault Mode",
+    "cid": 22113,
+    "id": 23219323,
+    "old": 23219323
+  },
+  {
+    "name": "Crimson Blader/Assault Mode",
+    "cid": 22114,
+    "id": 50604072,
+    "old": 50604072
+  },
+  {
+    "name": "Assault Lich",
+    "cid": 22115,
+    "id": 86098176,
+    "old": 86098176
+  },
+  {
+    "name": "Elfnote Lucina",
+    "cid": 22116,
+    "id": 13597785,
+    "old": 13597785
+  },
+  {
+    "name": "Elfnote Tinia",
+    "cid": 22117,
+    "id": 59581480,
+    "old": 59581480
+  },
+  {
+    "name": "Elfnote Fortuna",
+    "cid": 22118,
+    "id": 85976588,
+    "old": 85976588
+  },
+  {
+    "name": "Elfnote Power Patron",
+    "cid": 22119,
+    "id": 12375297,
+    "old": 12375297
+  },
+  {
+    "name": "Royal Archfiend",
+    "cid": 22120,
+    "id": 58769832,
+    "old": 58769832
+  },
+  {
+    "name": "Duke Archfiend",
+    "cid": 22121,
+    "id": 85154941,
+    "old": 85154941
+  },
+  {
+    "name": "Highness Archfiend",
+    "cid": 22122,
+    "id": 11248645,
+    "old": 11248645
+  },
+  {
+    "name": "Rex, Ride Fur Hire",
+    "cid": 22123,
+    "id": 47647354,
+    "old": 47647354
+  },
+  {
+    "name": "Darklord Gulgolet",
+    "cid": 22124,
+    "id": 84031359,
+    "old": 84031359
+  },
+  {
+    "name": "Darklord Djehuty",
+    "cid": 22125,
+    "id": 10426067,
+    "old": 10426067
+  },
+  {
+    "name": "Vic Viper Type-L",
+    "cid": 22084,
+    "id": 78910832,
+    "old": 78910832
+  },
+  {
+    "name": "B.E.S. Derringer Core",
+    "cid": 22082,
+    "id": 5121528,
+    "old": 5121528
+  },
+  {
+    "name": "Super B.E.S. Metal Slave",
+    "cid": 22083,
+    "id": 41516133,
+    "old": 41516133
+  },
+  {
+    "name": "Rescue-ACE Quick Attacker",
+    "cid": 22126,
+    "id": 47425162,
+    "old": 47425162
+  },
+  {
+    "name": "Fallen of the White Dragon",
+    "cid": 22127,
+    "id": 73819701,
+    "old": 73819701
+  },
+  {
+    "name": "Tri-Brigade Springans Kitt",
+    "cid": 22128,
+    "id": 19304410,
+    "old": 19304410
+  },
+  {
+    "name": "Derk, Longing for the Blue Skies",
+    "cid": 22129,
+    "id": 46708514,
+    "old": 46708514
+  },
+  {
+    "name": "Shiina, Twin Tempests of Celestial Thunder",
+    "cid": 22130,
+    "id": 12197223,
+    "old": 12197223
+  },
+  {
+    "name": "Fist Armed Dragon",
+    "cid": 22131,
+    "id": 49181828,
+    "old": 49181828
+  },
+  {
+    "name": "WAKE CUP! Earl",
+    "cid": 22132,
+    "id": 85586937,
+    "old": 85586937
+  },
+  {
+    "name": "First Penguin",
+    "cid": 22133,
+    "id": 12975671,
+    "old": 12975671
+  },
+  {
+    "name": "Archfiend Emperor",
+    "cid": 22134,
+    "id": 48469380,
+    "old": 48469380
+  },
+  {
+    "name": "Borreload Fatalflare Dragon",
+    "cid": 22135,
+    "id": 84464389,
+    "old": 84464389
+  },
+  {
+    "name": "D/D/D Alfred the Divine Sage King",
+    "cid": 22136,
+    "id": 11852093,
+    "old": 11852093
+  },
+  {
+    "name": "Conduction Warrior Plasma Magnum",
+    "cid": 22137,
+    "id": 47247792,
+    "old": 47247792
+  },
+  {
+    "name": "Artmage Non-Finito",
+    "cid": 22138,
+    "id": 74631897,
+    "old": 74631897
+  },
+  {
+    "name": "Darklord Eveningstar",
+    "cid": 22139,
+    "id": 10136446,
+    "old": 10136446
+  },
+  {
+    "name": "Dracotail Shaulas",
+    "cid": 22140,
+    "id": 42125140,
+    "old": 42125140
+  },
+  {
+    "name": "Nightwinged Cleric",
+    "cid": 22141,
+    "id": 79519259,
+    "old": 79519259
+  },
+  {
+    "name": "Junora the Power Patron of Tuning",
+    "cid": 22142,
+    "id": 5914858,
+    "old": 5914858
+  },
+  {
+    "name": "Elfnote Seraphim Strelitzia",
+    "cid": 22143,
+    "id": 42302563,
+    "old": 42302563
+  },
+  {
+    "name": "Ecclesia and the Dark Dragon",
+    "cid": 22144,
+    "id": 78397661,
+    "old": 78397661
+  },
+  {
+    "name": "Zalen the Shackled Dragon",
+    "cid": 22145,
+    "id": 4891376,
+    "old": 4891376
+  },
+  {
+    "name": "K9-X \"Ripper/M\"",
+    "cid": 22146,
+    "id": 31286915,
+    "old": 31286915
+  },
+  {
+    "name": "Exosister Karmael",
+    "cid": 22147,
+    "id": 77675029,
+    "old": 77675029
+  },
+  {
+    "name": "Gung-Ho! Springans!",
+    "cid": 22148,
+    "id": 4079728,
+    "old": 4079728
+  },
+  {
+    "name": "Topologic Blaster Dragon",
+    "cid": 22149,
+    "id": 30064423,
+    "old": 30064423
+  },
+  {
+    "name": "Borrelshroud Dragon",
+    "cid": 22150,
+    "id": 66452432,
+    "old": 66452432
+  },
+  {
+    "name": "Trisborrel Dragon",
+    "cid": 22151,
+    "id": 3957130,
+    "old": 3957130
+  },
+  {
+    "name": "Radiant Typhoon Varuroon, the Marine Eidolon",
+    "cid": 22152,
+    "id": 39341885,
+    "old": 39341885
+  },
+  {
+    "name": "Keel, Shipwright Fur Hire",
+    "cid": 22153,
+    "id": 66736884,
+    "old": 66736884
+  },
+  {
+    "name": "Rescue-ACE Arbitrator",
+    "cid": 22154,
+    "id": 2725599,
+    "old": 2725599
+  },
+  {
+    "name": "Double Interlock",
+    "cid": 22155,
+    "id": 38129297,
+    "old": 38129297
+  },
+  {
+    "name": "Magnet Bonding",
+    "cid": 22156,
+    "id": 65514302,
+    "old": 65514302
+  },
+  {
+    "name": "Duel Evolution - Assault Zone",
+    "cid": 22157,
+    "id": 91002901,
+    "old": 91002901
+  },
+  {
+    "name": "DoomZ Change",
+    "cid": 22158,
+    "id": 38007649,
+    "old": 38007649
+  },
+  {
+    "name": "Elfnotes: Welcome Home",
+    "cid": 22159,
+    "id": 64491754,
+    "old": 64491754
+  },
+  {
+    "name": "Elfnotes: A Plea for Help",
+    "cid": 22160,
+    "id": 90880453,
+    "old": 90880453
+  },
+  {
+    "name": "Theorealize Liberation",
+    "cid": 22161,
+    "id": 27285068,
+    "old": 27285068
+  },
+  {
+    "name": "Throne of the Archfiends",
+    "cid": 22162,
+    "id": 63679166,
+    "old": 63679166
+  },
+  {
+    "name": "Archfiend Strategy",
+    "cid": 22163,
+    "id": 90764871,
+    "old": 90764871
+  },
+  {
+    "name": "Fandora, the Flying Fighting Furtress",
+    "cid": 22164,
+    "id": 26162470,
+    "old": 26162470
+  },
+  {
+    "name": "Whirlwind Fur Hire",
+    "cid": 22165,
+    "id": 53557529,
+    "old": 53557529
+  },
+  {
+    "name": "Darklord Dance",
+    "cid": 22166,
+    "id": 99941223,
+    "old": 99941223
+  },
+  {
+    "name": "Boss on Parade",
+    "cid": 22085,
+    "id": 4909946,
+    "old": 4909946
+  },
+  {
+    "name": "Radiant Typhoon Ascendance",
+    "cid": 22167,
+    "id": 25940932,
+    "old": 25940932
+  },
+  {
+    "name": "Exosister Betrayal",
+    "cid": 22168,
+    "id": 52335937,
+    "old": 52335937
+  },
+  {
+    "name": "Forbidden Crown",
+    "cid": 22169,
+    "id": 98829635,
+    "old": 98829635
+  },
+  {
+    "name": "Nightmare Hands",
+    "cid": 22170,
+    "id": 25224340,
+    "old": 25224340
+  },
+  {
+    "name": "Riot's Reason",
+    "cid": 22171,
+    "id": 51612489,
+    "old": 51612489
+  },
+  {
+    "name": "Borrel Reboot",
+    "cid": 22172,
+    "id": 87607094,
+    "old": 87607094
+  },
+  {
+    "name": "Elfnotes: Aristeia of Trust",
+    "cid": 22174,
+    "id": 50590801,
+    "old": 50590801
+  },
+  {
+    "name": "Elfnotes: Rhapsodia of Madness",
+    "cid": 22173,
+    "id": 24092792,
+    "old": 24092792
+  },
+  {
+    "name": "Archfiend Playtime",
+    "cid": 22175,
+    "id": 87985506,
+    "old": 87985506
+  },
+  {
+    "name": "Archfiend's Fervor",
+    "cid": 22176,
+    "id": 13379114,
+    "old": 13379114
+  },
+  {
+    "name": "Furtive Techniques Fur Hire, Fur All Your Ultimate Moves",
+    "cid": 22177,
+    "id": 59374259,
+    "old": 59374259
+  },
+  {
+    "name": "Assist\u2605Yummy!",
+    "cid": 22178,
+    "id": 86762958,
+    "old": 86762958
+  },
+  {
+    "name": "Forbidden Ritual Art",
+    "cid": 22179,
+    "id": 12157563,
+    "old": 12157563
+  },
+  {
+    "name": "Arsenal Audit",
+    "cid": 22180,
+    "id": 49652661,
+    "old": 49652661
+  },
+  {
+    "name": "Tip of the Tinying Tongue",
+    "cid": 22181,
+    "id": 85640370,
+    "old": 85640370
+  },
+  {
+    "name": "Shichi-Go-San",
+    "cid": 22182,
+    "id": 11035075,
+    "old": 11035075
+  },
+  {
+    "name": "Mechanical Mechanic",
+    "cid": 22327,
+    "id": 22106558,
+    "old": 22106558
+  },
+  {
+    "name": "Jade Dragon Mech",
+    "cid": 22328,
+    "id": 69191257,
+    "old": 69191257
+  },
+  {
+    "name": "Mischief of the Wolves",
+    "cid": 22329,
+    "id": 95589901,
+    "old": 95589901
+  },
+  {
+    "name": "Mercurium the Living Quicksilver",
+    "cid": 22330,
+    "id": 22984000,
+    "old": 22984000
+  },
+  {
+    "name": "Vodnika the Fountain Spirit",
+    "cid": 22331,
+    "id": 68378605,
+    "old": 68378605
+  },
+  {
+    "name": "Rain of Frogs",
+    "cid": 22332,
+    "id": 94467314,
+    "old": 94467314
+  },
+  {
+    "name": "Flux Ochsenfeld",
+    "cid": 22333,
+    "id": 21861412,
+    "old": 21861412
+  },
+  {
+    "name": "Shipping Archfiend",
+    "cid": 22334,
+    "id": 57256127,
+    "old": 57256127
+  },
+  {
+    "name": "Storm-Bane Dragon Destorbim",
+    "cid": 22335,
+    "id": 94641726,
+    "old": 94641726
+  },
+  {
+    "name": "GMX Researcher Selande",
+    "cid": 22336,
+    "id": 20049870,
+    "old": 20049870
+  },
+  {
+    "name": "GMX Chairman Kimridge",
+    "cid": 22337,
+    "id": 56034579,
+    "old": 56034579
+  },
+  {
+    "name": "GMX Associate Noma",
+    "cid": 22338,
+    "id": 83528184,
+    "old": 83528184
+  },
+  {
+    "name": "Returned Dino Daneen",
+    "cid": 22339,
+    "id": 29927283,
+    "old": 29927283
+  },
+  {
+    "name": "GMX - ALLOS",
+    "cid": 22340,
+    "id": 56311997,
+    "old": 56311997
+  },
+  {
+    "name": "GMX - VELOX",
+    "cid": 22341,
+    "id": 82706696,
+    "old": 82706696
+  },
+  {
+    "name": "GMX Applied Experiment #55",
+    "cid": 22342,
+    "id": 18795635,
+    "old": 18795635
+  },
+  {
+    "name": "Pesanta the Titan of Troubadours",
+    "cid": 21249,
+    "id": 66429798,
+    "old": 66429798
+  },
+  {
+    "name": "Spenta, the Magistus Sealer",
+    "cid": 20732,
+    "id": 42544773,
+    "old": 42544773
+  },
+  {
+    "name": "Conduction Warrior Linear Magnum Plus Minus",
+    "cid": 21751,
+    "id": 44839512,
+    "old": 44839512
+  },
+  {
+    "name": "Invoked Magistus Omega",
+    "cid": 21577,
+    "id": 38423248,
+    "old": 38423248
+  },
+  {
+    "name": "Stardust Dragon/Assault Mode",
+    "cid": 8091,
+    "id": 61257790,
+    "old": 61257790
+  }
+]

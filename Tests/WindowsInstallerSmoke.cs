@@ -14,6 +14,10 @@ public static class WindowsInstallerSmoke
         string target = Path.Combine(work, "preserve-check");
         Directory.CreateDirectory(Path.Combine(target, "Data"));
         Directory.CreateDirectory(Path.Combine(target, "Deck"));
+        Directory.CreateDirectory(Path.Combine(target, "Progress"));
+        File.WriteAllText(Path.Combine(target, "Progress/profile.json"), "earned rewards");
+        File.WriteAllText(Path.Combine(target, "Data/friends-session.json"), "existing session");
+        File.WriteAllText(Path.Combine(target, "Data/Settings.json"), "custom settings");
         File.WriteAllText(Path.Combine(target, "Data/config.conf"), "existing user settings");
         File.WriteAllText(Path.Combine(target, "Deck/Starter.ydk"), "existing user deck");
         string fixture = Path.Combine(work, "fixture.zip");
@@ -22,10 +26,16 @@ public static class WindowsInstallerSmoke
             Write(zip, "Data/config.conf", "default settings");
             Write(zip, "Deck/Starter.ydk", "default starter");
             Write(zip, "Game/data.txt", "runtime asset");
+            Write(zip, "Progress/profile.json", "empty profile");
+            Write(zip, "Data/friends-session.json", "empty session");
+            Write(zip, "Data/Settings.json", "default settings");
         }
         extract.Invoke(null, new object[] { fixture, target });
         if (File.ReadAllText(Path.Combine(target, "Data/config.conf")) != "existing user settings"
             || File.ReadAllText(Path.Combine(target, "Deck/Starter.ydk")) != "existing user deck"
+            || File.ReadAllText(Path.Combine(target, "Progress/profile.json")) != "earned rewards"
+            || File.ReadAllText(Path.Combine(target, "Data/friends-session.json")) != "existing session"
+            || File.ReadAllText(Path.Combine(target, "Data/Settings.json")) != "custom settings"
             || File.ReadAllText(Path.Combine(target, "Game/data.txt")) != "runtime asset")
             throw new Exception("Existing settings/decks were overwritten or runtime data was not installed.");
         string traversal = Path.Combine(work, "traversal.zip");

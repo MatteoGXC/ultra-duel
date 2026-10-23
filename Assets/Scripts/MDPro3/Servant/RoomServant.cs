@@ -40,6 +40,7 @@ namespace MDPro3.Servant
 
         public static bool FromSolo;
         public static bool FromLocalHost;
+        public static bool FromUltraHost;
         public static bool FromHandTest;
 
         public class Player

@@ -111,3 +111,7 @@ go.work.sum
 
 # env files may contain secrets
 config/.env
+
+# Ultra Duel service credentials and live account database stay off GitHub.
+/state/
+/Server/state/
