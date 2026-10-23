@@ -29,7 +29,7 @@ namespace MDPro3.UI.ServantUI
         {
             base.Initialize(servant);
 
-            Title.text = "Matteo Duel";
+            Title.text = "Ultra Duel";
             BuildHome();
         }
 
@@ -105,10 +105,10 @@ namespace MDPro3.UI.ServantUI
         {
             // Keep the original wallpaper and callbacks; replace the crowded navigation.
             foreach (Transform child in Root) child.gameObject.SetActive(false);
-            var home = HomeRect("Matteo Duel Home", Root, 0, 0, 1, 1);
+            var home = HomeRect("Ultra Duel Home", Root, 0, 0, 1, 1);
             HomePanel(HomeRect("Navigation backdrop", home, 0, 0, .49f, 1), new Color(.015f, .04f, .065f, .95f));
             HomePanel(HomeRect("Gold rule", home, .045f, .83f, .405f, .002f), new Color(.80f, .66f, .37f));
-            HomeText(home, "MATTEO DUEL", 53, Color.white, .045f, .87f, .42f, .075f).fontStyle = FontStyles.Bold;
+            HomeText(home, "ULTRA DUEL", 53, Color.white, .045f, .87f, .42f, .075f).fontStyle = FontStyles.Bold;
             HomeText(home, "YOUR DECK. YOUR NEXT MOVE.", 19, new Color(.80f, .66f, .37f), .047f, .837f, .40f, .035f);
             defaultSelectable = HomeButton(home, "PLAY SOLO   >", "Challenge the AI with your selected deck", OnSolo, .045f, .635f, .40f, .155f, true);
             HomeButton(home, "MY DECKS", "Build, edit and check your cards", OnDeck, .045f, .49f, .40f, .12f);

@@ -21,7 +21,7 @@ namespace MDPro3.Duel.YGOSharp
         public int Stand;
         public int Mate;
 
-        public const string deckHint = "#created by Matteo Duel";
+        public const string deckHint = "#created by Ultra Duel";
         public string Format = "TCG";
         public int FormatPointCap = 100;
         public string userId;

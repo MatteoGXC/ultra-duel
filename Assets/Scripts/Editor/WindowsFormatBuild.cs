@@ -34,7 +34,7 @@ public static class WindowsFormatBuild
             throw new Exception("Run python Tools/refresh-format-data.py before building.");
 
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64);
-        PlayerSettings.productName = "Matteo Duel";
+        PlayerSettings.productName = "Ultra Duel";
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
         PlayerSettings.defaultScreenWidth = 1600;
         PlayerSettings.defaultScreenHeight = 900;
