@@ -51,14 +51,14 @@ namespace MDPro3.UI.ServantUI
         {
             foreach (Transform child in Root) child.gameObject.SetActive(false);
             ultraHome = HomeRect("Ultra Duel Home", Root, 0, 0, 1, 1);
-            HomePanel(ultraHome, new Color(.018f,.029f,.053f,1));
+            HomePanel(ultraHome, new Color(.018f,.029f,.053f,0));
             var diagonal=HomeRect("Midnight diagonal",ultraHome,.23f,0,.77f,1).gameObject.AddComponent<UltraHomeShape>();
-            diagonal.slash=true; diagonal.color=new Color(.045f,.085f,.14f); diagonal.raycastTarget=false;
+            diagonal.slash=true; diagonal.color=new Color(.045f,.085f,.14f,.10f); diagonal.raycastTarget=false;
             var glow=HomeRect("Blue diagonal",ultraHome,.62f,0,.38f,1).gameObject.AddComponent<UltraHomeShape>();
-            glow.slash=true; glow.color=new Color(.055f,.15f,.20f); glow.raycastTarget=false;
+            glow.slash=true; glow.color=new Color(.055f,.15f,.20f,.08f); glow.raycastTarget=false;
             var nav=HomeRect("Angular navigation",ultraHome,0,0,.52f,1).gameObject.AddComponent<UltraHomeShape>();
             nav.color=new Color(.006f,.012f,.021f,.98f); nav.raycastTarget=false;
-            // Quiet geometric light points, without character side artwork.
+            // Keep the player’s wallpaper and mate visible through the right side.
             for (int i=0;i<28;i++)
             {
                 float x=.38f+((i*37)%59)/100f, y=.12f+((i*19)%71)/100f;
@@ -82,10 +82,10 @@ namespace MDPro3.UI.ServantUI
             NavButton("DECK",OnDeck,.565f,36);
             NavButton("SOLO",OnSolo,.475f,36);
             NavButton("SHOP",OpenShop,.385f,36);
-            HomeText(ultraHome,"ULTRA DUEL",55,Color.white,.55f,.46f,.40f,.10f).fontStyle=FontStyles.Bold;
-            HomePanel(HomeRect("Brand line",ultraHome,.55f,.435f,.35f,.002f),Lime);
-            HomeText(ultraHome,"YOUR DECK. YOUR NEXT MOVE.",21,Muted,.55f,.385f,.39f,.045f);
-            HomeText(ultraHome,"TCG ADVANCED  /  GENESYS",17,Lime,.55f,.325f,.39f,.035f);
+            HomeText(ultraHome,"ULTRA DUEL",32,Color.white,.065f,.765f,.29f,.06f).fontStyle=FontStyles.Bold;
+            HomeText(ultraHome,"YOUR DECK. YOUR NEXT MOVE.",16,Muted,.065f,.735f,.30f,.03f);
+            var info=HomeRect("Home status backdrop",ultraHome,.53f,.065f,.44f,.17f);
+            HomePanel(info,new Color(.008f,.02f,.04f,.76f));
             var deckPanel=HomeRect("Selected deck",ultraHome,.045f,.19f,.27f,.15f);
             HomePanel(deckPanel,new Color(.055f,.075f,.12f));
             HomeText(deckPanel,"READY TO PLAY",17,Lime,.055f,.69f,.90f,.22f);
