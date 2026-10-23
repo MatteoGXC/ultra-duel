@@ -87,10 +87,15 @@ void Game::MainServerLoop() {
 	dataManager.FileSystem = new irr::io::CFileSystem();
 #endif
 	deckManager.LoadLFList();
-	if (!dataManager.LoadDB(L"cards.cdb") && !dataManager.LoadDB(L"Data/locales/en-US/cards.cdb")) {
+#ifdef _WIN32
+    // Windows loads its packaged locale databases in LoadExpansions below.
+    dataManager.LoadDB(L"cards.cdb");
+#else
+    if (!dataManager.LoadDB(L"cards.cdb") && !dataManager.LoadDB(L"Data/locales/en-US/cards.cdb")) {
         fprintf(stderr, "Failed to load cards.cdb\n");
         return;
     }
+#endif
 	LoadExpansions();
 #if defined SERVER_PRO2_SUPPORT || defined SERVER_PRO3_SUPPORT
 	dataManager.FileSystem->addFileArchive("data/script.zip", true, false, EFAT_ZIP);
