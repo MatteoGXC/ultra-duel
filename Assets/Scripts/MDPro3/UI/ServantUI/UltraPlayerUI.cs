@@ -95,7 +95,7 @@ namespace MDPro3.UI.ServantUI
             wordmark.transform.SetAsLastSibling();
             var homeDefault=defaultSelectable;
             defaultSelectable=SmallButton(modal,"GAME START",()=>{CloseModal();defaultSelectable=homeDefault;homeDefault?.Select();},.10f,.23f,.76f,.075f,25);
-            var startFrame=defaultSelectable.GetComponent<UltraChrome>();startFrame.color=Color.clear;startFrame.rim=0;
+            var startFrame=defaultSelectable.GetComponent<UltraChrome>();startFrame.color=startFrame.rimColor=Color.clear;startFrame.rim=0;
             defaultSelectable.transition=Selectable.Transition.None;
             var pulse=defaultSelectable.gameObject.AddComponent<CanvasGroup>();pulse.DOFade(.38f,1.4f).SetLoops(-1,LoopType.Yoyo).SetEase(Ease.InOutSine).SetUpdate(true).SetLink(defaultSelectable.gameObject);
             HomeText(modal,"Ver. "+UltraServices.Version+"\n"+(string.IsNullOrEmpty(UltraServices.PlayerName)?"Welcome, Duelist":UltraServices.PlayerName),18,Muted,.10f,.84f,.80f,.09f);
