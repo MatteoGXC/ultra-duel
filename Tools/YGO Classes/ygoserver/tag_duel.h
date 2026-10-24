@@ -68,6 +68,7 @@ protected:
 	int phase;
 #endif
 	bool ready[4];
+	bool solo_team[2]{false, false};
 	bool surrender[4];
 	Deck pdeck[4];
 	int deck_error[4];

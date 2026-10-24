@@ -413,8 +413,31 @@ void TagDuel::UpdateDeck(DuelPlayer* dp, unsigned char* pdata, int len) {
 void TagDuel::StartDuel(DuelPlayer* dp) {
 	if(dp != host_player)
 		return;
-	if(!ready[0] || !ready[1] || !ready[2] || !ready[3])
-		return;
+	int present = 0;
+	for(int i = 0; i < 4; ++i) {
+		if(!players[i]) continue;
+		++present;
+		if(!ready[i]) return;
+	}
+	if(present < 3) return;
+	// Keep a real captain in each team's first slot for the opening selection.
+	for(int base : {0, 2}) {
+		if(players[base] || !players[base + 1]) continue;
+		DuelPlayer* moving = players[base + 1];
+		players[base] = moving; players[base + 1] = nullptr;
+		pdeck[base] = std::move(pdeck[base + 1]); pdeck[base + 1] = Deck{};
+		ready[base] = true; ready[base + 1] = false; moving->type = base;
+		STOC_HS_PlayerChange change;
+		change.status = ((base + 1) << 4) | PLAYERCHANGE_LEAVE;
+		for(auto player : players) NetServer::SendPacketToPlayer(player, STOC_HS_PLAYER_CHANGE, change);
+		STOC_HS_PlayerEnter enter;
+		BufferIO::CopyCharArray(moving->name, enter.name); enter.pos = base;
+		for(auto player : players) NetServer::SendPacketToPlayer(player, STOC_HS_PLAYER_ENTER, enter);
+		STOC_TypeChange type; type.type = base | (moving == host_player ? 0x10 : 0);
+		NetServer::SendPacketToPlayer(moving, STOC_TYPE_CHANGE, type);
+		change.status = (base << 4) | PLAYERCHANGE_READY;
+		for(auto player : players) NetServer::SendPacketToPlayer(player, STOC_HS_PLAYER_CHANGE, change);
+	}
 	NetServer::StopListen();
 	//NetServer::StopBroadcast();
 	for(int i = 0; i < 4; ++i)
@@ -511,16 +534,18 @@ void TagDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 		std::swap(players[0], players[2]);
 		std::swap(players[1], players[3]);
 		players[0]->type = 0;
-		players[1]->type = 1;
+		if(players[1]) players[1]->type = 1;
 		players[2]->type = 2;
-		players[3]->type = 3;
+		if(players[3]) players[3]->type = 3;
 		std::swap(pdeck[0], pdeck[2]);
 		std::swap(pdeck[1], pdeck[3]);
 		swapped = true;
 	}
 	turn_count = 0;
 	cur_player[0] = players[0];
-	cur_player[1] = players[3];
+	cur_player[1] = players[3] ? players[3] : players[2];
+	solo_team[0] = !players[1];
+	solo_team[1] = !players[3];
 	dp->state = CTOS_RESPONSE;
 	std::random_device rd;
 	unsigned int seed = rd();
@@ -540,9 +565,10 @@ void TagDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 	last_replay.BeginRecord();
 	last_replay.WriteHeader(rh);
 	last_replay.WriteData(players[0]->name, 40, false);
-	last_replay.WriteData(players[1]->name, 40, false);
+	const unsigned short empty_name[20]{};
+	last_replay.WriteData(players[1] ? players[1]->name : empty_name, 40, false);
 	last_replay.WriteData(players[2]->name, 40, false);
-	last_replay.WriteData(players[3]->name, 40, false);
+	last_replay.WriteData(players[3] ? players[3]->name : empty_name, 40, false);
 	if(!host_info.no_shuffle_deck) {
 		rnd.shuffle_vector(pdeck[0].main);
 		rnd.shuffle_vector(pdeck[1].main);
@@ -561,6 +587,8 @@ void TagDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 	set_player_info(pduel, 0, host_info.start_lp, host_info.start_hand, host_info.draw_count);
 	set_player_info(pduel, 1, host_info.start_lp, host_info.start_hand, host_info.draw_count);
 	unsigned int opt = local_format_options(host_info.duel_rule);
+	if(solo_team[0]) opt |= DUEL_TAG_SINGLE_0;
+	if(solo_team[1]) opt |= DUEL_TAG_SINGLE_1;
 	if(host_info.no_shuffle_deck)
 		opt |= DUEL_PSEUDO_SHUFFLE;
 	opt |= DUEL_TAG_MODE;
@@ -587,10 +615,10 @@ void TagDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 	load_single(pdeck[0].extra, 0, LOCATION_EXTRA);
 	load_tag(pdeck[1].main, 0, LOCATION_DECK);
 	load_tag(pdeck[1].extra, 0, LOCATION_EXTRA);
-	load_single(pdeck[3].main, 1, LOCATION_DECK);
-	load_single(pdeck[3].extra, 1, LOCATION_EXTRA);
-	load_tag(pdeck[2].main, 1, LOCATION_DECK);
-	load_tag(pdeck[2].extra, 1, LOCATION_EXTRA);
+	load_single(pdeck[solo_team[1] ? 2 : 3].main, 1, LOCATION_DECK);
+	load_single(pdeck[solo_team[1] ? 2 : 3].extra, 1, LOCATION_EXTRA);
+	load_tag(pdeck[solo_team[1] ? 3 : 2].main, 1, LOCATION_DECK);
+	load_tag(pdeck[solo_team[1] ? 3 : 2].extra, 1, LOCATION_EXTRA);
 	last_replay.Flush();
 	unsigned char startbuf[32]{};
 	auto pbuf = startbuf;
@@ -683,7 +711,7 @@ void TagDuel::Surrender(DuelPlayer* dp) {
 		return;
 	static const uint32_t teammatemap[] = { 1, 0, 3, 2 };
 	uint32_t teammate = teammatemap[player];
-	if(!surrender[teammate]) {
+	if(players[teammate] && !surrender[teammate]) {
 		surrender[player] = true;
 		NetServer::SendPacketToPlayer(players[player], STOC_TEAMMATE_SURRENDER);
 		NetServer::SendPacketToPlayer(players[teammate], STOC_TEAMMATE_SURRENDER);
@@ -1136,12 +1164,12 @@ int TagDuel::Analyze(unsigned char* msgbuffer, unsigned int len) {
 #endif
 			if(turn_count > 0) {
 				if(turn_count % 2 == 0) {
-					if(cur_player[0] == players[0])
+					if(!solo_team[0] && cur_player[0] == players[0])
 						cur_player[0] = players[1];
 					else
 						cur_player[0] = players[0];
 				} else {
-					if(cur_player[1] == players[2])
+					if(!solo_team[1] && cur_player[1] == players[2])
 						cur_player[1] = players[3];
 					else
 						cur_player[1] = players[2];

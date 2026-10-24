@@ -27,6 +27,8 @@ jobs:
           PY
       - name: Verify Aluber and Branded in White through production script reader
         run: build/server/server_archive_effects "$GITHUB_WORKSPACE"
+      - name: Play three-player and four-player tag turns through TCP
+        run: python3 Tests/NativeUnevenTagTests.py --native build/server
       - uses: actions/upload-artifact@v4
         with:
           name: ultra-linux-server-effects

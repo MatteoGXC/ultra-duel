@@ -3733,7 +3733,8 @@ int32_t field::process_turn(uint16_t step, uint8_t turn_player) {
 		infos.turn_player = turn_player;
 		pduel->write_buffer8(MSG_NEW_TURN);
 		pduel->write_buffer8(turn_player);
-		if((core.duel_options & DUEL_TAG_MODE) && infos.turn_id != 1)
+        if((core.duel_options & DUEL_TAG_MODE) && infos.turn_id != 1
+            && !(core.duel_options & (turn_player == 0 ? DUEL_TAG_SINGLE_0 : DUEL_TAG_SINGLE_1)))
 			tag_swap(turn_player);
 		if(is_player_affected_by_effect(infos.turn_player, EFFECT_SKIP_TURN)) {
 			core.units.begin()->step = 17;

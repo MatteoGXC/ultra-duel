@@ -415,6 +415,8 @@ inline bool check_playerid(int32_t playerid) {
 #define DUEL_REVEAL_DECK_SEQ	0x100
 #define DUEL_TCG_SEGOC           0x200
 #define DUEL_GENESYS_FIELD       0x400
+#define DUEL_TAG_SINGLE_0        0x800
+#define DUEL_TAG_SINGLE_1        0x1000
 
 //Activity
 #define ACTIVITY_SUMMON			1
