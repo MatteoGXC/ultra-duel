@@ -32,6 +32,12 @@ def main():
         if binary.suffix=='.dylib':run('install_name_tool','-id','@loader_path/'+binary.name,binary)
         for line in deps.splitlines()[1:]:
             dependency=line.strip().split(' (')[0]
+            if dependency.startswith('@rpath/'):
+                name=Path(dependency).name
+                if name==binary.name:continue
+                local=tools/name
+                if not local.exists():shutil.copy2(Path('/opt/homebrew/lib')/name,local)
+                run('install_name_tool','-change',dependency,'@loader_path/'+name,binary);queue.append(local);continue
             if not dependency.startswith(('/opt/homebrew/','/usr/local/')):continue
             name=Path(dependency).name
             if name==binary.name:continue
@@ -40,7 +46,7 @@ def main():
             run('install_name_tool','-change',dependency,'@loader_path/'+name,binary);queue.append(local)
     for binary in tools.iterdir():
         dependencies=subprocess.check_output(['otool','-L',str(binary)],text=True)
-        assert '/opt/homebrew/' not in dependencies and '/usr/local/' not in dependencies,dependencies
+        assert '/opt/homebrew/' not in dependencies and '/usr/local/' not in dependencies and '@rpath/' not in dependencies,dependencies
         run('codesign','--force','--sign','-',binary)
     run('codesign','--force','--deep','--sign','-',player)
     executable=app/'Contents/MacOS/Ultra Duel';executable.parent.mkdir()

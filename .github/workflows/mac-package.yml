@@ -119,4 +119,5 @@ jobs:
             ${{ runner.temp }}/platform-player.log
             ${{ runner.temp }}/mac-card-effects.json
             ${{ runner.temp }}/mac-ui*
+            ${{ runner.temp }}/ultra-runtime/installation.log
           retention-days: 7
