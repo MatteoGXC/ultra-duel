@@ -97,7 +97,7 @@ final class App: NSObject, NSApplicationDelegate, NSWindowDelegate {
         label=NSTextField(wrappingLabelWithString:"First launch installs the game’s artwork and duel fields. Interrupted downloads can be resumed.");label.frame=NSRect(x:28,y:100,width:480,height:62)
         progress=NSProgressIndicator(frame:NSRect(x:28,y:70,width:480,height:18));progress.style = .bar;progress.minValue=0;progress.maxValue=1
         button=NSButton(title:"Install and Play",target:self,action:#selector(start));button.frame=NSRect(x:330,y:20,width:180,height:36);button.bezelStyle = .rounded
-        [heading,label,progress,button].forEach{window.contentView!.addSubview($0)};window.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true)
+        let views: [NSView]=[heading,label,progress,button];views.forEach{window.contentView!.addSubview($0)};window.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true)
         do {
             let root=FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("Ultra Duel/Runtime")
             installer=try RuntimeInstaller(resources:Bundle.main.resourceURL!,runtime:root)

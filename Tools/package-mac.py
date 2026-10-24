@@ -23,16 +23,31 @@ def main():
     tools=resources/'Tools';tools.mkdir()
     prefix=Path(subprocess.check_output(['brew','--prefix','zstd'],text=True).strip())
     shutil.copy2(prefix/'bin/zstd',tools/'zstd');shutil.copy2(prefix/'lib/libzstd.1.dylib',tools/'libzstd.1.dylib')
-    deps=subprocess.check_output(['otool','-L',str(tools/'zstd')],text=True)
-    for line in deps.splitlines()[1:]:
-        dependency=line.strip().split(' (')[0]
-        if 'libzstd.' in dependency:run('install_name_tool','-change',dependency,'@loader_path/libzstd.1.dylib',tools/'zstd')
-    run('codesign','--force','--sign','-',tools/'libzstd.1.dylib');run('codesign','--force','--sign','-',tools/'zstd')
+    queue=[tools/'zstd',tools/'libzstd.1.dylib'];seen=set()
+    while queue:
+        binary=queue.pop()
+        if binary.name in seen:continue
+        seen.add(binary.name)
+        deps=subprocess.check_output(['otool','-L',str(binary)],text=True)
+        if binary.suffix=='.dylib':run('install_name_tool','-id','@loader_path/'+binary.name,binary)
+        for line in deps.splitlines()[1:]:
+            dependency=line.strip().split(' (')[0]
+            if not dependency.startswith(('/opt/homebrew/','/usr/local/')):continue
+            name=Path(dependency).name
+            if name==binary.name:continue
+            local=tools/name
+            if not local.exists():shutil.copy2(dependency,local)
+            run('install_name_tool','-change',dependency,'@loader_path/'+name,binary);queue.append(local)
+    for binary in tools.iterdir():
+        dependencies=subprocess.check_output(['otool','-L',str(binary)],text=True)
+        assert '/opt/homebrew/' not in dependencies and '/usr/local/' not in dependencies,dependencies
+        run('codesign','--force','--sign','-',binary)
     run('codesign','--force','--deep','--sign','-',player)
     executable=app/'Contents/MacOS/Ultra Duel';executable.parent.mkdir()
     run('xcrun','swiftc','-swift-version','5','-O','-target','arm64-apple-macos11.0','-framework','Cocoa','-framework','CryptoKit',ROOT/'Tools/MacBootstrap.swift','-o',executable)
     info=dict(CFBundleExecutable='Ultra Duel',CFBundleName='Ultra Duel',CFBundleDisplayName='Ultra Duel',CFBundleIdentifier='com.ultraduel.launcher',CFBundlePackageType='APPL',CFBundleShortVersionString='0.1.5',CFBundleVersion='15',LSMinimumSystemVersion='11.0',NSHighResolutionCapable=True)
     (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
+    if (ROOT/'LICENSE').exists():shutil.copy2(ROOT/'LICENSE',resources/'LICENSE.txt')
     run('codesign','--force','--deep','--sign','-',app)
     run('codesign','--verify','--deep','--strict','--verbose=2',app)
     (a.output/'Applications').symlink_to('/Applications')
