@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--runtime', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--player', type=Path, default=ROOT/'release/Mac-arm64/Ultra-Duel-Player.app')
+    parser.add_argument('--intel-textures', type=Path)
     args = parser.parse_args()
     player = args.player
     bundles = ROOT/'Platforms/StandaloneOSX/MasterDuel/Built-in'
@@ -40,6 +41,12 @@ def main():
             file = ROOT/'Picture/Art'/f"{row['id']}.jpg"
             if file.is_file():
                 target.write(file, 'Defaults/Picture/Art/'+file.name)
+        if args.intel_textures:
+            report=json.loads((args.intel_textures/'intel-texture-conversion.json').read_text(encoding='utf-8'))
+            assert report['textures']>1000 and report['bundles']>100
+            for file in (args.intel_textures/'StandaloneOSX').rglob('*'):
+                if file.is_file():target.write(file,'Defaults/'+file.relative_to(args.intel_textures).as_posix())
+            target.write(args.intel_textures/'intel-texture-conversion.json','Defaults/Data/intel-texture-conversion.json')
         target.writestr('runtime.json', json.dumps(json.loads(args.runtime.read_text()), indent=2))
     print('MAC_INPUT_READY', args.output, args.output.stat().st_size)
 
