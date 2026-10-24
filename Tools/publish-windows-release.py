@@ -39,7 +39,8 @@ def main():
             '- Friend rooms use the table layout, room actions and deck panel. Finished friend duels return to Ultra Duel instead of the legacy multiplayer page.\n'
             '- Retains the corrected supplied icons, transparent pass emblem, circular back buttons and portrait-colored profile frame from v0.1.6.\n'
             '- Genesys search hides Link and Pendulum cards.\n\n'
-            'Duos use two shared team fields; complete match testing remains pending. Four independent fields / 1v1v1v1 are not implemented. '
+            'Native 2v1 turns, discards and surrender, and four-player 2v2 turns passed Windows and Linux TCP tests. '
+            'Three-player friend starts require the updated live duel server. Three- and four-player free-for-all are not implemented. '
             'The Linux server effect-loading correction is verified separately; deployment depends on restoring VPS access. '
             'The Apple Silicon DMG is being installation-tested separately.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
