@@ -12,7 +12,7 @@ jobs:
         run: |
           test "$(uname -m)" = arm64
           brew list libevent >/dev/null || brew install libevent
-          cmake -S Server -B build/mac -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH="$(brew --prefix libevent)"
+          cmake -S Server -B build/mac -DCMAKE_BUILD_TYPE=Release -DULTRA_BUILD_EFFECT_TESTS=ON -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH="$(brew --prefix libevent)"
           cmake --build build/mac -j 3
           file build/mac/libocgcore.dylib build/mac/libygoserver.dylib
           otool -L build/mac/libygoserver.dylib
@@ -25,6 +25,19 @@ jobs:
           assert server.get_server_format_capabilities() & 3 == 3
           print('PASS Apple Silicon native TCG and Genesys capabilities')
           PY
+      - name: Fetch verified released card database
+        run: |
+          python3 - <<'PY'
+          import urllib.request,hashlib,zipfile
+          from pathlib import Path
+          p=Path('build/mac/released-update.zip')
+          urllib.request.urlretrieve('https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.6/Ultra-Duel-Update.zip',p)
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='e90c46c5df7d7afbaf41627f2c6367cc036e6e17a22225a976420d88383291cd'
+          with zipfile.ZipFile(p) as z:
+              target=Path('Data/locales/en-US/cards.cdb');target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(z.read(str(target)))
+          PY
+      - name: Verify production archive effect loading
+        run: build/mac/server_archive_effects "$GITHUB_WORKSPACE"
       - name: Initialize every non-token card on Apple Silicon
         run: ULTRA_NATIVE_DIR=build/mac python3 Tests/NativeCardScriptTests.py --all --output build/mac/card-effects.json
       - uses: actions/upload-artifact@v4
