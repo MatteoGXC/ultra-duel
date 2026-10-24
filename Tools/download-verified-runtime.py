@@ -26,7 +26,10 @@ def main():
                 time.sleep(2**attempt)
     count=(m['size']+chunk-1)//chunk
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-        paths=list(pool.map(fetch,range(count)))
+        paths=[]
+        for index,path in enumerate(pool.map(fetch,range(count))):
+            paths.append(path)
+            if index%32==0:print('RUNTIME_DOWNLOAD',round((index+1)/count*100),'%',flush=True)
     a.output.parent.mkdir(parents=True,exist_ok=True)
     with a.output.open('wb') as stream:
         for part in paths:
