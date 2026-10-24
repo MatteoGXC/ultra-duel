@@ -339,11 +339,6 @@ namespace MDPro3.UI.ServantUI
         void OpenMenu()
         {
             OpenModal("MENU","Ultra Duel  /  v"+UltraServices.Version,"menu");
-            SmallButton(modal,Config.GetBool("ExtendedArt",false)?"CARD ART: EXTENDED":"CARD ART: STANDARD",()=>{
-                Config.Set("ExtendedArt",Config.GetBool("ExtendedArt",false)?"0":"1");OpenMenu();
-                MessageManager.Cast("Card art preference saved. Reopen Ultra Duel to apply it.");
-            },.64f,.78f,.31f,.065f,19);
-
             SmallButton(modal,"SETTINGS",()=>{CloseModal();OnSetting();},.055f,.61f,.42f,.10f);
             SmallButton(modal,"WALLPAPER",OpenWallpaper,.525f,.61f,.42f,.10f);
             SmallButton(modal,"MATCH HISTORY",OpenHistory,.055f,.46f,.42f,.10f);

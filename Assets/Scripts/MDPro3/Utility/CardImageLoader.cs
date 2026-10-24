@@ -52,10 +52,8 @@ namespace MDPro3.Utility
 
         #region 初始化
 
-        public static bool ExtendedArtEnabled { get; private set; }
         public static void Initialize()
         {
-            ExtendedArtEnabled=Config.GetBool("ExtendedArt",false) || Array.Exists(Environment.GetCommandLineArgs(),a=>a=="--extended-art-check");
             maxLoads = GetOptimalConcurrency();
 
             artSemaphore = new SemaphoreSlim(maxLoads, maxLoads);
@@ -205,7 +203,7 @@ namespace MDPro3.Utility
             await lockObj.WaitAsync(token);
             try
             {
-                if (ExtendedArtEnabled || !CardRenderer.CardHasVideoArt(code) || forceTexture)
+                if (!CardRenderer.CardHasVideoArt(code) || forceTexture)
                 {
                     if (cachedCards.TryGetValue(code, out var entry) && entry.Texture == null && entry.LoadingTask == null)
                         cachedCards.TryRemove(code, out _);
@@ -533,21 +531,6 @@ namespace MDPro3.Utility
                     art = TextureManager.container.unknownArt.texture;
                 }
 
-                if(ExtendedArtEnabled)
-                {
-                    var target=RenderTexture.GetTemporary(704,1024,0,RenderTextureFormat.ARGB32);
-                    var previous=RenderTexture.active;
-                    try
-                    {
-                        float artAspect=(float)art.width/art.height;
-                        var scale=artAspect>DEFAULT_ASPECT?new Vector2(DEFAULT_ASPECT/artAspect,1):new Vector2(1,artAspect/DEFAULT_ASPECT);
-                        Graphics.Blit(art,target,scale,(Vector2.one-scale)*.5f);
-                        RenderTexture.active=target;
-                        var borderless=new Texture2D(704,1024,TextureFormat.RGB24,true);borderless.ReadPixels(new Rect(0,0,704,1024),0,0);borderless.Apply();borderless.name="ExtendedArt_"+code;
-                        ReleaseArt(code);return borderless;
-                    }
-                    finally{RenderTexture.active=previous;RenderTexture.ReleaseTemporary(target);}
-                }
                 Texture2D overFrame = await LoadOverFrameAsync(code, token).AttachExternalCancellation(token);
 
                 if (!Program.instance.cardRenderer.RenderCard(code, art, overFrame))

@@ -35,7 +35,7 @@ def main():
             'close the game, then run Update-Ultra-Duel.cmd. Only changed files download; decks and settings are preserved.\n\n'
             '## Included in v0.1.4\n\n'
             '- Original native glow and sparks on menu pages, colored to match the selected wallpaper; Deck-style page transitions, circular back buttons, adaptive home icons, aligned navigation and outlined gem wallet.\n'
-            '- Name-only collection search, one collection entry per named card, corrected drag-removal counters, and an optional borderless Extended card-art mode (restart to apply).\n'
+            '- Name-only collection search, one collection entry per named card, corrected drag-removal counters.\n'
             '- Corrected 2,278 archetype assignments to match the native card scripts, verified 598 English archetype names, and renamed Series to Archetype. This fixes Branded Opening and Titaniklad search filters.\n'
             '- Animated duel-score tally, sequential score rows, reward reveal and XP progress, with real Master Duel gem artwork.\n'
             '- Missions with Daily, Lifetime and Duel Pass categories, progress, claimable gem rewards and Receive All.\n'

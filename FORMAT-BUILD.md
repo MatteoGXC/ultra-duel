@@ -219,6 +219,3 @@ This corrects Kewl Tune Reco, Branded Opening's Despia filter and Titaniklad's
 Dogmatika filter. The audit records 2,278 corrected IDs. New unnamed subfamilies
 fall back to their named parent archetype. `Tests/NativeArchetypeTests.py` executes
 the reported activation and target filters through the actual native Lua API.
-An optional Extended card-art setting crops the existing artwork to borderless
-card proportions and takes effect on restart. Standard card frames remain the
-default. No artwork is synthesized by this option.
