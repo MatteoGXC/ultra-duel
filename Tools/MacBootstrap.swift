@@ -32,6 +32,17 @@ final class RuntimeInstaller {
         while let chunk=try stream.read(upToCount:4*1024*1024),!chunk.isEmpty { hash.update(data:chunk) }
         return hash.finalize().map{String(format:"%02x",$0)}.joined()
     }
+    func contentVersionHeader() throws -> String {
+        var request=URLRequest(url:URL(string:manifest.url)!);request.httpMethod="HEAD";request.timeoutInterval=30
+        let completed=DispatchSemaphore(value:0);var etag: String?;var failure: Error?
+        URLSession.shared.dataTask(with:request){_,response,error in
+            failure=error
+            if let http=response as? HTTPURLResponse,http.statusCode==200 {etag=http.value(forHTTPHeaderField:"ETag")}
+            completed.signal()
+        }.resume()
+        guard completed.wait(timeout:.now()+35) == .success, failure==nil,let result=etag else {throw InstallError.failed("The game content server did not respond. Retry to continue.")}
+        return result
+    }
     func copyDefaults() throws {
         let source=resources.appendingPathComponent("Defaults")
         guard let entries=files.enumerator(at:source,includingPropertiesForKeys:[.isDirectoryKey]) else { throw InstallError.failed("Bundled game data is missing.") }
@@ -62,7 +73,8 @@ final class RuntimeInstaller {
                     guard let self=self else{return};let bytes=((try? self.files.attributesOfItem(atPath:archive.path)[.size]) as? NSNumber)?.doubleValue ?? 0
                     self.report(String(format:"Downloading game content: %.2f / %.2f GB",bytes/1_073_741_824,Double(self.manifest.size)/1_073_741_824),min(1,bytes/Double(self.manifest.size)))
                 };timer.resume();defer{timer.cancel()}
-                try run(URL(fileURLWithPath:"/usr/bin/curl"),["--fail","--location","--retry","5","--retry-delay","2","--continue-at","-","--output",archive.path,manifest.url])
+                let etag=try contentVersionHeader()
+                try run(URL(fileURLWithPath:"/usr/bin/curl"),["--fail","--location","--retry","5","--retry-delay","2","--header","If-Match: "+etag,"--continue-at","-","--output",archive.path,manifest.url])
             }
             report("Verifying game content…",nil)
             guard ((try files.attributesOfItem(atPath:archive.path)[.size]) as? NSNumber)?.int64Value == manifest.size,try checksum(archive)==expected else {
