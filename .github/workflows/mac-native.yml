@@ -25,8 +25,12 @@ jobs:
           assert server.get_server_format_capabilities() & 3 == 3
           print('PASS Apple Silicon native TCG and Genesys capabilities')
           PY
+      - name: Initialize every non-token card on Apple Silicon
+        run: ULTRA_NATIVE_DIR=build/mac python3 Tests/NativeCardScriptTests.py --all --output build/mac/card-effects.json
       - uses: actions/upload-artifact@v4
         with:
           name: ultra-duel-native-arm64
-          path: build/mac/*.dylib
+          path: |
+            build/mac/*.dylib
+            build/mac/card-effects.json
           retention-days: 7

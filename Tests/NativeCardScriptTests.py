@@ -20,15 +20,16 @@ def main():
     parser.add_argument('--scripts',type=Path,default=ROOT/'Data/script.zip')
     parser.add_argument('--ids',type=Path)
     parser.add_argument('--output',type=Path)
+    parser.add_argument('--all',action='store_true',help='Include OCG and legacy non-token entries too.')
     args=parser.parse_args()
     db=sqlite3.connect(args.database)
     cards={r[0]:r for r in db.execute('select d.id,d.ot,d.alias,d.setcode,d.type,d.atk,d.def,d.level,d.race,d.attribute,t.name from datas d join texts t using(id)')}
     archive=zipfile.ZipFile(args.scripts)
     scripts={Path(n).name:archive.read(n) for n in archive.namelist() if n.endswith('.lua')}
     buffers={}
-    directory=ROOT/'Assets/Plugins/Windows'
-    handle=os.add_dll_directory(str(directory))
-    core=C.CDLL(str(directory/'ocgcore.dll'))
+    directory=Path(os.environ.get('ULTRA_NATIVE_DIR',ROOT/'Assets/Plugins/Windows')).resolve()
+    handle=os.add_dll_directory(str(directory)) if os.name=='nt' else None
+    core=C.CDLL(str(directory/('ocgcore.dll' if os.name=='nt' else 'libocgcore.dylib')),mode=C.RTLD_GLOBAL)
     ScriptReader=C.CFUNCTYPE(C.c_void_p,C.c_char_p,C.POINTER(C.c_int32))
     CardReader=C.CFUNCTYPE(C.c_uint32,C.c_uint32,C.POINTER(CardData))
     MessageHandler=C.CFUNCTYPE(C.c_uint32,C.c_void_p,C.c_uint32)
@@ -63,7 +64,7 @@ def main():
     core.create_duel.argtypes=[C.c_uint32];core.create_duel.restype=C.c_void_p
     core.end_duel.argtypes=[C.c_void_p]
     core.new_card.argtypes=[C.c_void_p,C.c_uint32,C.c_uint8,C.c_uint8,C.c_uint8,C.c_uint8,C.c_uint8]
-    ids=json.loads(args.ids.read_text()) if args.ids else [i for i,r in cards.items() if r[1]&2 and not r[4]&0x4000]
+    ids=json.loads(args.ids.read_text()) if args.ids else [i for i,r in cards.items() if (args.all or r[1]&2) and not r[4]&0x4000]
     for index,code in enumerate(ids):
         current[0]=code
         duel=core.create_duel(1)
