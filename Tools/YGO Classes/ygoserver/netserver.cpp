@@ -92,6 +92,9 @@ bool NetServer::StartServer(unsigned short port) {
 	std::memset(&sin, 0, sizeof sin);
 	server_port = port;
 	sin.sin_family = AF_INET;
+#ifdef __APPLE__
+	sin.sin_len = sizeof(sin);
+#endif
 #ifdef SERVER_PRO2_SUPPORT
 	sin.sin_addr.s_addr = htonl(remote_room ? INADDR_ANY : INADDR_LOOPBACK);
 #else

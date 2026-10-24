@@ -17,10 +17,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def server(native, runtime, port):
     os.chdir(runtime)
+    print('Starting native tag server', port, flush=True)
     handle = os.add_dll_directory(str(native)) if os.name=='nt' else None
     suffix = '.dylib' if sys.platform=='darwin' else '.so'
     ctypes.CDLL(str(native/('ocgcore.dll' if os.name=='nt' else 'libocgcore'+suffix)), mode=ctypes.RTLD_GLOBAL)
     library = ctypes.CDLL(str(native/('ygoserver.dll' if os.name=='nt' else 'libygoserver'+suffix)))
+    print('Native libraries loaded', flush=True)
     library.start_server.argtypes = [ctypes.c_char_p]
     library.start_server(f'{port} 0 1 2 7 T T 8000 5 1 0 0'.encode())
 
@@ -46,7 +48,7 @@ def play(native, count, solo_first):
         try:
             for index in range(count):
                 client = socket.socket()
-                for attempt in range(100):
+                for attempt in range(600):
                     try: client.connect(('127.0.0.1', port)); break
                     except OSError:
                         if proc.poll() is not None: raise AssertionError(proc.stdout.read().decode())
@@ -122,7 +124,7 @@ def play(native, count, solo_first):
             for client in clients: client.close()
             if proc.poll() is None: proc.terminate()
             output = proc.communicate(timeout=5)[0].decode(errors='replace')
-            if proc.returncode not in (0,-15): print(output[-3000:])
+            if output.strip(): print(output[-3000:])
 
 if __name__=='__main__':
     if len(sys.argv)>1 and sys.argv[1]=='--server':
