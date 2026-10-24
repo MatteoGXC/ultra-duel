@@ -51,7 +51,7 @@ def main():
     run('codesign','--force','--deep','--sign','-',player)
     executable=app/'Contents/MacOS/Ultra Duel';executable.parent.mkdir()
     run('xcrun','swiftc','-swift-version','5','-O','-target','arm64-apple-macos11.0','-framework','Cocoa','-framework','CryptoKit',ROOT/'Tools/MacBootstrap.swift','-o',executable)
-    info=dict(CFBundleExecutable='Ultra Duel',CFBundleName='Ultra Duel',CFBundleDisplayName='Ultra Duel',CFBundleIdentifier='com.ultraduel.launcher',CFBundlePackageType='APPL',CFBundleShortVersionString='0.1.5',CFBundleVersion='15',LSMinimumSystemVersion='11.0',NSHighResolutionCapable=True)
+    info=dict(CFBundleExecutable='Ultra Duel',CFBundleName='Ultra Duel',CFBundleDisplayName='Ultra Duel',CFBundleIdentifier='com.ultraduel.launcher',CFBundlePackageType='APPL',CFBundleShortVersionString=json.loads((resources/'runtime.json').read_text())['version'],CFBundleVersion=json.loads((resources/'runtime.json').read_text())['version'].replace('.',''),LSMinimumSystemVersion='11.0',NSHighResolutionCapable=True)
     (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
     if (ROOT/'LICENSE').exists():shutil.copy2(ROOT/'LICENSE',resources/'LICENSE.txt')
     run('codesign','--force','--deep','--sign','-',app)

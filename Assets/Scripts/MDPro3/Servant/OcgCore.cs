@@ -259,6 +259,11 @@ namespace MDPro3.Servant
 
         public override void OnExit()
         {
+            if(RoomServant.FromUltraHost)
+            {
+                MainMenuUI.ReturnToFriendRooms=true;
+                returnServant=Program.instance.menu;
+            }
             base.OnExit();
             CloseConnection();
             CurrentReplayGodView = false;

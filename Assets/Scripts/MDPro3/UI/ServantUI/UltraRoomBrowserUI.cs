@@ -14,7 +14,9 @@ namespace MDPro3.UI.ServantUI
         void BuildRoomBrowser()
         {
             OpenModal("ROOM MATCH","","rooms");WideModal();
-            var rooms=UltraServices.State?["rooms"] as JArray??new JArray();
+            var rooms=new JArray();
+            foreach(var room in UltraServices.State?["rooms"] as JArray??new JArray())
+                if(((string)room["mode"]??"1v1")==friendRoomMode)rooms.Add(room.DeepClone());
             HomeText(modal,"FRIEND ROOMS",25,Color.white,.045f,.76f,.55f,.06f);
             HomeText(modal,rooms.Count+" rooms available",18,Muted,.045f,.70f,.55f,.05f);
             var viewport=HomeRect("Room list",modal,.045f,.16f,.59f,.53f);var hit=viewport.gameObject.AddComponent<Image>();hit.color=Color.clear;hit.raycastTarget=true;viewport.gameObject.AddComponent<RectMask2D>();

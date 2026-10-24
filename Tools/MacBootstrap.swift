@@ -94,6 +94,8 @@ final class RuntimeInstaller {
     }
     func prepare(offline: URL?=nil) throws {
         try files.createDirectory(at:runtime,withIntermediateDirectories:true)
+        // The upstream art archive omits the six bundles built from our project.
+        if !files.fileExists(atPath:runtime.appendingPathComponent("StandaloneOSX/MasterDuel/Built-in/sprites").path) { try copyDefaults() }
         let marker=runtime.appendingPathComponent(".ultra-mac-content")
         let expected=manifest.sha256
         if (try? String(contentsOf:marker,encoding:.utf8)) != expected || !files.fileExists(atPath:runtime.appendingPathComponent("StandaloneOSX/MasterDuel/Built-in/sprites").path) {

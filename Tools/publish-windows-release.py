@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.6'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.7'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -33,19 +33,15 @@ def main():
             'New players: download **Ultra-Duel-Setup.exe**. The complete game downloads about 8.1 GB. '
             'Setup now downloads three parts concurrently, resumes interrupted parts, shows speed, and supports pausing.\n\n'
             'Existing players: use **Ultra-Duel-Updater.zip** beside your game executable. Only the cumulative update downloads; decks, settings and account data are preserved.\n\n'
-            '## Included in v0.1.6\n\n'
-            '- Fixed cropped mail, mission and friend icons using the supplied artwork.\n'
-            '- Removed the rectangular background from the pass emblem and corrected the circular back button crop.\n'
-            '- Profile header now has rounded corners and colors sampled from the selected portrait.\n'
-            '- Genesys card search hides Link and Pendulum cards.\n'
-            '- Retains the earlier Ultra Duel start screen and animated wallpaper.\n'
-            '- Supplied mail, mission, friend, pass and back-button artwork, animated buttons, updated login, circular profile portraits, portrait-colored accents and XP.\n'
-            '- Removed the opaque navigation panel covering the wallpaper.\n'
-            '- 48 verified extended-art identities imported from official Konami previews. These are low-resolution SAMPLE previews, not high-resolution retail scans; normal card text remains rendered by the game.\n'
-            '- Duos 2v2 friend rooms use the existing native tag-duel engine with two shared team fields. Four authenticated clients passed room, deck-ready and duel-start checks. Full match interaction testing remains pending.\n'
-            '- All 14,625 non-token card initializers passed the Windows native script audit. This does not certify every conditional card interaction.\n'
-            '- Includes the earlier Solo, archetype, deck-search, missions, reward-animation and free Duel Pass fixes.\n\n'
-            'Four independent fields / 1v1v1v1 are **not implemented** in this release. The Apple Silicon DMG is still being prepared.\n\n'
+            '## Included in v0.1.7\n\n'
+            '- Restored the normal card presentation and removed extended-art overrides.\n'
+            '- DUEL now opens a mode menu with Friend Duels, Duos 2v2, Solo and Other Servers.\n'
+            '- Friend rooms use the table layout, room actions and deck panel. Finished friend duels return to Ultra Duel instead of the legacy multiplayer page.\n'
+            '- Retains the corrected supplied icons, transparent pass emblem, circular back buttons and portrait-colored profile frame from v0.1.6.\n'
+            '- Genesys search hides Link and Pendulum cards.\n\n'
+            'Duos use two shared team fields; complete match testing remains pending. Four independent fields / 1v1v1v1 are not implemented. '
+            'The Linux server effect-loading correction is verified separately; deployment depends on restoring VPS access. '
+            'The Apple Silicon DMG is being installation-tested separately.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:

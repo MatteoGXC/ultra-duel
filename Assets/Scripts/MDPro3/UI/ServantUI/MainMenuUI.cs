@@ -34,12 +34,14 @@ namespace MDPro3.UI.ServantUI
         }
 
         private TextMeshProUGUI homeStatus;
+        public static bool ReturnToFriendRooms;
 
         public override void ShowEvent()
         {
             base.ShowEvent();
             RefreshHomeStatus();
             RefreshUltraHome();
+            if(ReturnToFriendRooms){ReturnToFriendRooms=false;OpenFriendDuels();}
         }
 
         private void RefreshHomeStatus()

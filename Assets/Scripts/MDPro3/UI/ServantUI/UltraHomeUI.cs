@@ -282,6 +282,15 @@ namespace MDPro3.UI.ServantUI
         void RemoveFriend(int id) {Run(async()=>{await UltraServices.Request("/friends/"+id,"DELETE");await UltraServices.Refresh();ShowFriends();});}
         void OpenDuel()
         {
+            OpenModal("DUEL","Choose how you want to play","duel-modes");WideModal();
+            SmallButton(modal,"FRIEND DUELS  >",()=>OpenFriendDuels("1v1"),.12f,.58f,.76f,.12f,30);
+            SmallButton(modal,"DUOS 2v2  >",()=>OpenFriendDuels("2v2"),.12f,.42f,.76f,.12f,30);
+            SmallButton(modal,"SOLO  >",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.12f,.26f,.36f,.10f,26);
+            SmallButton(modal,"OTHER SERVERS  >",()=>{CloseModal();OnOnline();},.52f,.26f,.36f,.10f,26);
+        }
+        public void OpenFriendDuels(string mode="1v1")
+        {
+            friendRoomMode=mode;
             if(string.IsNullOrEmpty(UltraServices.Token)){OpenLogin();return;}
             ShowRooms();Run(async()=>{await UltraServices.Refresh();if(modalPage=="rooms")ShowRooms();});
         }

@@ -83,7 +83,12 @@ namespace MDPro3.Servant
 
         public override void OnExit()
         {
-            if (FromSolo)
+            if (FromUltraHost)
+            {
+                MainMenuUI.ReturnToFriendRooms=true;
+                returnServant=Program.instance.menu;
+            }
+            else if (FromSolo)
                 returnServant = Program.instance.solo;
             else
             {
@@ -273,7 +278,7 @@ namespace MDPro3.Servant
             else if(FromHandTest)
                 Program.instance.ocgcore.returnServant = Program.instance.deckEditor;
             else
-                Program.instance.ocgcore.returnServant = Program.instance.online;
+                Program.instance.ocgcore.returnServant = FromUltraHost ? Program.instance.menu : Program.instance.online;
             if (SelfType == 7)
                 OcgCore.condition = OcgCore.Condition.Watch;
             else

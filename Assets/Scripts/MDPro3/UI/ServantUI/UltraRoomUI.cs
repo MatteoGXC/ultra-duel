@@ -6,13 +6,13 @@ using Newtonsoft.Json.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
 namespace MDPro3.UI.ServantUI
 {
     public partial class RoomServantUI
     {
         RectTransform friendRoom;
         TextMeshProUGUI tableLabel, membersLabel, deckLabel;
+        RectTransform roomPopup;
         Image[] tableAvatars;
         Button beginButton, readyButton;
         RectTransform R(string name,Transform parent,float x,float y,float w,float h)
@@ -31,7 +31,7 @@ namespace MDPro3.UI.ServantUI
             var r=R(s,p,x,y,w,h);var image=r.gameObject.AddComponent<UltraChrome>();image.color=new Color(.02f,.025f,.035f);image.rimColor=new Color(.65f,.68f,.71f);image.raycastTarget=true;
             var b=r.gameObject.AddComponent<Button>();b.targetGraphic=image;b.onClick.AddListener(action);
             var t=T(r,s,23,.04f,.1f,.92f,.8f);t.alignment=TextAlignmentOptions.Center;t.color=new Color(.78f,1,0);
-            var colors=b.colors;colors.highlightedColor=colors.selectedColor=new Color(.7f,1,.15f);b.colors=colors;return b;
+            var colors=b.colors;colors.highlightedColor=colors.selectedColor=new Color(.7f,1,.15f);b.colors=colors;r.gameObject.AddComponent<UltraButtonMotion>();return b;
         }
         void RefreshFriendRoom()
         {
@@ -41,25 +41,39 @@ namespace MDPro3.UI.ServantUI
             if(friendRoom==null)
             {
                 friendRoom=R("Ultra Friend Room",Root,0,0,1,1);P(friendRoom,Color.clear).raycastTarget=true;
-                T(friendRoom,"ROOM MATCH",33,.09f,.90f,.35f,.065f);
-                P(R("Header rule",friendRoom,.02f,.875f,.96f,.002f),new Color(.5f,.55f,.6f));
-                B(friendRoom,"CHAT",()=>Program.instance.ui_.chatPanel.Switch(),.08f,.075f,.22f,.07f);
-                membersLabel=T(friendRoom,"",22,.51f,.90f,.44f,.065f);
-                var table=R("Table 1",friendRoom,.08f,.49f,.56f,.32f);P(table,new Color(.18f,.20f,.27f));
-                P(R("Table header",table,0,.85f,1,.15f),new Color(.65f,.68f,.73f));
-                T(table,"TABLE 1",19,.025f,.85f,.8f,.15f).color=Color.black;
+                friendRoom.gameObject.AddComponent<UltraPageTransition>();
+                var back=R("Back",friendRoom,.012f,.905f,.042f,.065f);
+                var backArt=back.gameObject.AddComponent<UltraCircleBack>();
+                var backButton=back.gameObject.AddComponent<Button>();backButton.targetGraphic=backArt;backButton.onClick.AddListener(()=>Program.instance.room.OnExit());back.gameObject.AddComponent<UltraButtonMotion>();
+                T(friendRoom,"Room Match",29,.065f,.905f,.35f,.065f);
+                P(R("Header rule",friendRoom,.015f,.885f,.97f,.002f),new Color(.5f,.55f,.6f));
+                membersLabel=T(friendRoom,"",19,.48f,.905f,.49f,.06f);
+                var table=R("Table 1",friendRoom,.11f,.56f,.50f,.29f);P(table,new Color(.28f,.28f,.32f,.75f));
+                P(R("Table header",table,0,.84f,1,.16f),new Color(.72f,.72f,.75f));
+                T(table,"Table 1",21,.025f,.84f,.8f,.16f).color=Color.black;
                 tableAvatars=new Image[required];
-                for(int i=0;i<required;i++)tableAvatars[i]=P(R("Player "+i,table,required==4?.03f+i*.25f:.04f+i*.72f,.36f,required==4?.17f:.20f,.40f),Color.white);
-                tableLabel=T(table,"",22,.04f,.04f,.92f,.25f);
-                beginButton=B(table,"BEGIN DUEL",OnStart,.33f,.20f,.34f,.19f);
-                readyButton=B(friendRoom,"READY",OnReady,.08f,.34f,.26f,.095f);
-                B(friendRoom,"CHOOSE DECK",OnSelectDeck,.38f,.34f,.26f,.095f);
-                B(friendRoom,"INVITE FRIENDS",InviteFromRoom,.70f,.67f,.25f,.085f);
-                B(friendRoom,"LEAVE ROOM",()=>Program.instance.room.OnExit(),.70f,.55f,.25f,.085f);
-                var deckPanel=R("Deck preview",friendRoom,.70f,.17f,.25f,.29f);P(deckPanel,new Color(.08f,.10f,.18f));
-                T(deckPanel,"SELECTED DECK",18,.06f,.76f,.88f,.16f);
-                deckLabel=T(deckPanel,"",27,.06f,.20f,.88f,.45f);
-                T(friendRoom,required==4?"Duos / Seats 1–2 versus seats 3–4 / All players must be ready":"Private friend room / Both players must be ready",20,.08f,.20f,.56f,.07f);
+                for(int i=0;i<required;i++)
+                {
+                    float x=required==4?.035f+i*.25f:.10f+i*.69f;
+                    var seat=R("Player "+i,table,x,.36f,required==4?.15f:.13f,.38f);
+                    seat.gameObject.AddComponent<AspectRatioFitter>().aspectMode=AspectRatioFitter.AspectMode.HeightControlsWidth;
+                    tableAvatars[i]=P(seat,new Color(.8f,.8f,.85f));
+                }
+                tableLabel=T(table,"",19,.025f,.05f,.95f,.21f);tableLabel.alignment=TextAlignmentOptions.Center;
+                readyButton=required==4?B(friendRoom,"ENTRY",OnReady,.11f,.43f,.23f,.075f):B(table,"ENTRY",OnReady,.31f,.39f,.38f,.27f);
+                beginButton=B(friendRoom,"BEGIN DUEL",OnStart,required==4?.38f:.23f,.43f,required==4?.23f:.26f,.075f);
+                B(friendRoom,"Room Details  >",()=>ShowRoomInfo(false),.65f,.775f,.25f,.065f);
+                B(friendRoom,"Room Members  >",()=>ShowRoomInfo(true),.65f,.69f,.25f,.065f);
+                B(friendRoom,"Replays  >",()=>{Program.instance.room.OnExit();Program.instance.ShiftToServant(Program.instance.replay);},.65f,.605f,.25f,.065f);
+                B(friendRoom,"Invite Friends  >",InviteFromRoom,.65f,.52f,.25f,.065f);
+                var leave=B(friendRoom,RoomServant.IsHost?"Disband  >":"Leave Room  >",()=>Program.instance.room.OnExit(),.65f,.435f,.25f,.065f);
+                leave.GetComponentInChildren<TextMeshProUGUI>().color=new Color(.95f,.22f,.20f);
+                var deckPanel=R("Deck preview",friendRoom,.65f,.145f,.25f,.23f);P(deckPanel,new Color(.23f,.22f,.28f,.78f));
+                var deckHit=deckPanel.gameObject.AddComponent<Button>();deckPanel.GetComponent<Image>().raycastTarget=true;deckHit.targetGraphic=deckPanel.GetComponent<Image>();deckHit.onClick.AddListener(OnSelectDeck);deckPanel.gameObject.AddComponent<UltraButtonMotion>();
+                var deckCase=P(R("Deck case",deckPanel,.36f,.31f,.28f,.60f),Color.white);deckCase.preserveAspect=true;LoadFriendDeckCase(deckCase).Forget();
+                deckLabel=T(deckPanel,"",21,.04f,.025f,.92f,.22f);deckLabel.alignment=TextAlignmentOptions.Center;
+                T(friendRoom,required==4?"DUOS 2v2 / Seats 1–2 vs 3–4":"Choose ENTRY to ready your deck",20,.11f,.31f,.50f,.055f).alignment=TextAlignmentOptions.Center;
+                B(friendRoom,"CHAT",()=>Program.instance.ui_.chatPanel.Switch(),.11f,.145f,.20f,.065f);
             }
             foreach(Transform child in Root)if(child!=friendRoom)child.gameObject.SetActive(false);
             friendRoom.gameObject.SetActive(true);friendRoom.SetAsLastSibling();
@@ -70,13 +84,26 @@ namespace MDPro3.UI.ServantUI
                 else {names+="Waiting for player";allReady=false;}
                 allReady&=p!=null && p.ready;
                 if(i<required-1)names+=required==4?(i==1?"   VS   ":" / "):"                 VS                 ";
-                if(i<roomPlayers.Count){tableAvatars[i].sprite=roomPlayers[i].GetAvatar().sprite;tableAvatars[i].preserveAspect=true;}
+                if(i<roomPlayers.Count){tableAvatars[i].sprite=roomPlayers[i].GetAvatar().sprite;tableAvatars[i].preserveAspect=true;tableAvatars[i].color=p==null?new Color(.28f,.28f,.32f):Color.white;}
             }
             tableLabel.text=names;membersLabel.text=DuelFormat.DisplayName+" / "+(required==4?"DUOS / ":"")+count+" / "+required+" Members";
             deckLabel.text=Config.GetConfigDeckName();
             beginButton.interactable=RoomServant.IsHost && count==required && allReady;
             readyButton.interactable=RoomServant.SelfType<required;
-            readyButton.GetComponentInChildren<TextMeshProUGUI>().text=RoomServant.SelfType<required && RoomServant.players[RoomServant.SelfType]?.ready==true?"CANCEL READY":"READY";
+            readyButton.GetComponentInChildren<TextMeshProUGUI>().text=RoomServant.SelfType<required && RoomServant.players[RoomServant.SelfType]?.ready==true?"CANCEL":"ENTRY";
+        }
+        void ShowRoomInfo(bool members)
+        {
+            if(roomPopup!=null)Destroy(roomPopup.gameObject);
+            roomPopup=R("Room information",friendRoom,.14f,.20f,.44f,.31f);P(roomPopup,new Color(.04f,.045f,.065f,.98f)).raycastTarget=true;
+            string text=members?tableLabel.text:DuelFormat.DisplayName+"\n"+(RoomServant.Mode==2?"Duos 2v2":"Friend duel 1v1")+" / "+RoomServant.StartLp+" LP";
+            T(roomPopup,text,22,.04f,.23f,.92f,.69f);
+            B(roomPopup,"CLOSE",()=>{Destroy(roomPopup.gameObject);roomPopup=null;},.30f,.035f,.40f,.17f);
+        }
+        async UniTask LoadFriendDeckCase(Image image)
+        {
+            try{var deck=new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK+Config.GetConfigDeckName()+Program.EXPANSION_YDK);var icon=await Program.items.TryLoadItemIconAsync(deck.Case.ToString(),Items.ItemType.Case);if(image!=null)image.sprite=icon;}
+            catch(Exception e){Debug.LogWarning(e.Message);}
         }
         async void InviteFromRoom()
         {

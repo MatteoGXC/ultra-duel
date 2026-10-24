@@ -54,9 +54,6 @@ namespace MDPro3.Utility
 
         public static void Initialize()
         {
-            if(Directory.Exists("Picture/ExtendedArt"))
-                foreach(var file in Directory.GetFiles("Picture/ExtendedArt","*.png"))
-                    if(int.TryParse(Path.GetFileNameWithoutExtension(file),out int id))extendedArts.Add(id);
             maxLoads = GetOptimalConcurrency();
 
             artSemaphore = new SemaphoreSlim(maxLoads, maxLoads);
@@ -206,7 +203,7 @@ namespace MDPro3.Utility
             await lockObj.WaitAsync(token);
             try
             {
-                if (ExtendedArtPath(code)!=null || !CardRenderer.CardHasVideoArt(code) || forceTexture)
+                if (!CardRenderer.CardHasVideoArt(code) || forceTexture)
                 {
                     if (cachedCards.TryGetValue(code, out var entry) && entry.Texture == null && entry.LoadingTask == null)
                         cachedCards.TryRemove(code, out _);
@@ -472,7 +469,7 @@ namespace MDPro3.Utility
             {
                 if (!CardHasOverFrame(code))
                     return null;
-                var path = Tools.GetPlatformFilePath(ExtendedArtPath(code) ?? Program.PATH_OVER_FRAME + code + ".png");
+                var path = Tools.GetPlatformFilePath(Program.PATH_OVER_FRAME + code + ".png");
                 path=new Uri(Path.GetFullPath(path)).AbsoluteUri;
                 using var request = UnityWebRequestTexture.GetTexture(path);
                 try
@@ -835,14 +832,6 @@ namespace MDPro3.Utility
 
         #region Over Frame Cache
 
-        static readonly HashSet<int> extendedArts=new();
-        static string ExtendedArtPath(int code)
-        {
-            if(extendedArts.Contains(code))return "Picture/ExtendedArt/"+code+".png";
-            var card=CardsManager.Get(code);if(card!=null && extendedArts.Contains(card.Alias))return "Picture/ExtendedArt/"+card.Alias+".png";
-            return null;
-        }
-
         private static readonly List<int> overFrameFileList = new();
         private static bool overFrameFileListInitialized;
         private static async UniTask InitializeOverFrameFileListAsync()
@@ -865,7 +854,7 @@ namespace MDPro3.Utility
 
         public static bool CardHasOverFrame(int code)
         {
-            return overFrameFileList.Contains(code) || ExtendedArtPath(code)!=null;
+            return overFrameFileList.Contains(code);
         }
 
         public static Texture2D GetOverFrame(int code)

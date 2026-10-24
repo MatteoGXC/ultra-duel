@@ -234,6 +234,19 @@ namespace MDPro3
                 yield return new WaitForSecondsRealtime(3);
                 yield return Capture("duel-results-complete");Destroy(results);
             }
+            if(commandLine.Contains("--friend-room-layout"))
+            {
+                RoomServant.FromUltraHost=true;RoomServant.FromSolo=false;RoomServant.FromHandTest=false;
+                RoomServant.Mode=0;RoomServant.SelfType=0;RoomServant.IsHost=true;
+                for(int i=0;i<4;i++)RoomServant.players[i]=i==0?new RoomServant.Player{name="Duelist",ready=false}:null;
+                Program.instance.ShiftToServant(Program.instance.room);
+                yield return Capture("friend-room");
+                RoomServant.Mode=2;
+                Program.instance.room.GetUI<RoomServantUI>().Realize();
+                yield return Capture("friend-room-duos");
+                RoomServant.FromUltraHost=false;
+                Program.instance.ShiftToServant(Program.instance.menu);
+            }
             int remoteIndex = Array.IndexOf(commandLine, "--ultra-remote-room");
             if (remoteIndex >= 0)
             {
