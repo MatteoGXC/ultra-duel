@@ -41,6 +41,7 @@ namespace MDPro3
         public static bool Owns(Product item) => Profile==null ? UltraProgress.Data.ownedCosmetics.Contains(item.key) : (Profile["owned"] as JArray)?.Any(x=>(string)x==item.key)==true;
         public static bool CanEquip(int id)
         {
+            if((int?)Profile?["unlock_all"]==1)return true;
             if (id==0 || id%10000==1) return true;
             // Wallpaper and identity artwork stay freely selectable.
             if (id>=1130000 || (id>=1010000 && id<1070000)) return true;

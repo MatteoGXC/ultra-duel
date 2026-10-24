@@ -14,7 +14,7 @@ public static class MacFormatBuild
     {
         string target=Environment.GetEnvironmentVariable("ULTRA_MAC_OUTPUT")??Path.Combine(Directory.GetCurrentDirectory(),"release","Mac-arm64","Ultra-Duel-Player.app");
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone,BuildTarget.StandaloneOSX);
-        PlayerSettings.productName="Ultra Duel";PlayerSettings.bundleVersion="0.1.7";
+        PlayerSettings.productName="Ultra Duel";PlayerSettings.bundleVersion="0.1.8";
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone,ScriptingImplementation.Mono2x);
         PlayerSettings.SetArchitecture(NamedBuildTarget.Standalone,1);
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneOSX,false);

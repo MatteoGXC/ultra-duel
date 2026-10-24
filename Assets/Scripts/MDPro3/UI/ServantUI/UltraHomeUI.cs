@@ -34,6 +34,7 @@ namespace MDPro3.UI.ServantUI
         RectTransform ultraHome, overlay, modal;
         TextMeshProUGUI profileLabel, gemLabel, passLabel, updateLabel, friendLabel, modalStatus;
         Image profileAccent;
+        Button ownerAdminButton;
         readonly List<GameObject> hiddenHome = new List<GameObject>();
         bool actionBusy;
         string modalPage;
@@ -99,6 +100,8 @@ namespace MDPro3.UI.ServantUI
             friendLabel=HomeText(ultraHome,"",17,Muted,0,0,0,0);
             updateLabel=HomeText(ultraHome,"",16,Muted,0,0,0,0);
             HomeText(ultraHome,"v"+UltraServices.Version,15,Muted,.045f,.015f,.10f,.025f);
+            ownerAdminButton=SmallButton(ultraHome,"ADMIN",OpenAdmin,.16f,.012f,.11f,.038f,16);
+            ownerAdminButton.gameObject.SetActive(false);
             friendLabel.gameObject.SetActive(false);updateLabel.gameObject.SetActive(false);
             UltraServices.Initialize();
             UltraServices.Changed += RefreshUltraHome;
@@ -149,6 +152,7 @@ namespace MDPro3.UI.ServantUI
             homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
             updateLabel.text="UPDATES  /  "+UltraServices.UpdateStatus+"\n<size=80%>New pass & shop · Friends & profiles · Solo fixes</size>";
             var state=UltraServices.State;
+            if(ownerAdminButton!=null)ownerAdminButton.gameObject.SetActive(UltraAdminAccess.IsOwner);
             friendLabel.text=state==null?"FRIENDS  /  Sign in to connect and host duels":
                 "FRIENDS  /  "+(state["friends"] as JArray)?.Count+" added   ·   "+(state["requests"] as JArray)?.Count+" requests";
         }

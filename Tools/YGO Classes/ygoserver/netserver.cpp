@@ -16,6 +16,36 @@ DuelMode* NetServer::duel_mode = 0;
 unsigned char NetServer::net_server_write[SIZE_NETWORK_BUFFER];
 size_t NetServer::last_sent = 0;
 
+int NetServer::AdminAction(const std::wstring& name, int operation, int target, int value) {
+    if(!duel_mode || !duel_mode->pduel) return 1;
+    DuelPlayer* actor=nullptr;
+    for(auto& entry : users) {
+        auto& p=entry.second;
+        wchar_t player_name[20]{}; BufferIO::CopyCharArray(p.name,player_name);
+        if(p.game == duel_mode && p.type < (duel_mode->host_info.mode == MODE_TAG ? 4 : 2)
+            && name == player_name) {
+            if(actor) return 4; // Ambiguous names must never select another seat.
+            actor=&p;
+        }
+    }
+    if(!actor) return 4;
+    if(operation != 1 && actor->state != CTOS_RESPONSE && actor->state != CTOS_TIME_CONFIRM) return 2;
+    int side=duel_mode->host_info.mode == MODE_TAG ? actor->type/2 : actor->type;
+    int result=ocg_admin_command(duel_mode->pduel,side,operation,target ? 1-side : side,value);
+    if(result) return result;
+    if(operation == 1) {
+        unsigned char buffer[8]{}; int size=get_message(duel_mode->pduel,buffer);
+        int stop=duel_mode->Analyze(buffer,size);
+        // The ordinary engine WIN path calls EndDuel from Analyze; Process
+        // completes its normal end-of-match routing without touching the core.
+        if(stop==2) {
+            for(auto& entry : users) SendPacketToPlayer(&entry.second,STOC_DUEL_END);
+            StopServer();
+        }
+    } else duel_mode->Process();
+    return 0;
+}
+
 #ifdef YGOPRO_SERVER_MODE
 extern unsigned short replay_mode;
 extern HostInfo game_info;

@@ -12,6 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT.parent/'release-work/mac-verified-017'
 API = 'https://api.github.com/repos/MatteoGXC/ultra-duel'
 
+def file_sha(path):
+    digest=hashlib.sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda:stream.read(4*1024*1024),b''):digest.update(block)
+    return digest.hexdigest()
+
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--publish',action='store_true');args=parser.parse_args()
@@ -24,7 +30,7 @@ def main():
     audit=json.loads(next(evidence.rglob('mac-card-effects.json')).read_text())
     assert audit['checked']>=14000 and not audit['errors']
     dmg=next((OUTPUT/'verified-ultra-duel-apple-silicon-dmg').rglob('Ultra-Duel-Apple-Silicon.dmg'))
-    sha=hashlib.file_digest(dmg.open('rb'),'sha256').hexdigest()
+    sha=file_sha(dmg)
     state=json.loads((ROOT.parent/'release-work/mac-verification/private-input.json').read_text())
     runtime=json.loads((ROOT.parent/'release-work/mac-verification/versioned-runtime-017.json').read_text())
     result=subprocess.run(['git','credential','fill'],input='protocol=https\nhost=github.com\n\n',text=True,capture_output=True,check=True)
@@ -46,7 +52,7 @@ def main():
     print('READY',dmg,dmg.stat().st_size,sha,flush=True)
     if not args.publish:return
     def upload(path):
-        digest='sha256:'+hashlib.file_digest(path.open('rb'),'sha256').hexdigest()
+        digest='sha256:'+file_sha(path)
         prior=assets.get(path.name)
         if prior:
             assert prior.get('digest')==digest, 'Draft asset differs: '+path.name

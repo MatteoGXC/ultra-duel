@@ -284,7 +284,7 @@ namespace MDPro3.UI.ServantUI
         }
         void OpenAdmin()
         {
-            if((bool?)UltraServices.State?["admin"]!=true){MessageManager.Cast("Administrator account required.");return;}
+            if(!UltraAdminAccess.IsOwner){MessageManager.Cast("Owner account required.");return;}
             Run(async()=>{
                 var players=await UltraServices.Request("/admin/players");
                 OpenModal("ADMINISTRATION","Registered players / Account wallet grants are recorded on the VPS","admin");WideModal();
@@ -293,9 +293,20 @@ namespace MDPro3.UI.ServantUI
                 {
                     int id=(int)player["id"];
                     var row=Row(content,index++,(string)player["name"],(string)player["activity"]+" / "+(int)player["gems"]+" gems");
-                    SmallButton(row,"GRANT",()=>GrantPlayer(id,(string)player["name"]),.75f,.2f,.22f,.60f,18);
+                    SmallButton(row,"GEMS",()=>GrantPlayer(id,(string)player["name"]),.62f,.2f,.15f,.60f,17);
+                    SmallButton(row,"UNLOCK ALL",()=>UnlockPlayer(id,(string)player["name"]),.79f,.2f,.19f,.60f,16);
                 }
                 SmallButton(modal,"REFRESH",OpenAdmin,.045f,.025f,.23f,.07f,18);
+                SmallButton(modal,"UNLOCK MY ACCOUNT",()=>UnlockPlayer((int)UltraServices.State["id"],UltraServices.PlayerName),.31f,.025f,.40f,.07f,18);
+            });
+        }
+        void UnlockPlayer(int id,string name)
+        {
+            Run(async()=>{
+                if(!UltraAdminAccess.IsOwner)throw new Exception("Owner account required.");
+                await UltraServices.Request("/admin/unlock-all","POST",new{id});
+                await UltraServices.Refresh();
+                if(modalStatus!=null)modalStatus.text="Unlocked all cosmetics and Duel Pass for "+name+".";
             });
         }
         void GrantPlayer(int id,string name)

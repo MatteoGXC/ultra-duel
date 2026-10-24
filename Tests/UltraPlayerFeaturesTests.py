@@ -6,6 +6,9 @@ import sys
 import tempfile
 import time
 import unittest
+import hashlib
+from types import SimpleNamespace
+from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'Server'))
 import service
@@ -36,6 +39,39 @@ class PlayerFeatures(unittest.TestCase):
             with self.assertRaises(service.Problem):self.call('/admin/grant',{'id':2,'amount':amount})
     def test_unknown_recipient(self):
         with self.assertRaises(service.Problem):self.call('/admin/grant',{'id':999,'amount':1})
+    def test_unlock_all_is_owner_only_account_scoped_and_idempotent(self):
+        for uid in (2,3):
+            with self.assertRaises(service.Problem):self.call('/admin/unlock-all',{'id':2},uid)
+        for _ in range(2):self.call('/admin/unlock-all',{'id':2})
+        unlocked=player_features.profile(self.db,2)
+        catalog=json.loads(Path(player_features.__file__).with_name('shop-catalog.json').read_text())
+        self.assertTrue({i['key'] for i in catalog}<set(unlocked['owned']))
+        self.assertEqual((unlocked['unlock_all'],unlocked['xp'],unlocked['gems']),(1,4000,0))
+        self.assertEqual(player_features.profile(self.db,1)['unlock_all'],0)
+        self.assertEqual(player_features.profile(self.db,3)['unlock_all'],0)
+        with self.assertRaises(service.Problem):self.call('/admin/unlock-all',{'id':999})
+    def test_only_primary_admin_gets_owner_tools(self):
+        self.state.joinpath('admins.json').write_text('["owner","friend"]')
+        self.assertTrue(player_features.is_admin(self.state,'friend'))
+        self.assertFalse(player_features.is_owner(self.state,'friend'))
+        with self.assertRaises(service.Problem):self.call('/admin/unlock-all',{'id':2},2)
+    def test_duel_actions_require_owner_and_membership(self):
+        self.db.execute('create table sessions(token text,user integer,expires integer)')
+        for uid in (1,2):self.db.execute('insert into sessions values(?,?,?)',(hashlib.sha256(str(uid).encode()).hexdigest(),uid,int(time.time())+1000))
+        room={'members':{2}}
+        def call(uid,body):
+            request=SimpleNamespace(headers={'Authorization':'Bearer '+str(uid)})
+            return service.Handler.route(request,self.db,'POST','/admin/duel',body,int(time.time()))
+        body=dict(room='duel',action='set-lp',target=0,value=12345)
+        with patch.object(service,'STATE',self.state),patch.object(service,'ROOMS',{'duel':room}),patch.object(service,'send_duel_command',return_value=0) as command:
+            with self.assertRaises(service.Problem) as denied:call(2,body)
+            self.assertEqual(denied.exception.status,403)
+            with self.assertRaises(service.Problem):call(1,body)
+            command.assert_not_called()
+            room['members'].add(1)
+            self.assertTrue(call(1,body)['ok'])
+            command.assert_called_once_with(room,'owner',2,0,12345)
+            self.assertEqual(self.db.execute('select actor,action from admin_actions').fetchone()[:],(1,'set-lp'))
     def test_profile_avatar_is_account_scoped(self):
         p=self.call('/profile/avatar',{'card':16509007})
         self.assertEqual(p['avatar'],16509007)

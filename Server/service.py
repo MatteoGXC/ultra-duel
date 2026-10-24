@@ -79,13 +79,14 @@ def clean_rooms():
         if room['process'].poll() is not None or room['expires']<now:
             if room['process'].poll() is None: room['process'].terminate()
             room['log'].close()
+            if room['process'].stdin:room['process'].stdin.close()
             del ROOMS[rid]
 
 def public_room(room):
     return {key:room[key] for key in ('id','host','hostId','format','cap','port','expires','mode','capacity')}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'UltraDuel/0.1.5'
+    server_version = 'UltraDuel/0.1.8'
     def log_message(self, *_): pass # Passwords, tokens and private room secrets never enter access logs.
     def reply(self, data, status=200):
         body=json.dumps(data,separators=(',',':')).encode()
@@ -121,7 +122,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.5'}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.8','ownerDuelControls':True}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')
@@ -146,6 +147,23 @@ class Handler(BaseHTTPRequestHandler):
         uid=user['id']; db.execute('update users set seen=? where id=?',(now,uid))
         feature = player_features.route(self,db,method,path,body,now,user,(STATE,Problem,are_friends,ROOMS,LOCK))
         if feature is not None: return feature
+        if path=='/admin/duel' and method=='POST':
+            if not player_features.is_owner(STATE,user['name']):raise Problem('Owner permission required.',403)
+            actions={'win':1,'set-lp':2,'give-card':3,'clear-hand':4}
+            action=str(body.get('action','')); target=int(body.get('target',0));value=int(body.get('value',0))
+            if action not in actions or target not in (0,1):raise Problem('Invalid duel action.')
+            if action=='set-lp' and not 1<=value<=99999999:raise Problem('Enter life points from 1 to 99,999,999.')
+            if action=='give-card' and not 1<=value<=999999999:raise Problem('Invalid card ID.')
+            if action=='clear-hand':target=1
+            rid=str(body.get('room',''))
+            with LOCK:
+                room=ROOMS.get(rid)
+                if not room or uid not in room.get('members',set()):raise Problem('Join your current duel before using admin controls.',403)
+                result=send_duel_command(room,user['name'],actions[action],1 if action=='clear-hand' else target,value)
+            messages={1:'No active duel.',2:'Use this action during your own Main Phase, after effects finish resolving.',3:'Invalid value or card, or your hand is full.',4:'Your player is not seated in this duel.',5:'The duel did not answer. Check its state before retrying.'}
+            if result:raise Problem(messages.get(result,'Duel action failed.'),409)
+            db.execute('insert into admin_actions(actor,room,action,details,created) values(?,?,?,?,?)',(uid,rid,action,json.dumps(dict(target=target,value=value)),now))
+            return {'ok':True}
         if path=='/logout' and method=='POST':
             db.execute('delete from sessions where token=?',(hashlib.sha256(token.encode()).hexdigest(),))
             return {'ok':True}
@@ -160,7 +178,7 @@ class Handler(BaseHTTPRequestHandler):
             with LOCK:
                 clean_rooms()
                 rooms=[public_room(r) for r in ROOMS.values() if r['hostId']==uid or are_friends(db,uid,r['hostId'])]
-            return {'id':uid,'name':user['name'],'friends':friends,'requests':requests,'sent':sent,'rooms':rooms,'admin':player_features.is_admin(STATE,user['name']),'profile':player_features.profile(db,uid),'invites':[dict(r) for r in db.execute('select i.room,u.name,i.sender from invites i join users u on u.id=i.sender where i.recipient=? and i.expires>?',(uid,now))]}
+            return {'id':uid,'name':user['name'],'friends':friends,'requests':requests,'sent':sent,'rooms':rooms,'admin':player_features.is_admin(STATE,user['name']),'owner':player_features.is_owner(STATE,user['name']),'profile':player_features.profile(db,uid),'invites':[dict(r) for r in db.execute('select i.room,u.name,i.sender from invites i join users u on u.id=i.sender where i.recipient=? and i.expires>?',(uid,now))]}
         if path=='/friends/request' and method=='POST':
             target=db.execute('select id from users where name=?',(str(body.get('name','')).strip(),)).fetchone()
             if not target: raise Problem('No player has that username.',404)
@@ -186,9 +204,10 @@ class Handler(BaseHTTPRequestHandler):
                 port=next((p for p in range(ROOM_FIRST,ROOM_FIRST+ROOM_COUNT) if p not in used),None)
                 if port is None: raise Problem('All duel rooms are busy. Please try again later.',503)
                 rid=secrets.token_hex(8); secret=secrets.token_hex(8)
-                env=dict(os.environ,ULTRA_ROOM_SECRET=secret)
+                control=STATE/('control-'+rid);control.mkdir(mode=0o700)
+                env=dict(os.environ,ULTRA_ROOM_SECRET=secret,ULTRA_ADMIN_RESULTS=str(control))
                 log=(STATE/f'room-{rid}.log').open('ab')
-                proc=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--room',str(port),mode,str(cap),room_mode],env=env,stdout=log,stderr=log)
+                proc=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--room',str(port),mode,str(cap),room_mode],env=env,stdin=subprocess.PIPE,text=True,stdout=log,stderr=log)
                 ready=False
                 for _ in range(40):
                     if proc.poll() is not None: break
@@ -197,7 +216,7 @@ class Handler(BaseHTTPRequestHandler):
                     except OSError: time.sleep(.1)
                 if not ready:
                     proc.terminate(); log.close(); raise Problem('The duel room could not start.',503)
-                ROOMS[rid]=dict(id=rid,host=user['name'],hostId=uid,format=mode,cap=cap,port=port,secret=secret,process=proc,log=log,expires=now+3600,mode=room_mode,capacity=4 if room_mode=='2v2' else 2)
+                ROOMS[rid]=dict(id=rid,host=user['name'],hostId=uid,format=mode,cap=cap,port=port,secret=secret,process=proc,log=log,expires=now+3600,mode=room_mode,capacity=4 if room_mode=='2v2' else 2,members={uid},controlDir=control)
                 return dict(public_room(ROOMS[rid]),address=HOST,secret=secret)
         if path.startswith('/rooms/'):
             rid=path.split('/')[2]
@@ -210,8 +229,25 @@ class Handler(BaseHTTPRequestHandler):
                     room['process'].terminate(); room['log'].close(); del ROOMS[rid]; return {'ok':True}
                 if method=='POST' and path.endswith('/join'):
                     if room['hostId']!=uid and not are_friends(db,uid,room['hostId']): raise Problem('Only the host’s friends can join this room.',403)
+                    room.setdefault('members',set()).add(uid)
                     return dict(public_room(room),address=HOST,secret=room['secret'])
         raise Problem('Not found.',404)
+
+def send_duel_command(room,name,operation,target,value):
+    proc=room.get('process');control=room.get('controlDir')
+    if not proc or proc.poll() is not None or not control or not proc.stdin:raise Problem('This room does not support admin controls yet.',409)
+    request_id=secrets.token_hex(16);result=control/(request_id+'.json')
+    try:
+        proc.stdin.write(json.dumps(dict(id=request_id,name=name,operation=operation,target=target,value=value))+'\n');proc.stdin.flush()
+    except (OSError,BrokenPipeError):raise Problem('The duel has closed.',409)
+    for _ in range(120):
+        if result.exists():
+            try:return int(json.loads(result.read_text())['result'])
+            finally:result.unlink(missing_ok=True)
+        if proc.poll() is not None:break
+        time.sleep(.05)
+    raise Problem('The duel did not answer. Check its state before retrying.',409)
+
 
 def room_worker():
     port=int(sys.argv[2]); genesys=sys.argv[3]=='Genesys'; cap=int(sys.argv[4])
@@ -221,6 +257,18 @@ def room_worker():
     server.configure_remote_room(os.environ['ULTRA_ROOM_SECRET'].encode())
     server.set_local_genesys_point_cap.argtypes=[ctypes.c_uint]; server.set_local_genesys_point_cap(cap)
     server.start_server.argtypes=[ctypes.c_char_p]; server.start_server.restype=ctypes.c_int
+    server.admin_duel_action.argtypes=[ctypes.c_char_p,ctypes.c_int,ctypes.c_int,ctypes.c_int]
+    server.admin_duel_action.restype=ctypes.c_int
+    def commands():
+        control=Path(os.environ['ULTRA_ADMIN_RESULTS'])
+        for line in sys.stdin:
+            try:
+                command=json.loads(line);request_id=command['id']
+                if not re.fullmatch('[a-f0-9]{32}',request_id):continue
+                result=server.admin_duel_action(str(command['name']).encode(),int(command['operation']),int(command['target']),int(command['value']))
+                temporary=control/(request_id+'.pending');temporary.write_text(json.dumps({'result':result}));temporary.replace(control/(request_id+'.json'))
+            except (ValueError,KeyError,TypeError,OSError):print('ADMIN_COMMAND_ERROR',flush=True)
+    threading.Thread(target=commands,daemon=True).start()
     tag=len(sys.argv)>5 and sys.argv[5]=='2v2'
     args=f"{port} {'-1' if genesys else '0'} 1 {2 if tag else 0} {'8' if genesys else '7'} F F 8000 5 1 0 0"
     # The native entry point blocks until the last player leaves. Its return

@@ -29,6 +29,10 @@ jobs:
         run: build/server/server_archive_effects "$GITHUB_WORKSPACE"
       - name: Play three-player and four-player tag turns through TCP
         run: python3 Tests/NativeUnevenTagTests.py --native build/server
+      - name: Verify explicit owner duel controls through TCP
+        run: python3 Tests/NativeAdminDuelTests.py build/server
+      - name: Verify reported Branded hand and Aluber search through TCP
+        run: python3 Tests/NativeFriendEffectsTests.py build/server
       - uses: actions/upload-artifact@v4
         with:
           name: ultra-linux-server-effects

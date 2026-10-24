@@ -40,6 +40,7 @@ public:
 	static int ServerThread();
 	static void DisconnectPlayer(DuelPlayer* dp);
 	static void HandleCTOSPacket(DuelPlayer* dp, unsigned char* data, int len);
+    static int AdminAction(const std::wstring& name, int operation, int target, int value);
 	static size_t CreateChatPacket(unsigned char* src, int src_size, unsigned char* dst, uint16_t dst_player_type);
 	static void SendPacketToPlayer(DuelPlayer* dp, unsigned char proto) {
 		auto p = net_server_write;

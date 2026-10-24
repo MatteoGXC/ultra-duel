@@ -1,8 +1,30 @@
 #include "serverapi.h"
 #include "ocgapi.h"
 #include <atomic>
+#include <future>
+#include <memory>
 
 namespace ygo {
+    struct AdminRequest {
+        std::wstring name; int operation, target, value;
+        std::promise<int> result; std::atomic<bool> cancelled{false};
+    };
+    extern "C" DECL_DLLEXPORT int admin_duel_action(const char* name, int operation, int target, int value) {
+        if(!NetServer::net_evbase || !name || strlen(name)>96) return 1;
+        auto request=std::make_shared<AdminRequest>();
+        wchar_t decoded[100]{}; BufferIO::DecodeUTF8(name,decoded);
+        request->name=decoded; request->operation=operation; request->target=target; request->value=value;
+        auto result=request->result.get_future();
+        auto payload=new std::shared_ptr<AdminRequest>(request);
+        timeval immediately{};
+        if(event_base_once(NetServer::net_evbase,-1,EV_TIMEOUT,[](evutil_socket_t,short,void* argument) {
+            std::unique_ptr<std::shared_ptr<AdminRequest>> holder(static_cast<std::shared_ptr<AdminRequest>*>(argument));
+            auto r=*holder;
+            r->result.set_value(r->cancelled ? 5 : NetServer::AdminAction(r->name,r->operation,r->target,r->value));
+        },payload,&immediately)) {delete payload;return 1;}
+        if(result.wait_for(std::chrono::seconds(4))!=std::future_status::ready) {request->cancelled=true;return 5;}
+        return result.get();
+    }
 	bool remote_room = false;
 	std::string remote_secret;
 	extern "C" DECL_DLLEXPORT void configure_remote_room(const char* secret) {

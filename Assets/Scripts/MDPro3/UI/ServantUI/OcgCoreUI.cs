@@ -171,6 +171,7 @@ namespace MDPro3.UI.ServantUI
         public override void ShowEvent()
         {
             base.ShowEvent();
+            if(GetComponent<UltraAdminDuelUI>()==null)gameObject.AddComponent<UltraAdminDuelUI>();
 
             CloseHint();
 

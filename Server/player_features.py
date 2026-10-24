@@ -22,6 +22,18 @@ def initialize(db):
     ''')
     if 'avatar' not in {r[1] for r in db.execute('pragma table_info(profiles)')}:
         db.execute('alter table profiles add column avatar integer not null default 0')
+    if 'unlock_all' not in {r[1] for r in db.execute('pragma table_info(profiles)')}:
+        db.execute('alter table profiles add column unlock_all integer not null default 0')
+    db.execute('create table if not exists admin_actions(id integer primary key,actor integer not null,recipient integer,room text,action text not null,details text not null,created integer not null)')
+
+
+def is_owner(state, name):
+    # Only the primary server-configured administrator owns these controls.
+    try:
+        names=json.loads((state/'admins.json').read_text())
+        return bool(names) and str(names[0]).casefold()==name.casefold()
+    except (OSError,ValueError,TypeError):
+        return False
 
 
 def is_admin(state, name):
@@ -56,6 +68,8 @@ def profile(db, uid):
     p = dict(db.execute('select * from profiles where user=?', (uid,)).fetchone())
     p['missions'] = mission_rows(db,uid)
     p['owned'] = [r[0] for r in db.execute('select item from owned where user=?', (uid,))]
+    if p['unlock_all']:
+        p['owned']=sorted(set(p['owned']) | {'Frame:Neon','Frame:Champion'} | {r['key'] for r in json.loads(Path(__file__).with_name('shop-catalog.json').read_text())})
     p['wins'] = db.execute("select count(*) from games where user=? and result='WIN'", (uid,)).fetchone()[0]
     p['played'] = db.execute('select count(*) from games where user=? and result is not null', (uid,)).fetchone()[0]
     best = db.execute('select deck,count(*) n from games where user=? and result is not null group by deck order by n desc,deck limit 1', (uid,)).fetchone()
@@ -131,12 +145,12 @@ def route(h, db, method, path, body, now, user, api):
         db.execute('insert or replace into invites values(?,?,?,?)', (uid,other,rid,now+300))
         return {'ok':True}
     if path == '/admin/players' and method == 'GET':
-        if not is_admin(state,user['name']): raise Problem('Administrator permission required.',403)
+        if not is_owner(state,user['name']): raise Problem('Owner permission required.',403)
         return {'players':[dict(id=r['id'],name=r['name'],online=r['seen']>now-120,
             activity=r['activity'] if r['seen']>now-120 else 'Offline',gems=r['gems'] or 0)
             for r in db.execute("select u.id,u.name,u.seen,coalesce(p.activity,'Home') activity,p.gems from users u left join profiles p on p.user=u.id order by u.name")]}
     if path == '/admin/grant' and method == 'POST':
-        if not is_admin(state,user['name']): raise Problem('Administrator permission required.',403)
+        if not is_owner(state,user['name']): raise Problem('Owner permission required.',403)
         other=int(body['id']); amount=int(body['amount']); reason=str(body.get('reason','Owner reward'))[:200]
         if not 1<=amount<=100000: raise Problem('Grant must be between 1 and 100,000 gems.')
         if not db.execute('select 1 from users where id=?',(other,)).fetchone(): raise Problem('Player not found.',404)
@@ -144,4 +158,12 @@ def route(h, db, method, path, body, now, user, api):
         db.execute('update profiles set gems=gems+? where user=?',(amount,other))
         db.execute('insert into grants(actor,recipient,amount,reason,created) values(?,?,?,?,?)',(uid,other,amount,reason,now))
         return {'ok':True}
+    if path == '/admin/unlock-all' and method == 'POST':
+        if not is_owner(state,user['name']):raise Problem('Owner permission required.',403)
+        other=int(body['id'])
+        if not db.execute('select 1 from users where id=?',(other,)).fetchone():raise Problem('Player not found.',404)
+        profile(db,other)
+        db.execute('update profiles set unlock_all=1,gold=1,xp=max(xp,4000) where user=?',(other,))
+        db.execute('insert into admin_actions(actor,recipient,action,details,created) values(?,?,?,?,?)',(uid,other,'unlock-all','All cosmetics and Duel Pass unlocked',now))
+        return {'ok':True,'profile':profile(db,other)}
     return None

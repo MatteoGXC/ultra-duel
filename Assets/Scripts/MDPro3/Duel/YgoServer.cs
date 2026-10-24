@@ -15,6 +15,8 @@ namespace MDPro3.Net
         public static extern int get_server_format_capabilities();
         [DllImport("ygoserver", CallingConvention = CallingConvention.Cdecl)]
         public static extern void set_local_genesys_point_cap(uint cap);
+        [DllImport("ygoserver", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int admin_duel_action([MarshalAs(UnmanagedType.LPUTF8Str)] string name,int operation,int target,int value);
     }
 
     public class YgoServer

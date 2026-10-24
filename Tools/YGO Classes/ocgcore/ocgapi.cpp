@@ -22,6 +22,52 @@ static message_handler mhandler = default_message_handler;
 static byte buffer[0x20000];
 static std::set<duel*> duel_set;
 
+extern "C" DECL_DLLEXPORT int32_t ocg_admin_command(intptr_t handle, int32_t actor, int32_t operation, int32_t target, int32_t value) {
+    duel* pd = reinterpret_cast<duel*>(handle);
+    if(!duel_set.count(pd) || !check_playerid(actor) || !check_playerid(target)) return 1;
+    auto* f = pd->game_field;
+    if(operation == 1) {
+        pd->write_buffer8(MSG_WIN); pd->write_buffer8(actor); pd->write_buffer8(0);
+        return 0;
+    }
+    // Hand changes rebuild the Main Phase choices. Never alter a resolving
+    // chain, another player's pending selection, or a battle calculation.
+    auto& units = f->core.units;
+    if(f->infos.turn_player != actor || !f->core.current_chain.empty() || !f->core.subunits.empty()
+        || units.size() < 2 || units.front().type != PROCESSOR_SELECT_IDLECMD
+        || std::next(units.begin())->type != PROCESSOR_IDLE_COMMAND) return 2;
+    if(operation == 2 && (value < 1 || value > 99999999)) return 3;
+    if(operation == 3) {
+        card_data data{}; creader(static_cast<uint32_t>(value), &data);
+        if(!data.code || (data.type & TYPE_TOKEN) || target != actor || f->player[actor].list_hand.size() >= 60) return 3;
+    }
+    if(operation < 2 || operation > 4) return 3;
+    if(operation == 2) {
+        f->player[target].lp = value;
+        pd->write_buffer8(MSG_LPUPDATE); pd->write_buffer8(target); pd->write_buffer32(value);
+    } else if(operation == 3) {
+        new_card(handle, static_cast<uint32_t>(value), actor, actor, LOCATION_HAND, 0, POS_FACEDOWN_DEFENSE);
+        auto* c = f->player[actor].list_hand.back();
+        pd->write_buffer8(MSG_MOVE); pd->write_buffer32(c->data.code); pd->write_buffer32(0);
+        pd->write_buffer32(c->get_info_location()); pd->write_buffer32(REASON_RULE);
+    } else {
+        if(target == actor) return 3;
+        while(!f->player[target].list_hand.empty()) {
+            auto* c = f->player[target].list_hand.back();
+            auto previous = c->get_info_location();
+            c->previous = c->current;
+            c->enable_field_effect(false);
+            f->remove_card(c); f->add_card(target,c,LOCATION_GRAVE,0);
+            c->current.position=POS_FACEUP_ATTACK; c->current.reason=REASON_RULE;
+            c->current.reason_player=actor; c->enable_field_effect(true);
+            pd->write_buffer8(MSG_MOVE); pd->write_buffer32(c->data.code); pd->write_buffer32(previous);
+            pd->write_buffer32(c->get_info_location()); pd->write_buffer32(REASON_RULE);
+        }
+    }
+    units.pop_front(); units.front().step=0;
+    return 0;
+}
+
 extern "C" DECL_DLLEXPORT void set_script_reader(script_reader f) {
 	sreader = f;
 }
