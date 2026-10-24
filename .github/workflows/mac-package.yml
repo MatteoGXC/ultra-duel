@@ -9,7 +9,9 @@ on:
         description: Input archive checksum
         required: true
 permissions:
-  contents: read
+  # GitHub requires collaborator access to retrieve assets from an unpublished draft.
+  # This workflow has no release-publishing step.
+  contents: write
 jobs:
   package:
     runs-on: macos-15
