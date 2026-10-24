@@ -47,10 +47,13 @@ def play(native, count, solo_first):
             clients[index].sendall(struct.pack('<HB', len(data)+1, op)+data)
         try:
             for index in range(count):
-                client = socket.socket()
                 for attempt in range(600):
+                    # A socket that failed to connect cannot be reused reliably
+                    # on Darwin. Retry startup with a fresh socket each time.
+                    client = socket.socket()
                     try: client.connect(('127.0.0.1', port)); break
                     except OSError:
+                        client.close()
                         if proc.poll() is not None: raise AssertionError(proc.stdout.read().decode())
                         time.sleep(.05)
                 else: raise AssertionError('Server did not listen')
