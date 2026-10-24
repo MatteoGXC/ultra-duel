@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.5'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.6'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -33,8 +33,12 @@ def main():
             'New players: download **Ultra-Duel-Setup.exe**. The complete game downloads about 8.1 GB. '
             'Setup now downloads three parts concurrently, resumes interrupted parts, shows speed, and supports pausing.\n\n'
             'Existing players: use **Ultra-Duel-Updater.zip** beside your game executable. Only the cumulative update downloads; decks, settings and account data are preserved.\n\n'
-            '## Included in v0.1.5\n\n'
-            '- Ultra Duel start title with the original silver triangle and selected animated wallpaper. Start and home menus are separate.\n'
+            '## Included in v0.1.6\n\n'
+            '- Fixed cropped mail, mission and friend icons using the supplied artwork.\n'
+            '- Removed the rectangular background from the pass emblem and corrected the circular back button crop.\n'
+            '- Profile header now has rounded corners and colors sampled from the selected portrait.\n'
+            '- Genesys card search hides Link and Pendulum cards.\n'
+            '- Retains the earlier Ultra Duel start screen and animated wallpaper.\n'
             '- Supplied mail, mission, friend, pass and back-button artwork, animated buttons, updated login, circular profile portraits, portrait-colored accents and XP.\n'
             '- Removed the opaque navigation panel covering the wallpaper.\n'
             '- 48 verified extended-art identities imported from official Konami previews. These are low-resolution SAMPLE previews, not high-resolution retail scans; normal card text remains rendered by the game.\n'

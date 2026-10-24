@@ -354,6 +354,8 @@ namespace MDPro3.Duel.YGOSharp
             foreach (var item in _cards)
             {
                 Card card = item.Value;
+                if (banlist != null && banlist.isCredit && (card.HasType(CardType.Pendulum) || card.HasType(CardType.Link)))
+                    continue;
                 if (!card.HasType(CardType.Token))
                 {
                     bool pass = true;

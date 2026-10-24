@@ -13,9 +13,10 @@ namespace MDPro3.UI.ServantUI
             vh.Clear();
             if(kind<3 && mainTexture!=null)
             {
-                var crops=new[]{new Rect(81,64,189,188),new Rect(355,62,188,190),new Rect(629,67,190,189)};
-                var crop=crops[kind];var texture=mainTexture;
-                UltraReferenceArt.Quad(vh,rectTransform.rect,new Rect(crop.x/texture.width,crop.y/texture.height,crop.width/texture.width,crop.height/texture.height),color);return;
+                var crops=new[]{new Rect(82,64,188,188),new Rect(355,64,188,188),new Rect(629,68,188,188)};
+                var crop=crops[kind];
+                // UVs refer to the original image, independent of Unity's NPOT resize.
+                UltraReferenceArt.Quad(vh,rectTransform.rect,new Rect(crop.x/894f,crop.y/334f,crop.width/894f,crop.height/334f),color);return;
             }
             Quad(vh,.02f,.02f,.96f,.96f,new Color(.42f,.42f,.42f));
             var light=new Color(.85f,.85f,.85f);var dark=new Color(.33f,.33f,.33f);

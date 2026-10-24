@@ -32,12 +32,12 @@ namespace MDPro3.UI.ServantUI
         {
             vh.Clear();var r=rectTransform.rect;var c=r.center;float radius=Mathf.Min(r.width,r.height)*.46f;
             if(mainTexture==null)return;var texture=mainTexture;
-            var uvCenter=new Vector2(161f/texture.width,115f/texture.height);
+            var uvCenter=new Vector2(161.5f/327f,127.5f/244f);
             vh.AddVert(c,color,uvCenter);
             for(int i=0;i<=64;i++)
             {
                 float angle=i*Mathf.PI/32;var unit=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle));
-                vh.AddVert(c+unit*radius,color,uvCenter+Vector2.Scale(unit,new Vector2(83f/texture.width,83f/texture.height)));
+                vh.AddVert(c+unit*radius,color,uvCenter+Vector2.Scale(unit,new Vector2(83f/327f,83f/244f)));
                 if(i>0)vh.AddTriangle(0,i,i+1);
             }
         }

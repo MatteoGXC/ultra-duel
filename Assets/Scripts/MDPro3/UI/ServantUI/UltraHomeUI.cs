@@ -67,7 +67,7 @@ namespace MDPro3.UI.ServantUI
             profileAccent=HomeRect("Profile frame",profile,0,0,.012f,1).gameObject.AddComponent<Image>();
             profileAccent.raycastTarget=false;
             var avatar=profile.gameObject.AddComponent<UltraProfileHeader>();avatar.Initialize();
-            profileLabel=HomeText(profile,"",25,Color.white,.30f,.49f,.66f,.43f);
+            profileLabel=HomeText(profile,"",25,Color.white,.35f,.49f,.58f,.43f);
             var profileClick=profile.gameObject.AddComponent<Button>(); profileClick.onClick.AddListener(OpenProfile);
             profileClick.targetGraphic=profile.GetComponent<Image>();
             profile.GetComponent<Image>().raycastTarget=true;
