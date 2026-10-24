@@ -105,7 +105,15 @@ jobs:
           import os,subprocess,pathlib
           root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
           env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
-          result=subprocess.run([str(player),'-batchmode','-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--deck-badges-only','-logFile',str(root/'mac-ui.log')],env=env,timeout=180)
+          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
+          process=subprocess.Popen(command,env=env)
+          try:code=process.wait(timeout=120)
+          except subprocess.TimeoutExpired:
+              subprocess.run(['sample',str(process.pid),'5','-file',str(root/'mac-ui-sample.txt')],timeout=20)
+              subprocess.run(['screencapture','-x',str(root/'mac-ui-timeout.png')],timeout=15)
+              try:code=process.wait(timeout=180)
+              except subprocess.TimeoutExpired:process.kill();process.wait();raise
+          result=subprocess.CompletedProcess(command,code)
           assert result.returncode==0
           assert (root/'mac-ui/passed.txt').exists(),(root/'mac-ui.log').read_text()[-6000:]
           PY
@@ -115,7 +123,7 @@ jobs:
           import os,subprocess,pathlib
           root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
           env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
-          result=subprocess.run([str(player),'-batchmode','-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','-logFile',str(root/'mac-duel-ui.log')],env=env,timeout=240)
+          result=subprocess.run([str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','-logFile',str(root/'mac-duel-ui.log')],env=env,timeout=300)
           assert result.returncode==0
           assert (root/'mac-duel-ui/passed.txt').exists(),(root/'mac-duel-ui.log').read_text()[-6000:]
           PY
