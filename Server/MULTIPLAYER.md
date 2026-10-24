@@ -6,7 +6,7 @@ The requested modes are independent requirements:
 | --- | --- | --- |
 | 1v1 | Two opposing sides | Existing |
 | 2v2 | Two opposing sides, alternating teammates | Existing; regression checked with four TCP clients |
-| 2v1 | Two opposing sides, one side has no teammate | Native Windows turn/discard/surrender tests pass; Linux and Apple Silicon checks and live deployment still required |
+| 2v1 | Two opposing sides, one side has no teammate | Native Windows and Linux turn/discard/surrender tests pass; Apple Silicon checks and live deployment still required |
 | 1v1v1 | Three independent opposing players | Requested, **not implemented** |
 | 1v1v1v1 | Four independent opposing players | Requested, **not implemented** |
 

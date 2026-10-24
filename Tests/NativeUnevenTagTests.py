@@ -115,6 +115,7 @@ def play(native, count, solo_first):
                             else: send(index,1,struct.pack('<i',7))
                         if message==5 and count==3:
                             won=True
+                            assert turns>=7 and frame[2:]==bytes([1 if solo_first else 0,0]), ('Unexpected duel end',turns,frame.hex())
                             assert all(owners[i]>0 for i in range(3)), (owners,frame.hex(),trace)
                             print('PASS 2v1', 'solo first' if solo_first else 'team first',
                                   'turns',turns,'controllers',dict(owners),'swaps',dict(swaps),flush=True)
