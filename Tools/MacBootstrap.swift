@@ -1,7 +1,8 @@
 import Cocoa
 import CryptoKit
 
-struct RuntimeManifest: Codable { let version: String; let url: String; let size: Int64; let sha256: String }
+struct RuntimePart: Codable { let name: String; let url: String; let size: Int64; let sha256: String }
+struct RuntimeManifest: Codable { let version: String; let url: String; let size: Int64; let sha256: String; let parts: [RuntimePart]? }
 enum InstallError: Error { case failed(String) }
 final class RuntimeInstaller {
     let resources: URL
@@ -9,22 +10,24 @@ final class RuntimeInstaller {
     let manifest: RuntimeManifest
     let files = FileManager.default
     var report: (String, Double?) -> Void = { _, _ in }
-    var active: Process?
+    var active: [Process] = []
     let lock = NSLock()
     var cancelled = false
     init(resources: URL, runtime: URL) throws {
         self.resources=resources;self.runtime=runtime
         manifest=try JSONDecoder().decode(RuntimeManifest.self,from:Data(contentsOf:resources.appendingPathComponent("runtime.json")))
     }
-    func cancel() { lock.lock();cancelled=true;let task=active;lock.unlock();if task?.isRunning == true { task?.terminate() } }
+    func cancel() { lock.lock();cancelled=true;let tasks=active;lock.unlock();for task in tasks where task.isRunning { task.terminate() } }
     func run(_ executable: URL,_ arguments: [String],input: FileHandle?=nil,output: FileHandle?=nil) throws {
         if cancelled { throw InstallError.failed("Paused. Your download has been saved.") }
         let task=Process();task.executableURL=executable;task.arguments=arguments
         if let input=input { task.standardInput=input };if let output=output { task.standardOutput=output }
         let log=runtime.appendingPathComponent("installation.log");if !files.fileExists(atPath:log.path){files.createFile(atPath:log.path,contents:nil)}
         let handle=try FileHandle(forWritingTo:log);handle.seekToEndOfFile();task.standardError=handle
-        lock.lock();active=task;lock.unlock();try task.run();task.waitUntilExit();try handle.close()
-        lock.lock();active=nil;lock.unlock()
+        lock.lock();active.append(task)
+        do { try task.run();lock.unlock() } catch { active.removeAll{$0 === task};lock.unlock();throw error }
+        task.waitUntilExit();try handle.close()
+        lock.lock();active.removeAll{$0 === task};lock.unlock()
         if task.terminationStatus != 0 { throw InstallError.failed(cancelled ? "Paused. Your download has been saved." : "Installation could not finish. Retry to resume the download. See installation.log in the Ultra Duel data folder.") }
     }
     func checksum(_ url: URL) throws -> String {
@@ -42,6 +45,38 @@ final class RuntimeInstaller {
         }.resume()
         guard completed.wait(timeout:.now()+35) == .success, failure==nil,let result=etag else {throw InstallError.failed("The game content server did not respond. Retry to continue.")}
         return result
+    }
+    func downloadParts(_ parts: [RuntimePart],cache: URL,archive: URL) throws {
+        let work=DispatchGroup();let queue=OperationQueue();queue.maxConcurrentOperationCount=3
+        var errors: [Error]=[];let errorLock=NSLock()
+        let timer=DispatchSource.makeTimerSource(queue:DispatchQueue.global());timer.schedule(deadline:.now(),repeating:.milliseconds(300))
+        timer.setEventHandler { [weak self] in
+            guard let self=self else{return};let done=parts.reduce(0.0){sum,part in sum+(((try? self.files.attributesOfItem(atPath:cache.appendingPathComponent(part.name).path)[.size]) as? NSNumber)?.doubleValue ?? 0)}
+            self.report(String(format:"Downloading game content: %.2f / %.2f GB",done/1_073_741_824,Double(self.manifest.size)/1_073_741_824),min(1,done/Double(self.manifest.size)))
+        };timer.resume();defer{timer.cancel()}
+        for part in parts {
+            work.enter();queue.addOperation {
+                defer{work.leave()}
+                do {
+                    let target=cache.appendingPathComponent(part.name)
+                    let size=((try? self.files.attributesOfItem(atPath:target.path)[.size]) as? NSNumber)?.int64Value ?? 0
+                    var verified=false
+                    if size==part.size {verified=(try self.checksum(target))==part.sha256}
+                    if !verified {
+                        if size>=part.size {try? self.files.removeItem(at:target)}
+                        try self.run(URL(fileURLWithPath:"/usr/bin/curl"),["--fail","--location","--silent","--show-error","--retry","5","--retry-delay","2","--continue-at","-","--output",target.path,part.url])
+                    }
+                    guard try self.checksum(target)==part.sha256 else {try? self.files.removeItem(at:target);throw InstallError.failed("A content download failed verification. Retry to download that part again.")}
+                } catch {errorLock.lock();errors.append(error);errorLock.unlock()}
+            }
+        }
+        work.wait();if let error=errors.first{throw error}
+        report("Combining verified game content…",nil)
+        files.createFile(atPath:archive.path,contents:nil);let output=try FileHandle(forWritingTo:archive);try output.truncate(atOffset:0);defer{try? output.close()}
+        for part in parts {
+            let input=try FileHandle(forReadingFrom:cache.appendingPathComponent(part.name));defer{try? input.close()}
+            while let bytes=try input.read(upToCount:4*1024*1024),!bytes.isEmpty {try output.write(contentsOf:bytes)}
+        }
     }
     func copyDefaults() throws {
         let source=resources.appendingPathComponent("Defaults")
@@ -67,6 +102,13 @@ final class RuntimeInstaller {
             if offline == nil {
                 let free=(try files.attributesOfFileSystem(forPath:runtime.path)[.systemFreeSize] as? NSNumber)?.int64Value ?? 0
                 if free<10_000_000_000 { throw InstallError.failed("Ultra Duel needs 10 GB of free space for its first installation.") }
+                let archiveSize=((try? files.attributesOfItem(atPath:archive.path)[.size]) as? NSNumber)?.int64Value ?? 0
+                var cached=false
+                if archiveSize==manifest.size {cached=(try checksum(archive))==expected}
+                if cached {report("Using verified game content…",1)}
+                else if let parts=manifest.parts,!parts.isEmpty {
+                    try downloadParts(parts,cache:cache,archive:archive)
+                } else {
                 report("Downloading game artwork and duel fields (3.7 GB)…",0)
                 let timer=DispatchSource.makeTimerSource(queue:DispatchQueue.global());timer.schedule(deadline:.now(),repeating:.milliseconds(300))
                 timer.setEventHandler { [weak self] in
@@ -75,12 +117,14 @@ final class RuntimeInstaller {
                 };timer.resume();defer{timer.cancel()}
                 let etag=try contentVersionHeader()
                 try run(URL(fileURLWithPath:"/usr/bin/curl"),["--fail","--location","--retry","5","--retry-delay","2","--header","If-Match: "+etag,"--continue-at","-","--output",archive.path,manifest.url])
+                }
             }
             report("Verifying game content…",nil)
             guard ((try files.attributesOfItem(atPath:archive.path)[.size]) as? NSNumber)?.int64Value == manifest.size,try checksum(archive)==expected else {
                 if offline == nil { try? files.removeItem(at:archive) }
                 throw InstallError.failed("Game content failed verification. Retry to download a fresh copy.")
             }
+            if offline == nil {for part in manifest.parts ?? [] {try? files.removeItem(at:cache.appendingPathComponent(part.name))}}
             report("Installing artwork and duel fields…",nil)
             let decompressor=Process();decompressor.executableURL=resources.appendingPathComponent("Tools/zstd");decompressor.arguments=["-d","-c",archive.path]
             let pipe=Pipe();decompressor.standardOutput=pipe;try decompressor.run()

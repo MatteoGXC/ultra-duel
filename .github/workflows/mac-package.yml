@@ -65,6 +65,8 @@ jobs:
           key: mac-runtime-ddd688f1b23825950afaad75fe519b953ae61c8a587ee4b9cbff8ff6c049019a
       - name: Download and verify runtime archive
         id: runtime
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           APP="$RUNNER_TEMP/Applications/Ultra Duel.app"
           python3 -u Tools/download-verified-runtime.py "$APP/Contents/Resources/runtime.json" "$RUNNER_TEMP/mac-runtime.tar.zst"
