@@ -1,0 +1,104 @@
+name: Verify Apple Silicon DMG
+on:
+  workflow_dispatch:
+    inputs:
+      asset_id:
+        description: Private draft input asset ID
+        required: true
+      sha256:
+        description: Input archive checksum
+        required: true
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /Tools/MacBootstrap.swift
+            /Tools/package-mac.py
+            /Tools/download-verified-runtime.py
+            /Tests/NativeCardScriptTests.py
+      - name: Download private build input
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_ASSET: ${{ inputs.asset_id }}
+          INPUT_SHA: ${{ inputs.sha256 }}
+        run: |
+          python3 - <<'PY'
+          import os,urllib.request,hashlib
+          class Redirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self,*args,**kwargs):
+              r=super().redirect_request(*args,**kwargs)
+              if r:r.remove_header('Authorization')
+              return r
+          request=urllib.request.Request('https://api.github.com/repos/${{ github.repository }}/releases/assets/'+os.environ['INPUT_ASSET'],headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/octet-stream','User-Agent':'Ultra-Duel-private-DMG-test'})
+          h=hashlib.sha256()
+          with urllib.request.build_opener(Redirect()).open(request,timeout=120) as r,open('mac-input.zip','wb') as stream:
+            while data:=r.read(4*1024*1024):stream.write(data);h.update(data)
+          assert h.hexdigest()==os.environ['INPUT_SHA']
+          PY
+      - name: Assemble and sign app
+        run: |
+          brew list zstd >/dev/null || brew install zstd
+          python3 Tools/package-mac.py --input mac-input.zip --output build/dmg
+          file "build/dmg/Ultra Duel.app/Contents/MacOS/Ultra Duel" "build/dmg/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel"
+      - name: Create, verify, mount and install DMG
+        run: |
+          hdiutil create -volname "Ultra Duel" -srcfolder build/dmg -ov -format UDZO build/Ultra-Duel-Apple-Silicon.dmg
+          hdiutil verify build/Ultra-Duel-Apple-Silicon.dmg
+          mkdir -p "$RUNNER_TEMP/ultra-mount" "$RUNNER_TEMP/Applications"
+          hdiutil attach build/Ultra-Duel-Apple-Silicon.dmg -readonly -nobrowse -mountpoint "$RUNNER_TEMP/ultra-mount"
+          ditto "$RUNNER_TEMP/ultra-mount/Ultra Duel.app" "$RUNNER_TEMP/Applications/Ultra Duel.app"
+          hdiutil detach "$RUNNER_TEMP/ultra-mount"
+          codesign --verify --deep --strict --verbose=2 "$RUNNER_TEMP/Applications/Ultra Duel.app"
+      - name: Verify actual first-launch installation
+        run: |
+          APP="$RUNNER_TEMP/Applications/Ultra Duel.app"
+          python3 Tools/download-verified-runtime.py "$APP/Contents/Resources/runtime.json" "$RUNNER_TEMP/mac-runtime.tar.zst"
+          "$APP/Contents/MacOS/Ultra Duel" --prepare-only --runtime "$RUNNER_TEMP/ultra-runtime" --offline-archive "$RUNNER_TEMP/mac-runtime.tar.zst"
+          rm "$RUNNER_TEMP/mac-runtime.tar.zst"
+      - name: Run installed Apple Silicon Unity player
+        run: |
+          python3 - <<'PY'
+          import os,subprocess,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP']);app=root/'Applications/Ultra Duel.app';player=app/'Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
+          env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
+          result=subprocess.run([str(player),'-batchmode','-nographics','--mac-platform-probe',str(root/'platform-passed.txt'),'-logFile',str(root/'platform-player.log')],env=env,timeout=120)
+          assert result.returncode==0
+          assert (root/'platform-passed.txt').exists(),(root/'platform-player.log').read_text()[-6000:]
+          print((root/'platform-passed.txt').read_text())
+          PY
+      - name: Audit all installed card initializers
+        run: |
+          APP="$RUNNER_TEMP/Applications/Ultra Duel.app"
+          ULTRA_NATIVE_DIR="$APP/Contents/Resources/Player.app/Contents/Plugins" python3 Tests/NativeCardScriptTests.py --all --database "$RUNNER_TEMP/ultra-runtime/Data/locales/en-US/cards.cdb" --scripts "$RUNNER_TEMP/ultra-runtime/Data/script.zip" --output "$RUNNER_TEMP/mac-card-effects.json"
+      - name: Verify graphical game launch
+        run: |
+          python3 - <<'PY'
+          import os,subprocess,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
+          env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
+          result=subprocess.run([str(player),'-batchmode','-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--deck-badges-only','-logFile',str(root/'mac-ui.log')],env=env,timeout=180)
+          assert result.returncode==0
+          assert (root/'mac-ui/passed.txt').exists(),(root/'mac-ui.log').read_text()[-6000:]
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-ultra-duel-apple-silicon-dmg
+          path: build/Ultra-Duel-Apple-Silicon.dmg
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac-installation-evidence
+          path: |
+            ${{ runner.temp }}/platform-passed.txt*
+            ${{ runner.temp }}/platform-player.log
+            ${{ runner.temp }}/mac-card-effects.json
+            ${{ runner.temp }}/mac-ui*
+          retention-days: 7

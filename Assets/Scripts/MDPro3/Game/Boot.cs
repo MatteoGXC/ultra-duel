@@ -48,7 +48,6 @@ namespace MDPro3
                 StartCoroutine(CheckFile());
             }
 #elif !UNITY_EDITOR && UNITY_STANDALONE_OSX
-            Directory.SetCurrentDirectory(Application.dataPath);
             InitializeLanguage();
             StartCoroutine(LoadMainSceneAsync());
 #else
