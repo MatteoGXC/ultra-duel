@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
@@ -82,14 +83,20 @@ namespace MDPro3.UI.ServantUI
             modal.anchorMin=Vector2.zero;modal.anchorMax=new Vector2(.52f,1);modal.offsetMin=modal.offsetMax=Vector2.zero;
             // The existing selected wallpaper stays visible on the right.
             foreach(Transform child in modal)child.gameObject.SetActive(false);
-            modal.GetComponent<Image>().color=new Color(.005f,.01f,.022f,.92f);
-            HomeText(modal,"ULTRA",75,Color.white,.10f,.50f,.80f,.14f).fontStyle=FontStyles.Bold;
-            HomeText(modal,"DUEL",89,new Color(.68f,.84f,1),.10f,.35f,.80f,.17f).fontStyle=FontStyles.Bold;
-            HomePanel(HomeRect("Title rule",modal,.10f,.34f,.78f,.004f),Lime);
+            modal.GetComponent<Image>().color=Color.clear;
+            var wordmark=HomeText(modal,"ULTRA DUEL",67,new Color(.91f,.94f,1),.055f,.45f,.89f,.15f);
+            wordmark.fontStyle=FontStyles.Bold|FontStyles.Italic;wordmark.alignment=TextAlignmentOptions.Center;
+            wordmark.outlineWidth=.18f;wordmark.outlineColor=new Color32(84,80,183,255);
+            var logoGroup=wordmark.gameObject.AddComponent<CanvasGroup>();logoGroup.alpha=0;
+            var logoRect=wordmark.rectTransform;var logoEnd=logoRect.anchoredPosition;logoRect.anchoredPosition+=Vector2.left*45;
+            logoGroup.DOFade(1,.8f).SetUpdate(true).SetLink(wordmark.gameObject);
+            logoRect.DOAnchorPos(logoEnd,1).SetEase(Ease.OutQuart).SetUpdate(true).SetLink(wordmark.gameObject);
+            var titleTriangle=HomeRect("Original title artwork",modal,.055f,.32f,.89f,.40f).gameObject.AddComponent<UltraNativeTitle>();titleTriangle.raycastTarget=false;
+            wordmark.transform.SetAsLastSibling();
             var homeDefault=defaultSelectable;
             defaultSelectable=SmallButton(modal,"GAME START",()=>{CloseModal();defaultSelectable=homeDefault;homeDefault?.Select();},.10f,.23f,.76f,.075f,25);
+            var pulse=defaultSelectable.gameObject.AddComponent<CanvasGroup>();pulse.DOFade(.38f,1.4f).SetLoops(-1,LoopType.Yoyo).SetEase(Ease.InOutSine).SetUpdate(true).SetLink(defaultSelectable.gameObject);
             HomeText(modal,"Ver. "+UltraServices.Version+"\n"+(string.IsNullOrEmpty(UltraServices.PlayerName)?"Welcome, Duelist":UltraServices.PlayerName),18,Muted,.10f,.84f,.80f,.09f);
-            HomeText(modal,"YOUR DECK. YOUR NEXT MOVE.",17,Muted,.10f,.075f,.80f,.05f);
         }
         void OpenProfile()
         {
@@ -137,6 +144,7 @@ namespace MDPro3.UI.ServantUI
                 SmallButton(row,"EQUIP",()=>EquipProfileMate(id),.75f,.2f,.22f,.6f,18);
             }
             SmallButton(modal,"SHOP",OpenShop,.045f,.025f,.23f,.07f,18);
+            SmallButton(modal,"PROFILE ICON",OpenAvatarPicker,.70f,.025f,.25f,.07f,18);
         }
         void EquipProfileMate(int id){Config.Set("ProfileMate",id.ToString());Config.Save();OpenProfile();RefreshUltraHome();}
         void OpenCollection()

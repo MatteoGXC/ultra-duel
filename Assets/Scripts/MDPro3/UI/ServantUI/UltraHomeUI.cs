@@ -51,28 +51,27 @@ namespace MDPro3.UI.ServantUI
         }
         void BuildUltraHome()
         {
-            if(!Config.GetBool("UltraDeckBackgroundApplied",false))
+            if(!Config.GetBool("UltraReferenceBackgroundApplied",false))
             {
-                Config.Set("Background","11");Config.Set("UltraDeckBackgroundApplied","1");
-                Program.instance.background_.Change(11);
+                Config.Set("Background","2");Config.Set("UltraReferenceBackgroundApplied","1");
+                Program.instance.background_.Change(2);
             }
             foreach (Transform child in Root) child.gameObject.SetActive(false);
             ultraHome = HomeRect("Ultra Duel Home", Root, 0, 0, 1, 1);
             HomePanel(ultraHome, new Color(.018f,.029f,.053f,0));
             var nav=HomeRect("Angular navigation",ultraHome,0,0,.52f,1).gameObject.AddComponent<UltraHomeShape>();
-            nav.color=new Color(.006f,.012f,.021f,.98f); nav.raycastTarget=false;
+            nav.color=Color.clear; nav.raycastTarget=false;
             var profile=HomeRect("Profile",ultraHome,.045f,.855f,.27f,.105f);
             HomePanel(profile,new Color(.015f,.02f,.028f));
-            NativeArt(profile,"ProfileFrame",0,0,1,1);
+            profile.GetComponent<UltraChrome>().rim=5;
             profileAccent=HomeRect("Profile frame",profile,0,0,.012f,1).gameObject.AddComponent<Image>();
             profileAccent.raycastTarget=false;
-            var portrait=HomeRect("Mate portrait",profile,.025f,.10f,.25f,.80f).gameObject.AddComponent<Image>();
-            portrait.preserveAspect=true;portrait.raycastTarget=false;LoadMatePortrait(portrait).Forget();
-            profileLabel=HomeText(profile,"",22,Color.white,.30f,.12f,.66f,.76f);
+            var avatar=profile.gameObject.AddComponent<UltraProfileHeader>();avatar.Initialize();
+            profileLabel=HomeText(profile,"",25,Color.white,.30f,.49f,.66f,.43f);
             var profileClick=profile.gameObject.AddComponent<Button>(); profileClick.onClick.AddListener(OpenProfile);
             profileClick.targetGraphic=profile.GetComponent<Image>();
             profile.GetComponent<Image>().raycastTarget=true;
-            var outline=profile.gameObject.AddComponent<Outline>();outline.effectColor=Lime;outline.effectDistance=new Vector2(2,-2);
+            profile.gameObject.AddComponent<UltraButtonMotion>();
             var wallet=HomeRect("Gem wallet",ultraHome,.385f,.90f,.135f,.055f);
             var walletFrame=wallet.gameObject.AddComponent<UltraChrome>();walletFrame.color=new Color(.06f,.08f,.12f,.88f);walletFrame.rim=2;walletFrame.rimColor=new Color(.70f,.75f,.80f);walletFrame.raycastTarget=false;
             HomeRect("Gem",wallet,.055f,.15f,.16f,.70f).gameObject.AddComponent<UltraGem>().raycastTarget=false;
@@ -92,7 +91,7 @@ namespace MDPro3.UI.ServantUI
             SmallButton(deckPanel,"VIEW",OpenMissions,.69f,.73f,.27f,.20f,14);
             var pass=HomeRect("Duel Pass",ultraHome,.045f,.055f,.27f,.105f);
             HomePanel(pass,new Color(.09f,.085f,.23f));
-            NativeArt(pass,"PassNormal",0,0,1,1);
+            HomeRect("Duel Pass emblem",pass,.75f,.10f,.23f,.80f).gameObject.AddComponent<UltraPassIcon>().raycastTarget=false;
             passLabel=HomeText(pass,"",23,Color.white,.055f,.12f,.60f,.78f);
             pass.GetComponent<Image>().raycastTarget=true;
             pass.GetComponent<Image>().raycastTarget=true;
@@ -115,7 +114,7 @@ namespace MDPro3.UI.ServantUI
             var image=rect.gameObject.AddComponent<Image>();image.color=Color.clear;
             var b=rect.gameObject.AddComponent<Button>();b.targetGraphic=image;b.onClick.AddListener(action);
             var glyph=HomeRect("Icon",rect,.34f,.38f,.32f,.55f).gameObject.AddComponent<UltraNavIcon>();glyph.kind=icon;glyph.raycastTarget=false;
-            var adaptive=Resources.Load<Shader>("Ultra/AdaptiveIcon");if(adaptive!=null)glyph.material=UltraAdaptiveMaterial.Get(adaptive);
+            rect.gameObject.AddComponent<UltraButtonMotion>();
             var caption=HomeText(rect,title,15,Color.white,0,0,1,.27f);caption.alignment=TextAlignmentOptions.Center;caption.outlineWidth=.22f;caption.outlineColor=new Color32(0,0,0,240);
         }
         Button NavButton(string title,UnityAction action,float y,float size)
@@ -126,26 +125,26 @@ namespace MDPro3.UI.ServantUI
             var colors=button.colors;colors.normalColor=new Color(0,0,0,0);colors.highlightedColor=colors.selectedColor=new Color(.16f,.24f,.22f,.8f);colors.pressedColor=new Color(.24f,.35f,.24f);button.colors=colors;
             HomePanel(HomeRect("Accent",rect,0,.20f,.005f,.60f),Lime);
             HomeText(rect,title,size,Color.white,.025f,0,.94f,1).fontStyle=FontStyles.Bold;
-            button.onClick.AddListener(action);return button;
+            button.onClick.AddListener(action);rect.gameObject.AddComponent<UltraButtonMotion>();return button;
         }
         Button SmallButton(Transform parent,string text,UnityAction action,float x,float y,float w,float h,float size=18)
         {
             var rect=HomeRect(text,parent,x,y,w,h);
-            var image=rect.gameObject.AddComponent<UltraChrome>();image.color=new Color(.012f,.025f,.04f,.90f);
+            var image=rect.gameObject.AddComponent<UltraChrome>();image.color=new Color(.23f,.22f,.22f,.96f);image.rim=0;
             var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=image;
             var colors=button.colors;colors.normalColor=Color.white;colors.highlightedColor=colors.selectedColor=new Color(.60f,.85f,.75f);colors.pressedColor=new Color(.40f,.65f,.50f);button.colors=colors;
-            var label=HomeText(rect,text,size,Lime,.05f,.05f,.90f,.90f);label.alignment=TextAlignmentOptions.Center;
-            button.onClick.AddListener(action);return button;
+            var label=HomeText(rect,text,size,Color.white,.05f,.05f,.90f,.90f);label.alignment=TextAlignmentOptions.Center;
+            button.onClick.AddListener(action);rect.gameObject.AddComponent<UltraButtonMotion>();return button;
         }
         void RefreshUltraHome()
         {
             if (profileLabel==null) return;
             var data=UltraProgress.Data;
             string name=string.IsNullOrEmpty(UltraServices.PlayerName)?Config.Get("DuelPlayerName0","Player"):UltraServices.PlayerName;
-            profileLabel.text=name+"   >\n<size=70%>Lv. "+UltraAccount.Level+"  /  "+UltraAccount.Rank+"</size>";
+            profileLabel.text=name;
             if (string.IsNullOrWhiteSpace(name)) name="Player";
-            profileLabel.text=name+"   >\n<size=70%>Lv. "+UltraAccount.Level+"  /  "+UltraAccount.Rank+"</size>";
-            profileAccent.color=FrameColor();gemLabel.text=UltraAccount.Gems.ToString("N0");
+            profileLabel.text=name;
+            profileAccent.enabled=false;gemLabel.text=UltraAccount.Gems.ToString("N0");
             passLabel.text="DUEL PASS   "+UltraAccount.Tier+" / 20\n<size=65%>"+(UltraAccount.Tier>UltraAccount.Claimed?"Rewards ready to claim":"WIN DUELS · EARN REWARDS")+"</size>";
             homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
             updateLabel.text="UPDATES  /  "+UltraServices.UpdateStatus+"\n<size=80%>New pass & shop · Friends & profiles · Solo fixes</size>";
@@ -165,12 +164,12 @@ namespace MDPro3.UI.ServantUI
             CloseModal();modalPage=page;
             overlay=HomeRect("Modal overlay",ultraHome,0,0,1,1);
             var shade=overlay.gameObject.AddComponent<Image>();shade.color=new Color(0,0,0,.45f);
-            bool drawer=page=="friends" || page=="login" || page=="friend";
-            bool homeVisible=drawer || page=="start";
+            bool drawer=page=="friends" || page=="friend";
+            bool homeVisible=drawer;
             if(!homeVisible)
             {
                 foreach(Transform child in ultraHome)if(child!=overlay && child.gameObject.activeSelf){hiddenHome.Add(child.gameObject);child.gameObject.SetActive(false);}
-                Program.instance.ui_.wallpaper.gameObject.SetActive(false);shade.color=Color.clear;
+                if(page!="start")Program.instance.ui_.wallpaper.gameObject.SetActive(false);shade.color=Color.clear;
             }
             modal=HomeRect(title,overlay,.04f,.055f,.92f,.89f);
             HomePanel(modal,drawer ? new Color(.012f,.025f,.040f,.99f):Color.clear);
@@ -212,11 +211,14 @@ namespace MDPro3.UI.ServantUI
         }
         void OpenLogin()
         {
-            OpenModal("FRIENDS","Create an Ultra Duel account, or sign in. Your deck files stay on this PC.","login");
-            var name=Input(modal,"Username (3–24 characters)",.61f);
-            var password=Input(modal,"Password (8 characters minimum)",.47f,true);
-            SmallButton(modal,"SIGN IN",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();}),.055f,.29f,.42f,.09f);
-            SmallButton(modal,"CREATE ACCOUNT",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,true);password.text="";ShowFriends();}),.525f,.29f,.42f,.09f);
+            OpenModal("DUELIST ACCESS","Sign in to connect with your friends and keep your account rewards.","login");WideModal();
+            var card=HomeRect("Access terminal",modal,.25f,.13f,.50f,.66f);HomePanel(card,new Color(.035f,.04f,.055f,.97f));
+            HomeText(card,"ULTRA DUEL",39,Color.white,.06f,.78f,.88f,.13f).alignment=TextAlignmentOptions.Center;
+            HomePanel(HomeRect("Access rule",card,.06f,.74f,.88f,.004f),Muted);
+            var name=Input(card,"Username (3–24 characters)",.57f);
+            var password=Input(card,"Password (8 characters minimum)",.39f,true);
+            SmallButton(card,"SIGN IN",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();}),.055f,.15f,.42f,.13f,23);
+            SmallButton(card,"CREATE ACCOUNT",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,true);password.text="";ShowFriends();}),.525f,.15f,.42f,.13f,23);
             HomeText(modal,"Connect with friends, see who is online, and join private TCG or Genesys rooms.",20,Muted,.055f,.13f,.89f,.11f);
         }
         RectTransform ScrollArea()

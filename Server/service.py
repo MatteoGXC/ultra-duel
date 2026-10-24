@@ -82,10 +82,10 @@ def clean_rooms():
             del ROOMS[rid]
 
 def public_room(room):
-    return {key:room[key] for key in ('id','host','hostId','format','cap','port','expires')}
+    return {key:room[key] for key in ('id','host','hostId','format','cap','port','expires','mode','capacity')}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'UltraDuel/0.1.4'
+    server_version = 'UltraDuel/0.1.5'
     def log_message(self, *_): pass # Passwords, tokens and private room secrets never enter access logs.
     def reply(self, data, status=200):
         body=json.dumps(data,separators=(',',':')).encode()
@@ -121,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.4'}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.5'}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')
@@ -177,6 +177,8 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/rooms' and method=='POST':
             mode=str(body.get('format','TCG')); cap=int(body.get('cap',100))
             if mode not in ('TCG','Genesys') or not 0<=cap<=10000: raise Problem('Invalid duel format or point cap.')
+            room_mode=body.get('mode','1v1')
+            if room_mode not in ('1v1','2v2'):raise Problem('Unsupported room mode.')
             with LOCK:
                 clean_rooms()
                 if any(r['hostId']==uid for r in ROOMS.values()): raise Problem('Close your existing room before creating another.')
@@ -186,7 +188,7 @@ class Handler(BaseHTTPRequestHandler):
                 rid=secrets.token_hex(8); secret=secrets.token_hex(8)
                 env=dict(os.environ,ULTRA_ROOM_SECRET=secret)
                 log=(STATE/f'room-{rid}.log').open('ab')
-                proc=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--room',str(port),mode,str(cap)],env=env,stdout=log,stderr=log)
+                proc=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--room',str(port),mode,str(cap),room_mode],env=env,stdout=log,stderr=log)
                 ready=False
                 for _ in range(40):
                     if proc.poll() is not None: break
@@ -195,7 +197,7 @@ class Handler(BaseHTTPRequestHandler):
                     except OSError: time.sleep(.1)
                 if not ready:
                     proc.terminate(); log.close(); raise Problem('The duel room could not start.',503)
-                ROOMS[rid]=dict(id=rid,host=user['name'],hostId=uid,format=mode,cap=cap,port=port,secret=secret,process=proc,log=log,expires=now+3600)
+                ROOMS[rid]=dict(id=rid,host=user['name'],hostId=uid,format=mode,cap=cap,port=port,secret=secret,process=proc,log=log,expires=now+3600,mode=room_mode,capacity=4 if room_mode=='2v2' else 2)
                 return dict(public_room(ROOMS[rid]),address=HOST,secret=secret)
         if path.startswith('/rooms/'):
             rid=path.split('/')[2]
@@ -219,7 +221,8 @@ def room_worker():
     server.configure_remote_room(os.environ['ULTRA_ROOM_SECRET'].encode())
     server.set_local_genesys_point_cap.argtypes=[ctypes.c_uint]; server.set_local_genesys_point_cap(cap)
     server.start_server.argtypes=[ctypes.c_char_p]; server.start_server.restype=ctypes.c_int
-    args=f"{port} {'-1' if genesys else '0'} 1 0 {'8' if genesys else '7'} F F 8000 5 1 0 0"
+    tag=len(sys.argv)>5 and sys.argv[5]=='2v2'
+    args=f"{port} {'-1' if genesys else '0'} 1 {2 if tag else 0} {'8' if genesys else '7'} F F 8000 5 1 0 0"
     # The native entry point blocks until the last player leaves. Its return
     # value is main()'s exit status, not the bound port.
     server.start_server(args.encode())

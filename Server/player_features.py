@@ -20,6 +20,8 @@ def initialize(db):
     create table if not exists invites(sender integer not null, recipient integer not null, room text not null,
         expires integer not null, primary key(sender,recipient));
     ''')
+    if 'avatar' not in {r[1] for r in db.execute('pragma table_info(profiles)')}:
+        db.execute('alter table profiles add column avatar integer not null default 0')
 
 
 def is_admin(state, name):
@@ -65,6 +67,12 @@ def route(h, db, method, path, body, now, user, api):
     uid = user['id']; state, Problem, are_friends, rooms, lock = api
     if path == '/profile' and method == 'GET':
         return profile(db, uid)
+    if path == '/profile/avatar' and method == 'POST':
+        avatar=int(body.get('card',0))
+        if not 0<=avatar<=999999999:raise Problem('Invalid profile icon.')
+        profile(db,uid)
+        db.execute('update profiles set avatar=? where user=?',(avatar,uid))
+        return profile(db,uid)
     if path == '/missions/claim' and method == 'POST':
         profile(db,uid)
         for row in mission_rows(db,uid,now):

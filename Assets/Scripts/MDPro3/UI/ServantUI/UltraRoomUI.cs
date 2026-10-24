@@ -36,6 +36,8 @@ namespace MDPro3.UI.ServantUI
         void RefreshFriendRoom()
         {
             if(!RoomServant.FromUltraHost){if(friendRoom!=null)friendRoom.gameObject.SetActive(false);return;}
+            int required=RoomServant.Mode==2?4:2;
+            if(friendRoom!=null && tableAvatars.Length!=required){Destroy(friendRoom.gameObject);friendRoom=null;}
             if(friendRoom==null)
             {
                 friendRoom=R("Ultra Friend Room",Root,0,0,1,1);P(friendRoom,Color.clear).raycastTarget=true;
@@ -46,10 +48,10 @@ namespace MDPro3.UI.ServantUI
                 var table=R("Table 1",friendRoom,.08f,.49f,.56f,.32f);P(table,new Color(.18f,.20f,.27f));
                 P(R("Table header",table,0,.85f,1,.15f),new Color(.65f,.68f,.73f));
                 T(table,"TABLE 1",19,.025f,.85f,.8f,.15f).color=Color.black;
-                tableAvatars=new Image[2];
-                for(int i=0;i<2;i++)tableAvatars[i]=P(R("Player "+i,table,.04f+i*.72f,.34f,.20f,.43f),Color.white);
+                tableAvatars=new Image[required];
+                for(int i=0;i<required;i++)tableAvatars[i]=P(R("Player "+i,table,required==4?.03f+i*.25f:.04f+i*.72f,.36f,required==4?.17f:.20f,.40f),Color.white);
                 tableLabel=T(table,"",22,.04f,.04f,.92f,.25f);
-                beginButton=B(table,"BEGIN DUEL",OnStart,.28f,.39f,.44f,.30f);
+                beginButton=B(table,"BEGIN DUEL",OnStart,.33f,.20f,.34f,.19f);
                 readyButton=B(friendRoom,"READY",OnReady,.08f,.34f,.26f,.095f);
                 B(friendRoom,"CHOOSE DECK",OnSelectDeck,.38f,.34f,.26f,.095f);
                 B(friendRoom,"INVITE FRIENDS",InviteFromRoom,.70f,.67f,.25f,.085f);
@@ -57,23 +59,24 @@ namespace MDPro3.UI.ServantUI
                 var deckPanel=R("Deck preview",friendRoom,.70f,.17f,.25f,.29f);P(deckPanel,new Color(.08f,.10f,.18f));
                 T(deckPanel,"SELECTED DECK",18,.06f,.76f,.88f,.16f);
                 deckLabel=T(deckPanel,"",27,.06f,.20f,.88f,.45f);
-                T(friendRoom,"Private friend room / Both players must be ready",20,.08f,.20f,.56f,.07f);
+                T(friendRoom,required==4?"Duos / Seats 1–2 versus seats 3–4 / All players must be ready":"Private friend room / Both players must be ready",20,.08f,.20f,.56f,.07f);
             }
             foreach(Transform child in Root)if(child!=friendRoom)child.gameObject.SetActive(false);
             friendRoom.gameObject.SetActive(true);friendRoom.SetAsLastSibling();
-            int count=0;string names="";
-            for(int i=0;i<2;i++)
+            int count=0;string names="";bool allReady=true;
+            for(int i=0;i<required;i++)
             {
                 var p=RoomServant.players[i];if(p!=null && !string.IsNullOrEmpty(p.name)){count++;names+=p.name+(p.ready?"  READY":"  NOT READY");}
-                else names+="Waiting for player";
-                if(i==0)names+="                 VS                 ";
+                else {names+="Waiting for player";allReady=false;}
+                allReady&=p!=null && p.ready;
+                if(i<required-1)names+=required==4?(i==1?"   VS   ":" / "):"                 VS                 ";
                 if(i<roomPlayers.Count){tableAvatars[i].sprite=roomPlayers[i].GetAvatar().sprite;tableAvatars[i].preserveAspect=true;}
             }
-            tableLabel.text=names;membersLabel.text=DuelFormat.DisplayName+" / "+count+" / 2 Members";
+            tableLabel.text=names;membersLabel.text=DuelFormat.DisplayName+" / "+(required==4?"DUOS / ":"")+count+" / "+required+" Members";
             deckLabel.text=Config.GetConfigDeckName();
-            beginButton.interactable=RoomServant.IsHost && count==2 && RoomServant.players[0].ready && RoomServant.players[1].ready;
-            readyButton.interactable=RoomServant.SelfType<2;
-            readyButton.GetComponentInChildren<TextMeshProUGUI>().text=RoomServant.SelfType<2 && RoomServant.players[RoomServant.SelfType]?.ready==true?"CANCEL READY":"READY";
+            beginButton.interactable=RoomServant.IsHost && count==required && allReady;
+            readyButton.interactable=RoomServant.SelfType<required;
+            readyButton.GetComponentInChildren<TextMeshProUGUI>().text=RoomServant.SelfType<required && RoomServant.players[RoomServant.SelfType]?.ready==true?"CANCEL READY":"READY";
         }
         async void InviteFromRoom()
         {

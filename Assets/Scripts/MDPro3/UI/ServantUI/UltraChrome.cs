@@ -6,20 +6,44 @@ namespace MDPro3.UI.ServantUI
     public class UltraNavIcon : MaskableGraphic
     {
         public int kind;
+        static Texture2D supplied;
+        public override Texture mainTexture=>kind<3?(supplied!=null?supplied:(supplied=Resources.Load<Texture2D>("Ultra/UserTopIcons"))):base.mainTexture;
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
-            if(kind==3){for(int i=0;i<3;i++)Line(vh,.12f,.25f+i*.25f,.88f,.25f+i*.25f);return;}
+            if(kind<3 && mainTexture!=null)
+            {
+                var crops=new[]{new Rect(81,64,189,188),new Rect(355,62,188,190),new Rect(629,67,190,189)};
+                var crop=crops[kind];var texture=mainTexture;
+                UltraReferenceArt.Quad(vh,rectTransform.rect,new Rect(crop.x/texture.width,crop.y/texture.height,crop.width/texture.width,crop.height/texture.height),color);return;
+            }
+            Quad(vh,.02f,.02f,.96f,.96f,new Color(.42f,.42f,.42f));
+            var light=new Color(.85f,.85f,.85f);var dark=new Color(.33f,.33f,.33f);
+            if(kind==3){for(int i=0;i<3;i++)Quad(vh,.20f,.23f+i*.23f,.60f,.075f,light);return;}
             if(kind==2)
             {
-                Circle(vh,.37f,.70f,.16f);Circle(vh,.72f,.62f,.13f);
-                Line(vh,.10f,.15f,.18f,.42f);Line(vh,.18f,.42f,.55f,.42f);Line(vh,.55f,.42f,.64f,.15f);
-                Line(vh,.63f,.35f,.88f,.35f);Line(vh,.88f,.35f,.95f,.12f);return;
+                Disc(vh,.39f,.64f,.17f,light);Disc(vh,.73f,.59f,.125f,new Color(.68f,.68f,.68f));
+                Quad(vh,.18f,.18f,.45f,.29f,light);Quad(vh,.63f,.28f,.24f,.22f,new Color(.68f,.68f,.68f));return;
             }
-            Line(vh,.10f,.18f,.90f,.18f);Line(vh,.90f,.18f,.90f,.82f);Line(vh,.90f,.82f,.10f,.82f);Line(vh,.10f,.82f,.10f,.18f);
-            if(kind==0){Line(vh,.10f,.82f,.50f,.43f);Line(vh,.50f,.43f,.90f,.82f);}
-            else for(int i=0;i<3;i++){float y=.32f+i*.19f;Line(vh,.22f,y,.30f,y);Line(vh,.42f,y,.76f,y);}
+            Quad(vh,.14f,.25f,.72f,.50f,light);
+            if(kind==0){Triangle(vh,new Vector2(.16f,.73f),new Vector2(.84f,.73f),new Vector2(.50f,.40f),new Color(.65f,.65f,.65f));}
+            else for(int i=0;i<3;i++){float y=.34f+i*.16f;Disc(vh,.25f,y,.035f,dark);Quad(vh,.39f,y-.025f,.35f,.05f,dark);}
         }
+        void Quad(VertexHelper vh,float x,float y,float w,float h,Color tint)
+        {
+            var r=rectTransform.rect;int n=vh.currentVertCount;
+            foreach(var p in new[]{new Vector2(x,y),new Vector2(x+w,y),new Vector2(x+w,y+h),new Vector2(x,y+h)})vh.AddVert(r.position+Vector2.Scale(p,r.size),tint,Vector2.zero);
+            vh.AddTriangle(n,n+1,n+2);vh.AddTriangle(n,n+2,n+3);
+        }
+        void Triangle(VertexHelper vh,Vector2 a,Vector2 b,Vector2 c,Color tint)
+        {
+            var r=rectTransform.rect;int n=vh.currentVertCount;foreach(var p in new[]{a,b,c})vh.AddVert(r.position+Vector2.Scale(p,r.size),tint,Vector2.zero);vh.AddTriangle(n,n+1,n+2);
+        }
+        void Disc(VertexHelper vh,float x,float y,float radius,Color tint)
+        {
+            for(int i=0;i<32;i++){float a=i*Mathf.PI/16,b=(i+1)*Mathf.PI/16;Triangle(vh,new Vector2(x,y),new Vector2(x+Mathf.Cos(a)*radius,y+Mathf.Sin(a)*radius),new Vector2(x+Mathf.Cos(b)*radius,y+Mathf.Sin(b)*radius),tint);}
+        }
+
         void Line(VertexHelper vh,float x,float y,float xx,float yy)
         {
             var r=rectTransform.rect;var a=new Vector2(r.x+x*r.width,r.y+y*r.height);var b=new Vector2(r.x+xx*r.width,r.y+yy*r.height);
@@ -48,7 +72,7 @@ namespace MDPro3.UI.ServantUI
         void Add(VertexHelper vh,Rect r,Color tint)
         {
             int start=vh.currentVertCount;float c=Mathf.Min(corner,r.height*.28f,r.width*.15f);
-            Vector2[] points={new Vector2(r.xMin+c,r.yMin),new Vector2(r.xMax,r.yMin),new Vector2(r.xMax,r.yMax-c),new Vector2(r.xMax-c,r.yMax),new Vector2(r.xMin,r.yMax),new Vector2(r.xMin,r.yMin+c)};
+            Vector2[] points={new Vector2(r.xMin+c,r.yMin),new Vector2(r.xMax-c,r.yMin),new Vector2(r.xMax,r.yMin+c),new Vector2(r.xMax,r.yMax-c*.4f),new Vector2(r.xMax-c*.4f,r.yMax),new Vector2(r.xMin+c,r.yMax),new Vector2(r.xMin,r.yMax-c),new Vector2(r.xMin,r.yMin+c*.4f)};
             foreach(var p in points)vh.AddVert(p,tint,Vector2.zero);
             for(int i=1;i<points.Length-1;i++)vh.AddTriangle(start,start+i,start+i+1);
         }

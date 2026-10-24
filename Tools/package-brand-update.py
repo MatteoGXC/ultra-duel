@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT.parent / 'release-work/windows-v0.1.0'
-VERSION = '0.1.4'
+VERSION = '0.1.5'
 OUT = ROOT.parent / ('release-work/windows-v'+VERSION)
 PLAYER = ROOT / 'release/Solo-mode-update'
 
@@ -38,6 +38,7 @@ def main():
     names += [p.relative_to(PLAYER).as_posix() for p in (PLAYER/'Data/locales').glob('*/cards.cdb')]
     names += [p.relative_to(PLAYER).as_posix() for p in (PLAYER/'Data/locales').glob('*/strings.conf')]
     names += ['Data/locales/en-US/translation.conf']
+    names += ['Data/extended-art-audit.json','Picture/ExtendedArt']
     audit = json.loads((ROOT/'Data/card-update-audit.json').read_text(encoding='utf-8'))
     names += ['Picture/Art/'+str(row['id'])+'.jpg' for row in audit['art']
               if (PLAYER/'Picture/Art'/f"{row['id']}.jpg").is_file()]

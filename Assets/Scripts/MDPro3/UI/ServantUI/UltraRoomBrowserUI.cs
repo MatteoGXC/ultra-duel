@@ -10,6 +10,7 @@ namespace MDPro3.UI.ServantUI
 {
     public partial class MainMenuUI
     {
+        string friendRoomMode="1v1";
         void BuildRoomBrowser()
         {
             OpenModal("ROOM MATCH","","rooms");WideModal();
@@ -40,11 +41,12 @@ namespace MDPro3.UI.ServantUI
             }
             HomePanel(HomeRect("Options divider",modal,.665f,.17f,.001f,.64f),new Color(.48f,.53f,.60f,.6f));
             HomeText(modal,"ROOM OPTIONS",23,Color.white,.70f,.76f,.25f,.055f);
+            SmallButton(modal,friendRoomMode=="2v2"?"MODE: DUOS 2v2":"MODE: 1v1",()=>{friendRoomMode=friendRoomMode=="1v1"?"2v2":"1v1";ShowRooms();},.70f,.85f,.25f,.075f,20);
             SmallButton(modal,DuelFormat.DisplayName,()=>DuelFormat.Select(ShowRooms),.70f,.65f,.25f,.085f,21);
             var create=SmallButton(modal,"CREATE ROOM",()=>Run(async()=>{
                 var deck=new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK+Config.GetConfigDeckName()+Program.EXPANSION_YDK);
                 if(!DuelFormat.Validate(deck,"Your Deck"))return;
-                var room=await UltraServices.Request("/rooms","POST",new{format=DuelFormat.Genesys?"Genesys":"TCG",cap=DuelFormat.PointCap});
+                var room=await UltraServices.Request("/rooms","POST",new{format=DuelFormat.Genesys?"Genesys":"TCG",cap=DuelFormat.PointCap,mode=friendRoomMode});
                 CloseModal();await UltraServices.JoinRoom(room);
             }),.70f,.53f,.25f,.085f,24);
             create.GetComponent<UltraChrome>().rimColor=Lime;create.GetComponent<UltraChrome>().rim=2;

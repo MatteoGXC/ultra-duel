@@ -22,6 +22,7 @@ namespace MDPro3
             public List<Match> matches = new List<Match>();
             public string title = "Rookie Duelist";
             public string frame = "Default";
+            public int avatarCard;
             public List<string> ownedFrames = new List<string> { "Default" };
         }
         [Serializable] public class Match

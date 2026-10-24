@@ -36,6 +36,13 @@ class PlayerFeatures(unittest.TestCase):
             with self.assertRaises(service.Problem):self.call('/admin/grant',{'id':2,'amount':amount})
     def test_unknown_recipient(self):
         with self.assertRaises(service.Problem):self.call('/admin/grant',{'id':999,'amount':1})
+    def test_profile_avatar_is_account_scoped(self):
+        p=self.call('/profile/avatar',{'card':16509007})
+        self.assertEqual(p['avatar'],16509007)
+        self.assertEqual(player_features.profile(self.db,2)['avatar'],0)
+        self.assertEqual(p['gems'],0)
+        for value in (-1,1000000000):
+            with self.assertRaises(service.Problem):self.call('/profile/avatar',{'card':value})
     def test_shop_ownership_and_duplicate_purchase(self):
         item=json.loads(Path(player_features.__file__).with_name('shop-catalog.json').read_text())[0]
         with self.assertRaises(service.Problem):self.call('/shop/buy',{'item':item['key']},2)

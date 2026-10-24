@@ -1,0 +1,438 @@
+{
+  "kind": "Official extended-art printing images, unmodified",
+  "count": 48,
+  "cards": [
+    {
+      "id": 64865,
+      "name": "Cyberse Code Magician",
+      "printing": "MAMO-EN017",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22706&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22706&ciid=2&enc=ux8jfL5TCnHzAPRNFi7KHA&request_locale=en",
+      "sha256": "47d4ed00dc3b10fe56b31ed21756945d5e4c957229ecd9d146014a49259d2ef2"
+    },
+    {
+      "id": 1186447,
+      "name": "Horoscope Sorcerer, the Stargazer Magician",
+      "printing": "MAMO-EN014",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22703&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22703&ciid=2&enc=XAWEK5n_j-5oUDjcTV1sSQ&request_locale=en",
+      "sha256": "9dd5ebe4546537905adb4c70ca25321a02afb4fd2a8dab5a81e2f320a946221a"
+    },
+    {
+      "id": 6218704,
+      "name": "Odd-Eyes Arcray Dragon",
+      "printing": "RA05-EN145",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=19172&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=19172&ciid=2&enc=ZjvyMNkr0lCqTwiWh-E3QA&request_locale=en",
+      "sha256": "28be8f543b2770c7ca0907993920bc3402924a1fdc47fd0101b28d5ec3d6c078"
+    },
+    {
+      "id": 7894706,
+      "name": "The Chaotic Phantasmal Sacred Beasts",
+      "printing": "CORI-EN029",
+      "set": "Chaos Origins",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22978&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22978&ciid=2&enc=mhXFyx7Kbsx3ZOtwqihjFg&request_locale=en",
+      "sha256": "30fa482c5af20402c2d25dab3e1687890e731d6f70ecef325d5aa00c90cd252e"
+    },
+    {
+      "id": 12381100,
+      "name": "Dragon Master Magia",
+      "printing": "BLGG-EN137",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=19718&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=19718&ciid=2&enc=dd8MH2OZ22zKKJsru3bXxw&request_locale=en",
+      "sha256": "530ef24168f75648106032706b31ce1a9913b1b13849e27f6fce664089a9149e"
+    },
+    {
+      "id": 12908094,
+      "name": "Gagaga Magician - Gagaga Magic",
+      "printing": "MAMO-EN011",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22700&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22700&ciid=2&enc=4mZh7nXZici59-_ScBYh_A&request_locale=en",
+      "sha256": "101b4cf178452074ad21d78d0e178d5aac2ac1da74f729cde7bb8e218a8c2a6e"
+    },
+    {
+      "id": 13021682,
+      "name": "Starjunk Synchron",
+      "printing": "MAMO-EN008",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22697&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22697&ciid=2&enc=FhZTOQkt6TVIo8QEHs-BVw&request_locale=en",
+      "sha256": "d4c94a348f4d0f6fdb53c36e9fad8fc3c240be2ebbd6547396cbd64c4b49a279"
+    },
+    {
+      "id": 13243124,
+      "name": "Favorite HERO Flame Wingman",
+      "printing": "MAMO-EN005",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22694&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22694&ciid=2&enc=ieE2gEw1MSN9puYmF7EtKA&request_locale=en",
+      "sha256": "f39f16010e47fa0154e956ddf770d49734a0959681098fd236c84188d8aa3ec5"
+    },
+    {
+      "id": 13331639,
+      "name": "Supreme King Z-ARC",
+      "printing": "BLGG-EN141",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=12953&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=12953&ciid=2&enc=mHgG1oFHZY9jrXZlkDrQrQ&request_locale=en",
+      "sha256": "9ac15809fe8158fd37206a069fd1e0515a2c9b006ca5842fe4daef2d7c67e643"
+    },
+    {
+      "id": 14965712,
+      "name": "Kuriboh - Multiply!",
+      "printing": "MAMO-EN002",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22691&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22691&ciid=2&enc=kwUGEe011x_a6TxzptOxHQ&request_locale=en",
+      "sha256": "67b37e0fdcdfb4509755956ffec1d8c0e477211364ba7785c312d4771ee38f42"
+    },
+    {
+      "id": 17242022,
+      "name": "Red-Eyes Black Dragon Exceed",
+      "printing": "BETB-EN036",
+      "set": "Beyond the Brave",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=23358&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=23358&ciid=2&enc=ega1fQiSIgA88ELfcmy6Sw&request_locale=en",
+      "sha256": "cd1802ac3679cc64104a57f699658c3ca79454553a5a7fa6351e31dd1514471c"
+    },
+    {
+      "id": 21637210,
+      "name": "Firewall Dragon Singularity",
+      "printing": "RA05-EN146",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=18510&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=18510&ciid=2&enc=WHqEu5QwiwHCT0gjGj34bQ&request_locale=en",
+      "sha256": "a7236655ab164a7495fb72a827bf52759235c49d6740048aec7559ba47f8606e"
+    },
+    {
+      "id": 22850702,
+      "name": "Chaos Angel",
+      "printing": "BLGG-EN143",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=18507&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=18507&ciid=2&enc=hOziZl4VkOQR0xsvDSFgaw&request_locale=en",
+      "sha256": "20c5cc40faa2faacef1f62f6e78388cbf253e0c8e000fcce6a0517c063024065"
+    },
+    {
+      "id": 24203749,
+      "name": "The Great Gallant Bandit",
+      "printing": "BETB-EN027",
+      "set": "Beyond the Brave",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=23349&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=23349&ciid=2&enc=GG5OhljzXcGT-PxwXviTzA&request_locale=en",
+      "sha256": "7623d6eeccc58d440b3e8f036e712933b73b637037d0920e8bd9ec8a839e5ff5"
+    },
+    {
+      "id": 31801517,
+      "name": "Number 62: Galaxy-Eyes Prime Photon Dragon",
+      "printing": "BLGG-EN140",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=11069&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=11069&ciid=2&enc=ChB6USYR6g4_SlhTV8fTTg&request_locale=en",
+      "sha256": "b27cf4b7e3e267dfc46ab81fd5faefa9ddd7e43385c33b010962104e86428847"
+    },
+    {
+      "id": 32828466,
+      "name": "Wake Up Your Elemental HERO",
+      "printing": "RA05-EN142",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=17247&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=17247&ciid=2&enc=gwqpHBzM4R1DKxHBudJKxg&request_locale=en",
+      "sha256": "d10c2cc97a3245c6eb8d7404a99896ee8268472992c6f9341cecfb581cd91c50"
+    },
+    {
+      "id": 35405755,
+      "name": "Kurikara Divincarnate",
+      "printing": "RA05-EN147",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=17433&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=17433&ciid=2&enc=j5jxlKlpE49ysASflne5-w&request_locale=en",
+      "sha256": "22cad15b7bdb33da743f5878dfcd00cdca565fcb80907167cdb4c83106853b36"
+    },
+    {
+      "id": 35952884,
+      "name": "Shooting Quasar Dragon",
+      "printing": "RA05-EN143",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=9709&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=9709&ciid=2&enc=gnmm3ZKgWv-v-qqCmtyDeQ&request_locale=en",
+      "sha256": "96a483e94550424c16fdaf40155dec121910d5c4432487b02b80c9fa39df9cd5"
+    },
+    {
+      "id": 37458564,
+      "name": "Cyberse Contract Witch",
+      "printing": "MAMO-EN018",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22707&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22707&ciid=2&enc=-0tnUSg73zNAaTSP_XvqTw&request_locale=en",
+      "sha256": "2bca6131b7f2711a6433fbd11ed520143c53a4ac4ab6ce7ec117e6038e6d3c05"
+    },
+    {
+      "id": 37818794,
+      "name": "Red-Eyes Dark Dragoon",
+      "printing": "RA05-EN141",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=14952&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=14952&ciid=2&enc=w7y1Zze848WGGVAKPshNSg&request_locale=en",
+      "sha256": "d75af56a65227828b4797005e434e476504cbce79f0685222f65ebdd3bb7be98"
+    },
+    {
+      "id": 40237839,
+      "name": "Winged Kuriboh Sabatiel LV10",
+      "printing": "MAMO-EN006",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22695&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22695&ciid=2&enc=Iwbd-H6ZGtKU0PRVRkXV8A&request_locale=en",
+      "sha256": "0a2b4e2bd47a5f0442ed11256bc05cedacd96f6acfc2aca516dd7ca64fd49cb1"
+    },
+    {
+      "id": 40366667,
+      "name": "Dominus Impulse",
+      "printing": "BLGG-EN146",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=20555&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=20555&ciid=2&enc=U0VCkAOxzxgbt9rPXAGoGw&request_locale=en",
+      "sha256": "0997f27ce406912dfaa5fcffe043a53cc564f9bba638d2304be17380ff7fa4e3"
+    },
+    {
+      "id": 41350417,
+      "name": "Dark Magical Curtain",
+      "printing": "MAMO-EN003",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22692&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22692&ciid=2&enc=DKk2q2lwqDkTr1mYBOv-nQ&request_locale=en",
+      "sha256": "1e3f136072fde5aeff589c2e4433f6d08c224d0fec7f45a0039454ed5b5f1b76"
+    },
+    {
+      "id": 44001993,
+      "name": "Magician of Dark Chaos - Black Chaos",
+      "printing": "CORI-EN027",
+      "set": "Chaos Origins",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22976&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22976&ciid=2&enc=A4UFM1TFQt8-B8KyqQ9oOA&request_locale=en",
+      "sha256": "e09a66417f3eeaa8c864e9750ee562d111406af25003c17967edc280e397d098"
+    },
+    {
+      "id": 44146295,
+      "name": "Mirrorjade the Iceblade Dragon",
+      "printing": "RA05-EN148",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=17069&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=17069&ciid=2&enc=hqeHIcHfR27p9aSV_A2e4Q&request_locale=en",
+      "sha256": "156bb74bf8041274b75f6b8db81e2f612272ac8b1dc663218d8c0f30e14c0fd3"
+    },
+    {
+      "id": 48130397,
+      "name": "Super Polymerization",
+      "printing": "RA05-EN149",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=7445&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=7445&ciid=2&enc=6eCA7EzU8AeC7RsTKrlVwA&request_locale=en",
+      "sha256": "b83bb059fbe8efae03710ecf1b85ae6299368eb5112434ca0c6e81d4708ef78c"
+    },
+    {
+      "id": 48171151,
+      "name": "Astrograph Sorcerer, the Starfrost Magician",
+      "printing": "MAMO-EN015",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22704&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22704&ciid=2&enc=iSJmg7GCA7kDZE5s262HJg&request_locale=en",
+      "sha256": "ba569cfb7fa6b8b1e36417bdb7970c4cdf3febdc48038f6ac7d8c83841834c4d"
+    },
+    {
+      "id": 48393693,
+      "name": "Gagaga Girl - Cell Phone Subtraction",
+      "printing": "MAMO-EN012",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22701&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22701&ciid=2&enc=wdkHwrqATYhpjPNmv3A62w&request_locale=en",
+      "sha256": "5848010776ddd507ab17019e1716b283c207a78bba953a25f42d40bc4a5cfe04"
+    },
+    {
+      "id": 49415281,
+      "name": "Synchro Emergency",
+      "printing": "MAMO-EN009",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22698&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22698&ciid=2&enc=sUx66QTZHVBgtNAWuCsWtA&request_locale=en",
+      "sha256": "914b60fbdaace5729a97aba972b44cfb254a72f00c5135e6bd1b311a1fb15fe9"
+    },
+    {
+      "id": 50208444,
+      "name": "Elemental Saga Doriado",
+      "printing": "BETB-EN028",
+      "set": "Beyond the Brave",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=23350&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=23350&ciid=2&enc=5831CTjk82xV2QKSGYDqwg&request_locale=en",
+      "sha256": "bde079242b1331cc605a76842df04e49157d6dacd57d21a922e8cf1674c1f3d0"
+    },
+    {
+      "id": 52245126,
+      "name": "Audhumla, Progenitor of the Frozen Expanse",
+      "printing": "BETB-EN081",
+      "set": "Beyond the Brave",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=23513&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=23513&ciid=2&enc=EXhIAuNBOJuPWlddTs_1Sg&request_locale=en",
+      "sha256": "1b8436eff4df996a2962c2bbd59e0cef7cd8f69d56a1145d5c04fae1fd2af794"
+    },
+    {
+      "id": 54577949,
+      "name": "Witness of the Ancient",
+      "printing": "CORI-EN081",
+      "set": "Chaos Origins",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=23296&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=23296&ciid=2&enc=p67BAXty_h9wN54D9qJhoQ&request_locale=en",
+      "sha256": "3698cfef1a0dfa476ffb2cb5dc6df0ca58a162646713d2ed76074117869b29aa"
+    },
+    {
+      "id": 70405001,
+      "name": "Black Luster Soldier - Soldier of Light and Darkness",
+      "printing": "CORI-EN028",
+      "set": "Chaos Origins",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22977&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22977&ciid=2&enc=Mzyp5qpJNgrAIdJMHSqhdw&request_locale=en",
+      "sha256": "4f181205c882e5850224f6abab58815a68c7098ce8b732dba7be1e5acf641fcc"
+    },
+    {
+      "id": 74665150,
+      "name": "Decode Talker Integration",
+      "printing": "MAMO-EN016",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22705&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22705&ciid=2&enc=Z5IE9fyAW2DgyjLlEXNDZg&request_locale=en",
+      "sha256": "e25b81b5d960f2fbeff71ff05e0f015a91e71a064dd670ed7c9cc8a5ef758681"
+    },
+    {
+      "id": 75787708,
+      "name": "Odd-Eyes Pendulum Dragon of the Four Heavenly Dragons",
+      "printing": "MAMO-EN013",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22702&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22702&ciid=2&enc=ud6ExPh0T8tV90PAET0HTQ&request_locale=en",
+      "sha256": "cfdafd5364b0341982df94396f22fc20b7495ed71a5807a59e5ed85fce2a8610"
+    },
+    {
+      "id": 76504386,
+      "name": "Number 39: Utopia, Emissary of Light",
+      "printing": "MAMO-EN010",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22699&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22699&ciid=2&enc=SAZd1IvrUc6v036UEVbBHA&request_locale=en",
+      "sha256": "85bd8b78b737738eac0da157535bd6d2e2b5013d200e17efc3e70510f1c2f053"
+    },
+    {
+      "id": 76636978,
+      "name": "Stardust Dragon - Victim Sanctuary",
+      "printing": "MAMO-EN007",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22696&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22696&ciid=2&enc=oXPrsEAYIoOdKl8yGTUXWQ&request_locale=en",
+      "sha256": "39c431bc8c7ecb0fc3cc419c478ad239a50d20ea64f9f93764fc1a692a8ddf80"
+    },
+    {
+      "id": 79791695,
+      "name": "CXyz Hope Chaos Barian Dragon",
+      "printing": "BETB-EN044",
+      "set": "Beyond the Brave",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=23366&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=23366&ciid=2&enc=f4EX--rcIhUz6IkYLdb-BA&request_locale=en",
+      "sha256": "ee334a54d9cda69dbbe7498f0a12b9e0d86df48623c61299db5d4597cf7feb92"
+    },
+    {
+      "id": 82344137,
+      "name": "Phara the Primordial Goddess",
+      "printing": "CORI-EN022",
+      "set": "Chaos Origins",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22971&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22971&ciid=2&enc=S-l1plNBsAWXfhE8HDq7fQ&request_locale=en",
+      "sha256": "b0e85e12832bc42bccafe89ccca56dd19318d846df16c57c0797af301fe4cc9c"
+    },
+    {
+      "id": 87116928,
+      "name": "Chimeratech Megafleet Dragon",
+      "printing": "BLGG-EN138",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=13358&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=13358&ciid=2&enc=oxftq3dWdnCgI08de5mlyA&request_locale=en",
+      "sha256": "3bc25970798c1a8f8129ecfe70e86c2c1e76663d969f371a08b6b050ecc88fd7"
+    },
+    {
+      "id": 87758525,
+      "name": "Favorite HERO Shining Flare Wingman",
+      "printing": "MAMO-EN004",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22693&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22693&ciid=2&enc=kWZKOvIvSt4Ki84wlAB1GQ&request_locale=en",
+      "sha256": "c25464f0082e398c5fea3eddcfdcd9d2d072c558190292788d51bb161317c872"
+    },
+    {
+      "id": 88570003,
+      "name": "Dark Magician, the Pharaoh's Servant",
+      "printing": "MAMO-EN001",
+      "set": "Magnificent Monsters",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=22690&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=22690&ciid=2&enc=zFxxVN-DtnDN5uvvm5bkBg&request_locale=en",
+      "sha256": "81804dd43ee732dedf463dfe6666ce93ca8f2505f48158575e48514c4095e512"
+    },
+    {
+      "id": 91530236,
+      "name": "Spirit Charmers",
+      "printing": "BLGG-EN145",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=15409&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=15409&ciid=2&enc=SWO_CKo_6TL9Viygd43gOw&request_locale=en",
+      "sha256": "34fcef3ce98ff074d9efe6263c485ca3eb94b46aac76d2367808163a4dccc86c"
+    },
+    {
+      "id": 95134948,
+      "name": "Number 99: Utopia Dragonar",
+      "printing": "RA05-EN144",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=16471&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=16471&ciid=2&enc=ZGvK1gCuhyQirkb_0odJnA&request_locale=en",
+      "sha256": "9d811fe182f3161d8021f7052e8319483097915a02e5297ee68c3f2529f1b196"
+    },
+    {
+      "id": 97045737,
+      "name": "Dominus Purge",
+      "printing": "RA05-EN150",
+      "set": "Rarity Collection 5",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=20257&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=20257&ciid=2&enc=Ggr-Rvq9UbIoEimHGBxo0g&request_locale=en",
+      "sha256": "5b2173df973aef898be5b4e73b1a9ac50e55cf70f609eab6da17b12b2015b9f0"
+    },
+    {
+      "id": 98127546,
+      "name": "Underworld Goddess of the Closed World",
+      "printing": "BLGG-EN144",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=15741&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=15741&ciid=2&enc=W6ogr_MeWo45fzJGiYz8Ew&request_locale=en",
+      "sha256": "d68ea3a969623176794e5ce4c2790ce76d54008774b854b2fe70a2b88ddc4ede"
+    },
+    {
+      "id": 98630720,
+      "name": "Borrelend Dragon",
+      "printing": "BLGG-EN142",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=14963&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=14963&ciid=2&enc=CTUXFwT09rXQXt2aEQBsaQ&request_locale=en",
+      "sha256": "eacae1efe3f931ac0b79194a853f8eae9c2b728a6ea448b93fbf4bfefcffffc9"
+    },
+    {
+      "id": 99585850,
+      "name": "Red Supernova Dragon",
+      "printing": "BLGG-EN139",
+      "set": "Battles of Legend: Glorious Gallery",
+      "cardPage": "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=14957&request_locale=en",
+      "image": "https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=2&cid=14957&ciid=2&enc=-tab2KLQQWQfJ4WDpLqYag&request_locale=en",
+      "sha256": "843e13433e8f5ce65ecd5eb0f35681a922cf15fc4e95ff64a6338569805a6f80"
+    }
+  ]
+}

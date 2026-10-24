@@ -30,6 +30,9 @@ namespace MDPro3
         {
 #if !UNITY_EDITOR && UNITY_STANDALONE_WIN
             Directory.SetCurrentDirectory(Path.GetDirectoryName(Application.dataPath));
+#elif !UNITY_EDITOR && UNITY_STANDALONE_OSX
+            Directory.SetCurrentDirectory(Environment.GetEnvironmentVariable("ULTRA_DUEL_DATA")
+                ?? Path.GetFullPath(Path.Combine(Application.dataPath,"../..")));
 #endif
             Application.targetFrameRate = 0;
 
