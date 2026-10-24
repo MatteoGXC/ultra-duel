@@ -118,7 +118,7 @@ namespace MDPro3
             }
 
             DirectoryInfo dir = new(Program.root + path);
-#if !UNITY_EDITOR && (UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN)
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
             dir = new DirectoryInfo(Path.Combine(Application.dataPath, Program.root + path));
 #endif
             FileInfo[] files = dir.GetFiles("*");
@@ -167,7 +167,7 @@ namespace MDPro3
         public static GameObject LoadFromFolder(string path)
         {
             DirectoryInfo dir = new(Program.root + path);
-#if !UNITY_EDITOR && (UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN)
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
             dir = new DirectoryInfo(Path.Combine(Application.dataPath, Program.root + path));
 #endif
             FileInfo[] files = dir.GetFiles("*");
@@ -207,7 +207,7 @@ namespace MDPro3
             }
 
             DirectoryInfo dir = new(Program.root + path);
-#if !UNITY_EDITOR && (UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN)
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
             dir = new DirectoryInfo(Path.Combine(Application.dataPath, Program.root + path));
 #endif
             if (!dir.Exists)
@@ -272,7 +272,7 @@ namespace MDPro3
             var returnValue = new List<GameObject>();
 
             DirectoryInfo dir = new(Program.root + path);
-#if !UNITY_EDITOR && (UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN)
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
             dir = new DirectoryInfo(Path.Combine(Application.dataPath, Program.root + path));
 #endif
 
@@ -354,7 +354,7 @@ namespace MDPro3
                         return material;
 
                 var folder = Program.root + "MasterDuel/Protector/" + code;
-#if !UNITY_EDITOR && (UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN)
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
             folder = Path.Combine(Application.dataPath, folder);
 #endif
                 if (!Directory.Exists(folder))
