@@ -52,8 +52,9 @@ def main():
             if not source.is_file():
                 continue
             relative = source.relative_to(PLAYER).as_posix()
-            # These multi-gigabyte bundles are unchanged by a player recompile.
-            if relative.startswith('Matteo-Duel_Data/StandaloneWindows64/'):
+            # Master Duel runtime content is unchanged; freshly built menu
+            # dependencies must accompany the new Addressables catalog.
+            if relative.startswith('Matteo-Duel_Data/StandaloneWindows64/') and not relative.startswith('Matteo-Duel_Data/StandaloneWindows64/MDPro3/'):
                 continue
             if relative.endswith(('.pdb', '.mdb')):
                 continue
