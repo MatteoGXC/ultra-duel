@@ -18,9 +18,9 @@ def main():
             else:
                 target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(archive.read(entry))
     player=resources/'Player.app'
-    run('lipo','-verify_arch',architecture,player/'Contents/MacOS/Ultra Duel')
+    run('lipo',player/'Contents/MacOS/Ultra Duel','-verify_arch',architecture)
     for name in ('libocgcore.dylib','libygoserver.dylib'):
-        run('lipo','-verify_arch',architecture,player/'Contents/Plugins'/name)
+        run('lipo',player/'Contents/Plugins'/name,'-verify_arch',architecture)
     for file in player.rglob('*'):
         if file.is_file() and file.read_bytes()[:4] in (b'\xcf\xfa\xed\xfe',b'\xfe\xed\xfa\xcf',b'\xca\xfe\xba\xbe'):
             file.chmod(0o755)
