@@ -29,6 +29,11 @@ def main():
         for file in bundles.iterdir():
             if file.is_file() and not file.name.endswith('.manifest'):
                 target.write(file, 'Defaults/StandaloneOSX/MasterDuel/Built-in/'+file.name)
+        menus = ROOT/'Platforms/StandaloneOSX/MDPro3'
+        assert list(menus.glob('*_monoscripts.bundle')), 'Missing freshly built Mac menu dependencies'
+        for file in menus.rglob('*'):
+            if file.is_file():
+                target.write(file, 'Defaults/StandaloneOSX/MDPro3/'+file.relative_to(menus).as_posix())
         audit = json.loads((ROOT/'Data/card-update-audit.json').read_text())
         for row in audit['art']:
             file = ROOT/'Picture/Art'/f"{row['id']}.jpg"
