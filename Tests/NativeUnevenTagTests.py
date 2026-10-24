@@ -18,8 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 def server(native, runtime, port):
     os.chdir(runtime)
     handle = os.add_dll_directory(str(native)) if os.name=='nt' else None
-    ctypes.CDLL(str(native/('ocgcore.dll' if os.name=='nt' else 'libocgcore.so')), mode=ctypes.RTLD_GLOBAL)
-    library = ctypes.CDLL(str(native/('ygoserver.dll' if os.name=='nt' else 'libygoserver.so')))
+    suffix = '.dylib' if sys.platform=='darwin' else '.so'
+    ctypes.CDLL(str(native/('ocgcore.dll' if os.name=='nt' else 'libocgcore'+suffix)), mode=ctypes.RTLD_GLOBAL)
+    library = ctypes.CDLL(str(native/('ygoserver.dll' if os.name=='nt' else 'libygoserver'+suffix)))
     library.start_server.argtypes = [ctypes.c_char_p]
     library.start_server(f'{port} 0 1 2 7 T T 8000 5 1 0 0'.encode())
 

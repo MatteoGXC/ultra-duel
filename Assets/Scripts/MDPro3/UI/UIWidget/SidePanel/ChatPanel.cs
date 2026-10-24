@@ -275,6 +275,8 @@ namespace MDPro3.UI
 
         public static string GetPlayerName(int player)
         {
+            if(RoomServant.Mode==2 && player>=0 && player<4 && RoomServant.players[player]==null
+                && RoomServant.players[player^1]!=null)player^=1;
             var playerPosition = GetPlayerPosition(player);
             player = GetRoomPlayerIndex(player);
             string nickName = string.Empty;

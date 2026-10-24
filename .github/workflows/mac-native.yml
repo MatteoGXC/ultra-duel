@@ -38,6 +38,8 @@ jobs:
           PY
       - name: Verify production archive effect loading
         run: build/mac/server_archive_effects "$GITHUB_WORKSPACE"
+      - name: Play three-player and four-player tag turns
+        run: python3 Tests/NativeUnevenTagTests.py --native build/mac
       - name: Initialize every non-token card on Apple Silicon
         run: ULTRA_NATIVE_DIR=build/mac python3 Tests/NativeCardScriptTests.py --all --output build/mac/card-effects.json
       - uses: actions/upload-artifact@v4

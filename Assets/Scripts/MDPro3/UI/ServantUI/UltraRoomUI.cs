@@ -81,14 +81,16 @@ namespace MDPro3.UI.ServantUI
             for(int i=0;i<required;i++)
             {
                 var p=RoomServant.players[i];if(p!=null && !string.IsNullOrEmpty(p.name)){count++;names+=p.name+(p.ready?"  READY":"  NOT READY");}
-                else {names+="Waiting for player";allReady=false;}
-                allReady&=p!=null && p.ready;
+                else {names+="Open seat";if(required!=4)allReady=false;}
+                if(p!=null)allReady&=p.ready;
                 if(i<required-1)names+=required==4?(i==1?"   VS   ":" / "):"                 VS                 ";
                 if(i<roomPlayers.Count){tableAvatars[i].sprite=roomPlayers[i].GetAvatar().sprite;tableAvatars[i].preserveAspect=true;tableAvatars[i].color=p==null?new Color(.28f,.28f,.32f):Color.white;}
             }
             tableLabel.text=names;membersLabel.text=DuelFormat.DisplayName+" / "+(required==4?"DUOS / ":"")+count+" / "+required+" Members";
             deckLabel.text=Config.GetConfigDeckName();
-            beginButton.interactable=RoomServant.IsHost && count==required && allReady;
+            bool uneven=required==4 && count==3;
+            beginButton.interactable=RoomServant.IsHost && (count==required || uneven) && allReady;
+            beginButton.GetComponentInChildren<TextMeshProUGUI>().text=uneven?"BEGIN 2v1":"BEGIN DUEL";
             readyButton.interactable=RoomServant.SelfType<required;
             readyButton.GetComponentInChildren<TextMeshProUGUI>().text=RoomServant.SelfType<required && RoomServant.players[RoomServant.SelfType]?.ready==true?"CANCEL":"ENTRY";
         }
