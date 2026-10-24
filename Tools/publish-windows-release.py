@@ -35,7 +35,7 @@ def main():
             '- The owner can explicitly unlock cosmetics and pass rewards for an account, change duel LP, add a card to their hand, send the opponent hand to the Graveyard, or win their current supported duel. No actions happen automatically.\n'
             '- Fixes friend-server Lua effect loading, including Branded spells and Aluber search. The corrected server is deployed.\n'
             '- Includes the friend-room layout, duel mode menu, corrected icons, normal card presentation and native 2v1/2v2 support from 0.1.7.\n\n'
-            'Hand and LP controls require the owner’s Main Phase after effects resolve. Three- and four-player free-for-all are not implemented. Mac installers are verified and published separately.\n\n'
+            'Hand and LP controls require the ownerâ€™s Main Phase after effects resolve. Three- and four-player free-for-all are not implemented. Mac installers are verified and published separately.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:
