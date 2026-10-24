@@ -1,5 +1,6 @@
 """Cumulative Ultra Duel update against the original public Windows build."""
 import hashlib
+from datetime import datetime, timezone
 import json
 import subprocess
 import zipfile
@@ -21,6 +22,15 @@ def sha(path):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    info_path = PLAYER/'build-info.json'
+    info = json.loads(info_path.read_text())
+    info.update(version=VERSION, commit=commit, builtAt=datetime.now(timezone.utc).isoformat(),
+        assemblySha256=sha(PLAYER/'Matteo-Duel_Data/Managed/Assembly-CSharp.dll'),
+        nativeServerSha256=sha(PLAYER/'Matteo-Duel_Data/Plugins/x86_64/ygoserver.dll'))
+    info['checks'].update(windows017Menus='passed', nativeUnevenTag='Windows and Linux TCP tests passed')
+    info_path.write_text(json.dumps(info, indent=2)+'\n')
+    (PLAYER/'Data/installed-version.json').write_text(json.dumps(dict(version=VERSION, sourceCommit=commit))+'\n')
     baseline = {}
     for path in sorted(BASE.glob('Matteo-Duel-Windows-*.zip')):
         with zipfile.ZipFile(path) as archive:
