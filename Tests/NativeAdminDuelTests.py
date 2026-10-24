@@ -1,7 +1,7 @@
 """Check explicit admin commands against a real two-client native duel."""
 import ctypes, json, os, select, shutil, socket, struct, subprocess, sys, tempfile, threading, time
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(os.environ.get('ULTRA_TEST_CONTENT',Path(__file__).resolve().parents[1]))
 
 def child(native,runtime,port):
     os.chdir(runtime)

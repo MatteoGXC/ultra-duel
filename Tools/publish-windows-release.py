@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.7'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.8'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -29,20 +29,13 @@ def main():
     manifest = json.loads((OUTPUT/'windows-manifest.json').read_text())
     version = manifest['version']
     tag = 'v'+version
-    body = ('## Ultra Duel for Windows\n\n'
-            'New players: download **Ultra-Duel-Setup.exe**. The complete game downloads about 8.1 GB. '
-            'Setup now downloads three parts concurrently, resumes interrupted parts, shows speed, and supports pausing.\n\n'
-            'Existing players: use **Ultra-Duel-Updater.zip** beside your game executable. Only the cumulative update downloads; decks, settings and account data are preserved.\n\n'
-            '## Included in v0.1.7\n\n'
-            '- Restored the normal card presentation and removed extended-art overrides.\n'
-            '- DUEL now opens a mode menu with Friend Duels, Duos 2v2, Solo and Other Servers.\n'
-            '- Friend rooms use the table layout, room actions and deck panel. Finished friend duels return to Ultra Duel instead of the legacy multiplayer page.\n'
-            '- Retains the corrected supplied icons, transparent pass emblem, circular back buttons and portrait-colored profile frame from v0.1.6.\n'
-            '- Genesys search hides Link and Pendulum cards.\n\n'
-            'Native 2v1 turns, discards and surrender, and four-player 2v2 turns passed Windows and Linux TCP tests. '
-            'Three-player friend starts require the updated live duel server. Three- and four-player free-for-all are not implemented. '
-            'The Linux server effect-loading correction is verified separately; deployment depends on restoring VPS access. '
-            'The Apple Silicon DMG is being installation-tested separately.\n\n'
+    body = ('## Ultra Duel 0.1.8 for Windows\n\n'
+            'New players: download **Ultra-Duel-Setup.exe**. Existing players: download **Ultra-Duel-Updater.zip**, extract it beside the game executable, then run the updater. Decks, settings and account data are preserved.\n\n'
+            '- Adds a visible ADMIN button for the authenticated server owner only.\n'
+            '- The owner can explicitly unlock cosmetics and pass rewards for an account, change duel LP, add a card to their hand, send the opponent hand to the Graveyard, or win their current supported duel. No actions happen automatically.\n'
+            '- Fixes friend-server Lua effect loading, including Branded spells and Aluber search. The corrected server is deployed.\n'
+            '- Includes the friend-room layout, duel mode menu, corrected icons, normal card presentation and native 2v1/2v2 support from 0.1.7.\n\n'
+            'Hand and LP controls require the owner’s Main Phase after effects resolve. Three- and four-player free-for-all are not implemented. Mac installers are verified and published separately.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:

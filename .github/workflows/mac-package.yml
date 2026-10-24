@@ -1,7 +1,11 @@
-name: Verify Apple Silicon DMG
+name: Verify Mac DMG
 on:
   workflow_dispatch:
     inputs:
+      arch:
+        type: choice
+        default: arm64
+        options: [arm64, x86_64]
       asset_id:
         description: Private draft input asset ID
         required: true
@@ -14,7 +18,7 @@ permissions:
   contents: write
 jobs:
   package:
-    runs-on: macos-15
+    runs-on: ${{ inputs.arch == 'x86_64' && 'macos-15-intel' || 'macos-15' }}
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -52,10 +56,10 @@ jobs:
           file "build/dmg/Ultra Duel.app/Contents/MacOS/Ultra Duel" "build/dmg/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel"
       - name: Create, verify, mount and install DMG
         run: |
-          hdiutil create -volname "Ultra Duel" -srcfolder build/dmg -ov -format UDZO build/Ultra-Duel-Apple-Silicon.dmg
-          hdiutil verify build/Ultra-Duel-Apple-Silicon.dmg
+          hdiutil create -volname "Ultra Duel" -srcfolder build/dmg -ov -format UDZO build/Ultra-Duel-${{ inputs.arch == 'x86_64' && 'Intel' || 'Apple-Silicon' }}.dmg
+          hdiutil verify build/Ultra-Duel-${{ inputs.arch == 'x86_64' && 'Intel' || 'Apple-Silicon' }}.dmg
           mkdir -p "$RUNNER_TEMP/ultra-mount" "$RUNNER_TEMP/Applications"
-          hdiutil attach build/Ultra-Duel-Apple-Silicon.dmg -readonly -nobrowse -mountpoint "$RUNNER_TEMP/ultra-mount"
+          hdiutil attach build/Ultra-Duel-${{ inputs.arch == 'x86_64' && 'Intel' || 'Apple-Silicon' }}.dmg -readonly -nobrowse -mountpoint "$RUNNER_TEMP/ultra-mount"
           ditto "$RUNNER_TEMP/ultra-mount/Ultra Duel.app" "$RUNNER_TEMP/Applications/Ultra Duel.app"
           hdiutil detach "$RUNNER_TEMP/ultra-mount"
           codesign --verify --deep --strict --verbose=2 "$RUNNER_TEMP/Applications/Ultra Duel.app"
@@ -117,8 +121,8 @@ jobs:
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: verified-ultra-duel-apple-silicon-dmg
-          path: build/Ultra-Duel-Apple-Silicon.dmg
+          name: verified-ultra-duel-${{ inputs.arch }}-dmg
+          path: build/Ultra-Duel-${{ inputs.arch == 'x86_64' && 'Intel' || 'Apple-Silicon' }}.dmg
           retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()

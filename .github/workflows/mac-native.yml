@@ -1,18 +1,23 @@
-name: Apple Silicon native engine
+name: Mac native engine
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        type: choice
+        default: arm64
+        options: [arm64, x86_64]
 permissions:
   contents: read
 jobs:
   native:
-    runs-on: macos-15
+    runs-on: ${{ inputs.arch == 'x86_64' && 'macos-15-intel' || 'macos-15' }}
     steps:
       - uses: actions/checkout@v4
       - name: Build Apple Silicon libraries
         run: |
-          test "$(uname -m)" = arm64
+          test "$(uname -m)" = '${{ inputs.arch }}'
           brew list libevent >/dev/null || brew install libevent
-          cmake -S Server -B build/mac -DCMAKE_BUILD_TYPE=Release -DULTRA_BUILD_EFFECT_TESTS=ON -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH="$(brew --prefix libevent)"
+          cmake -S Server -B build/mac -DCMAKE_BUILD_TYPE=Release -DULTRA_BUILD_EFFECT_TESTS=ON -DCMAKE_OSX_ARCHITECTURES=${{ inputs.arch }} -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH="$(brew --prefix libevent)"
           cmake --build build/mac -j 3
           file build/mac/libocgcore.dylib build/mac/libygoserver.dylib
           otool -L build/mac/libygoserver.dylib
@@ -48,7 +53,7 @@ jobs:
         run: ULTRA_NATIVE_DIR=build/mac python3 Tests/NativeCardScriptTests.py --all --output build/mac/card-effects.json
       - uses: actions/upload-artifact@v4
         with:
-          name: ultra-duel-native-arm64
+          name: ultra-duel-native-${{ inputs.arch }}
           path: |
             build/mac/*.dylib
             build/mac/card-effects.json

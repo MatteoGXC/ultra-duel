@@ -195,6 +195,16 @@ namespace MDPro3
             Debug.Log("FORMAT_SMOKE_MENU_READY");
             yield return Capture("menu");
             var commandLine = Environment.GetCommandLineArgs();
+            if(commandLine.Contains("--owner-admin-check"))
+            {
+                var refresh=MDPro3.Net.UltraServices.Refresh().AsTask();
+                while(!refresh.IsCompleted)yield return null;
+                if(refresh.IsFaulted || !UltraAdminAccess.IsOwner)throw new Exception("An authenticated primary owner session is required for this check.");
+                var home=Program.instance.menu.GetUI<MainMenuUI>();
+                typeof(MainMenuUI).GetMethod("OpenAdmin",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                yield return Capture("owner-account-controls");
+                typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+            }
             if(commandLine.Contains("--solo-ai-audit"))
             {
                 deadline=Time.realtimeSinceStartup+7200;
@@ -415,6 +425,16 @@ namespace MDPro3
             yield return new WaitForSecondsRealtime(12);
             yield return Capture("duel");
             Debug.Log("FORMAT_SMOKE_DUEL_READY " + mode);
+            if(commandLine.Contains("--owner-admin-check"))
+            {
+                var controls=Program.instance.ocgcore.GetUI<OcgCoreUI>().GetComponent<UltraAdminDuelUI>();
+                if(controls==null)throw new Exception("The duel admin controls are missing.");
+                controls.Open();
+                yield return Capture("owner-duel-controls");
+                if(!controls.GetComponentsInChildren<TMPro.TextMeshProUGUI>().Any(t=>t.text=="ADMIN / CURRENT DUEL"))throw new Exception("The owner duel panel did not open.");
+                controls.SendMessage("Close");
+                Debug.Log("OWNER_ADMIN_UI_PASSED authenticated owner account and duel controls rendered; no account grants made");
+            }
             yield return CheckHandMovement();
             yield return CheckDamageDisplay();
             if(Environment.GetCommandLineArgs().Contains("--ultra-result-check"))

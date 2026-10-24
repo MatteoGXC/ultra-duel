@@ -6,7 +6,9 @@ ROOT=Path(__file__).resolve().parents[1]
 def run(*args):subprocess.run([str(a) for a in args],check=True)
 def main():
     p=argparse.ArgumentParser();p.add_argument('--input',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
-    assert os.uname().machine=='arm64'
+    architecture=os.uname().machine
+    assert architecture in ('arm64','x86_64')
+    platform_name='Apple Silicon' if architecture=='arm64' else 'Intel'
     app=a.output/'Ultra Duel.app';resources=app/'Contents/Resources';resources.mkdir(parents=True)
     with zipfile.ZipFile(a.input) as archive:
         for entry in archive.infolist():
@@ -16,6 +18,9 @@ def main():
             else:
                 target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(archive.read(entry))
     player=resources/'Player.app'
+    run('lipo','-verify_arch',architecture,player/'Contents/MacOS/Ultra Duel')
+    for name in ('libocgcore.dylib','libygoserver.dylib'):
+        run('lipo','-verify_arch',architecture,player/'Contents/Plugins'/name)
     for file in player.rglob('*'):
         if file.is_file() and file.read_bytes()[:4] in (b'\xcf\xfa\xed\xfe',b'\xfe\xed\xfa\xcf',b'\xca\xfe\xba\xbe'):
             file.chmod(0o755)
@@ -36,7 +41,7 @@ def main():
                 name=Path(dependency).name
                 if name==binary.name:continue
                 local=tools/name
-                if not local.exists():shutil.copy2(Path('/opt/homebrew/lib')/name,local)
+                if not local.exists():shutil.copy2(Path(subprocess.check_output(['brew','--prefix'],text=True).strip())/'lib'/name,local)
                 run('install_name_tool','-change',dependency,'@loader_path/'+name,binary);queue.append(local);continue
             if not dependency.startswith(('/opt/homebrew/','/usr/local/')):continue
             name=Path(dependency).name
@@ -50,7 +55,7 @@ def main():
         run('codesign','--force','--sign','-',binary)
     run('codesign','--force','--deep','--sign','-',player)
     executable=app/'Contents/MacOS/Ultra Duel';executable.parent.mkdir()
-    run('xcrun','swiftc','-swift-version','5','-O','-target','arm64-apple-macos11.0','-framework','Cocoa','-framework','CryptoKit',ROOT/'Tools/MacBootstrap.swift','-o',executable)
+    run('xcrun','swiftc','-swift-version','5','-O','-target',architecture+'-apple-macos11.0','-framework','Cocoa','-framework','CryptoKit',ROOT/'Tools/MacBootstrap.swift','-o',executable)
     info=dict(CFBundleExecutable='Ultra Duel',CFBundleName='Ultra Duel',CFBundleDisplayName='Ultra Duel',CFBundleIdentifier='com.ultraduel.launcher',CFBundlePackageType='APPL',CFBundleShortVersionString=json.loads((resources/'runtime.json').read_text())['version'],CFBundleVersion=json.loads((resources/'runtime.json').read_text())['version'].replace('.',''),LSMinimumSystemVersion='11.0',NSHighResolutionCapable=True)
     (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
     if (ROOT/'LICENSE').exists():shutil.copy2(ROOT/'LICENSE',resources/'LICENSE.txt')

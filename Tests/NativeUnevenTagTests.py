@@ -13,7 +13,7 @@ import sys
 import tempfile
 import time
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(os.environ.get('ULTRA_TEST_CONTENT',Path(__file__).resolve().parents[1]))
 
 def server(native, runtime, port):
     os.chdir(runtime)

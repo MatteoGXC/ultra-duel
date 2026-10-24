@@ -11,8 +11,9 @@ def main():
     parser.add_argument('--baseline', type=Path, required=True)
     parser.add_argument('--runtime', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--player', type=Path, default=ROOT/'release/Mac-arm64/Ultra-Duel-Player.app')
     args = parser.parse_args()
-    player = ROOT/'release/Mac-arm64/Ultra-Duel-Player.app'
+    player = args.player
     bundles = ROOT/'Platforms/StandaloneOSX/MasterDuel/Built-in'
     for name in ('shaders', 'sprites', 'materials', 'outduel', 'textures', 'duel'):
         assert (bundles/name).is_file(), 'Missing native macOS bundle: '+name
