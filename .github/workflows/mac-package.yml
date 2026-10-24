@@ -105,6 +105,16 @@ jobs:
           assert result.returncode==0
           assert (root/'mac-ui/passed.txt').exists(),(root/'mac-ui.log').read_text()[-6000:]
           PY
+      - name: Verify a graphical Solo duel in the installed game
+        run: |
+          python3 - <<'PY'
+          import os,subprocess,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
+          env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
+          result=subprocess.run([str(player),'-batchmode','-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','-logFile',str(root/'mac-duel-ui.log')],env=env,timeout=240)
+          assert result.returncode==0
+          assert (root/'mac-duel-ui/passed.txt').exists(),(root/'mac-duel-ui.log').read_text()[-6000:]
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: verified-ultra-duel-apple-silicon-dmg
@@ -119,5 +129,6 @@ jobs:
             ${{ runner.temp }}/platform-player.log
             ${{ runner.temp }}/mac-card-effects.json
             ${{ runner.temp }}/mac-ui*
+            ${{ runner.temp }}/mac-duel-ui*
             ${{ runner.temp }}/ultra-runtime/installation.log
           retention-days: 7
