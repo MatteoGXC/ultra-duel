@@ -17,6 +17,7 @@ namespace MDPro3
         [Serializable] public class Profile
         {
             public int wins, xp, gems, claimed;
+            public List<string> missionClaims = new List<string>();
             public List<string> ownedCosmetics = new List<string>();
             public List<Match> matches = new List<Match>();
             public string title = "Rookie Duelist";

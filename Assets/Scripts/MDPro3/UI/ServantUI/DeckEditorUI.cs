@@ -502,6 +502,7 @@ namespace MDPro3.UI.ServantUI
                 return;
             AddHistoryCard(card.Card.Id);
             PlayDragCardShrinkAnimation();
+            RefreshShowingCardCount();
         }
 
         public void DragCardTo(SelectionButton_CardInDeck dragCard)

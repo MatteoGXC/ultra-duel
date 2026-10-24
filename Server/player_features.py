@@ -3,10 +3,12 @@ import json
 import os
 from pathlib import Path
 import re
+import time
 
 
 def initialize(db):
     db.executescript('''
+    create table if not exists mission_claims(user integer not null, mission text not null, primary key(user,mission));
     create table if not exists profiles(user integer primary key references users(id), gems integer not null default 0,
         xp integer not null default 0, claimed integer not null default 0, gold integer not null default 0,
         activity text not null default 'Home', mate integer not null default 1000001);
@@ -29,9 +31,28 @@ def is_admin(state, name):
         return False
 
 
+def mission_rows(db, uid, now=None):
+    now = int(time.time()) if now is None else now
+    day = now//86400
+    games = db.execute("select result,started from games where user=? and result is not null",(uid,)).fetchall()
+    played=len(games); wins=sum(r['result']=='WIN' for r in games)
+    daily_played=sum(r['started']//86400==day for r in games)
+    daily_wins=sum(r['started']//86400==day and r['result']=='WIN' for r in games)
+    xp=db.execute('select xp from profiles where user=?',(uid,)).fetchone()
+    tier=min(20,(xp[0] if xp else 0)//200)
+    claims={r[0] for r in db.execute('select mission from mission_claims where user=?',(uid,))}
+    specs=[('daily-play','Daily','Complete a duel',daily_played,1,20),('daily-win','Daily','Win a duel',daily_wins,1,30)]
+    specs += [(f'played-{n}','Lifetime','Complete duels',played,n,g) for n,g in ((5,50),(20,100))]
+    specs += [(f'wins-{n}','Lifetime','Win duels',wins,n,g) for n,g in ((5,50),(20,100))]
+    specs += [(f'grade-{n}','Duel Pass','Raise your Duel Pass grade',tier,n,g) for n,g in ((1,20),(5,50),(10,100),(20,200))]
+    return [dict(id=key,category=cat,title=title,progress=min(progress,target),target=target,gems=gems,
+        claimed=(key+(':'+str(day) if cat=='Daily' else '')) in claims) for key,cat,title,progress,target,gems in specs]
+
+
 def profile(db, uid):
     db.execute('insert or ignore into profiles(user) values(?)', (uid,))
     p = dict(db.execute('select * from profiles where user=?', (uid,)).fetchone())
+    p['missions'] = mission_rows(db,uid)
     p['owned'] = [r[0] for r in db.execute('select item from owned where user=?', (uid,))]
     p['wins'] = db.execute("select count(*) from games where user=? and result='WIN'", (uid,)).fetchone()[0]
     p['played'] = db.execute('select count(*) from games where user=? and result is not null', (uid,)).fetchone()[0]
@@ -44,6 +65,14 @@ def route(h, db, method, path, body, now, user, api):
     uid = user['id']; state, Problem, are_friends, rooms, lock = api
     if path == '/profile' and method == 'GET':
         return profile(db, uid)
+    if path == '/missions/claim' and method == 'POST':
+        profile(db,uid)
+        for row in mission_rows(db,uid,now):
+            if body.get('id','all') not in ('all',row['id']) or row['claimed'] or row['progress']<row['target']: continue
+            key=row['id']+(':'+str(now//86400) if row['category']=='Daily' else '')
+            inserted=db.execute('insert or ignore into mission_claims values(?,?)',(uid,key)).rowcount
+            if inserted: db.execute('update profiles set gems=gems+? where user=?',(row['gems'],uid))
+        return profile(db,uid)
     if path == '/presence' and method == 'POST':
         activity = body.get('activity', 'Home')
         if activity not in ('Home', 'In duel', 'In room', 'Deck editing', 'Solo'): raise Problem('Invalid status.')

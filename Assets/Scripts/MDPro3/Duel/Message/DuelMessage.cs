@@ -1999,7 +1999,7 @@ namespace MDPro3.Duel
             opSpSummonCount = 0;
             Core.GetUI<OcgCoreUI>().RefreshBgDetail();
             turns++;
-            myTurn = isFirst ? (turns % 2 != 0) : (turns % 2 == 0);
+            myTurn = LocalPlayer(reader.ReadByte()) == 0;
             duelBGManager.OnNewTurn(myTurn, turns);
 
             PhaseButtonHandler.TurnChange(myTurn, turns);

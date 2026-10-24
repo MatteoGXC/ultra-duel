@@ -1,0 +1,55 @@
+using System;
+using System.Linq;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace MDPro3.UI.ServantUI
+{
+    public partial class MainMenuUI
+    {
+        string missionCategory="All Missions";
+        void OpenMissions()
+        {
+            OpenModal("MISSIONS","","missions");WideModal();
+            string[] categories={"All Missions","Daily","Lifetime","Duel Pass"};
+            for(int i=0;i<categories.Length;i++)
+            {
+                string category=categories[i];float y=.70f-i*.115f;
+                var button=SmallButton(modal,category.ToUpperInvariant(),()=>{missionCategory=category;OpenMissions();},.045f,y,.225f,.10f,25);
+                var chrome=button.GetComponent<UltraChrome>();chrome.corner=0;chrome.rim=2;
+                chrome.color=category==missionCategory?new Color(.56f,.72f,.025f):new Color(.075f,.19f,.25f);
+                chrome.rimColor=category==missionCategory?Lime:new Color(.3f,.4f,.45f);
+                button.GetComponentInChildren<TextMeshProUGUI>().color=category==missionCategory?Color.black:Color.white;
+                HomePanel(HomeRect("Category edge",button.transform,0,0,.012f,1),Lime);
+            }
+            HomeText(modal,"Daily missions reset at 00:00 UTC",17,Muted,.045f,.13f,.225f,.10f);
+            HomeText(modal,missionCategory,25,Color.white,.31f,.79f,.63f,.055f);
+            var viewport=HomeRect("Mission list",modal,.31f,.14f,.64f,.64f);var hit=viewport.gameObject.AddComponent<Image>();hit.color=Color.clear;hit.raycastTarget=true;viewport.gameObject.AddComponent<RectMask2D>();
+            var content=HomeRect("Mission content",viewport,0,1,1,0);content.pivot=new Vector2(.5f,1);
+            var scroll=viewport.gameObject.AddComponent<ScrollRect>();scroll.viewport=viewport;scroll.content=content;scroll.horizontal=false;scroll.scrollSensitivity=40;scroll.movementType=ScrollRect.MovementType.Clamped;
+            var rows=UltraMissions.Rows().Where(r=>missionCategory=="All Missions" || r.category==missionCategory).ToArray();
+            for(int i=0;i<rows.Length;i++)
+            {
+                var mission=rows[i];var row=HomeRect(mission.id,content,0,1,1,0);row.pivot=new Vector2(.5f,1);row.sizeDelta=new Vector2(0,238);row.anchoredPosition=new Vector2(0,-i*254);
+                var panel=row.gameObject.AddComponent<UltraChrome>();panel.corner=0;panel.rim=2;panel.rimColor=new Color(.32f,.41f,.46f);panel.color=new Color(.005f,.012f,.02f,.95f);panel.raycastTarget=false;
+                HomePanel(HomeRect("Mission heading",row,.002f,.73f,.996f,.265f),new Color(.075f,.19f,.25f));
+                HomeText(row,mission.title+"  ("+mission.progress+"/"+mission.target+")",26,Color.white,.02f,.76f,.96f,.21f);
+                HomePanel(HomeRect("Progress track",row,.05f,.41f,.64f,.015f),new Color(.34f,.37f,.40f));
+                HomePanel(HomeRect("Progress",row,.05f,.41f,.64f*Mathf.Clamp01((float)mission.progress/mission.target),.015f),Lime);
+                HomeText(row,mission.category+"  /  "+(mission.claimed?"RECEIVED":mission.progress>=mission.target?"COMPLETE":"IN PROGRESS"),17,mission.claimed?Muted:Lime,.05f,.12f,.60f,.12f);
+                var reward=HomeRect("Reward",row,.76f,.09f,.19f,.57f);var rim=reward.gameObject.AddComponent<UltraChrome>();rim.color=new Color(.12f,.21f,.40f);rim.rim=3;rim.rimColor=Color.white;rim.raycastTarget=false;
+                HomePanel(HomeRect("Reward target",reward,.02f,.76f,.96f,.22f),Color.black);
+                HomeText(reward,mission.claimed?"✓":mission.target.ToString(),21,Color.white,.05f,.77f,.90f,.20f).alignment=TextAlignmentOptions.Center;
+                HomeRect("Gem",reward,.32f,.27f,.36f,.43f).gameObject.AddComponent<UltraGem>().raycastTarget=false;
+                HomeText(reward,"×"+mission.gems,20,Color.white,.05f,.03f,.90f,.21f).alignment=TextAlignmentOptions.Center;
+                if(!mission.claimed && mission.progress>=mission.target){var button=reward.gameObject.AddComponent<Button>();button.targetGraphic=rim;rim.raycastTarget=true;button.onClick.AddListener(()=>Run(async()=>{await UltraMissions.Claim(mission.id);OpenMissions();}));}
+            }
+            content.sizeDelta=new Vector2(0,rows.Length*254);
+            var receive=SmallButton(modal,"RECEIVE ALL",()=>Run(async()=>{await UltraMissions.Claim();OpenMissions();}),.70f,.025f,.25f,.085f,25);
+            receive.interactable=UltraMissions.Rows().Any(r=>!r.claimed && r.progress>=r.target);
+            SmallButton(modal,"DUEL PASS",OpenPass,.31f,.025f,.24f,.085f,21);
+            if(rows.Length==0)HomeText(modal,"Connect to load your missions.",24,Muted,.33f,.42f,.58f,.10f);
+        }
+    }
+}

@@ -34,7 +34,7 @@ def main():
     room=api('/rooms/'+room['id']+'/join','POST',{},player['token'])
     game=ROOT/'release/Solo-mode-update'
     session=game/'Data/friends-session.json';before=session.read_bytes() if session.exists() else None
-    output=ROOT.parent/'checks'/f'ultra-013-remote-{args.mode}-{args.cap}'
+    output=ROOT.parent/'checks'/f'ultra-014-remote-{args.mode}-{args.cap}'
     output.mkdir(parents=True,exist_ok=True)
     fixture=output/'room.json'
     fixture.write_bytes(json.dumps(room).encode())

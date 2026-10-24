@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using MDPro3.Net;
@@ -33,6 +34,7 @@ namespace MDPro3.UI.ServantUI
         RectTransform ultraHome, overlay, modal;
         TextMeshProUGUI profileLabel, gemLabel, passLabel, updateLabel, friendLabel, modalStatus;
         Image profileAccent;
+        readonly List<GameObject> hiddenHome = new List<GameObject>();
         bool actionBusy;
         string modalPage;
 
@@ -49,12 +51,17 @@ namespace MDPro3.UI.ServantUI
         }
         void BuildUltraHome()
         {
+            if(!Config.GetBool("UltraDeckBackgroundApplied",false))
+            {
+                Config.Set("Background","11");Config.Set("UltraDeckBackgroundApplied","1");
+                Program.instance.background_.Change(11);
+            }
             foreach (Transform child in Root) child.gameObject.SetActive(false);
             ultraHome = HomeRect("Ultra Duel Home", Root, 0, 0, 1, 1);
             HomePanel(ultraHome, new Color(.018f,.029f,.053f,0));
             var nav=HomeRect("Angular navigation",ultraHome,0,0,.52f,1).gameObject.AddComponent<UltraHomeShape>();
             nav.color=new Color(.006f,.012f,.021f,.98f); nav.raycastTarget=false;
-            var profile=HomeRect("Profile",ultraHome,.035f,.855f,.265f,.105f);
+            var profile=HomeRect("Profile",ultraHome,.045f,.855f,.27f,.105f);
             HomePanel(profile,new Color(.015f,.02f,.028f));
             NativeArt(profile,"ProfileFrame",0,0,1,1);
             profileAccent=HomeRect("Profile frame",profile,0,0,.012f,1).gameObject.AddComponent<Image>();
@@ -66,15 +73,18 @@ namespace MDPro3.UI.ServantUI
             profileClick.targetGraphic=profile.GetComponent<Image>();
             profile.GetComponent<Image>().raycastTarget=true;
             var outline=profile.gameObject.AddComponent<Outline>();outline.effectColor=Lime;outline.effectDistance=new Vector2(2,-2);
-            gemLabel=HomeText(ultraHome,"",23,new Color(.70f,.88f,1),.40f,.90f,.12f,.05f);
+            var wallet=HomeRect("Gem wallet",ultraHome,.385f,.90f,.135f,.055f);
+            var walletFrame=wallet.gameObject.AddComponent<UltraChrome>();walletFrame.color=new Color(.06f,.08f,.12f,.88f);walletFrame.rim=2;walletFrame.rimColor=new Color(.70f,.75f,.80f);walletFrame.raycastTarget=false;
+            HomeRect("Gem",wallet,.055f,.15f,.16f,.70f).gameObject.AddComponent<UltraGem>().raycastTarget=false;
+            gemLabel=HomeText(wallet,"",24,Color.white,.26f,.08f,.66f,.84f);gemLabel.alignment=TextAlignmentOptions.MidlineRight;
             TopButton("UPDATES",OpenUpdates,.54f,0);
             TopButton("MISSIONS",OpenMissions,.65f,1);
             TopButton("FRIENDS",OpenFriends,.76f,2);
             TopButton("MENU",OpenMenu,.87f,3);
-            defaultSelectable=NavButton("DUEL",OpenDuel,.66f,53);
-            NavButton("DECK",OnDeck,.565f,36);
-            NavButton("SOLO",OnSolo,.475f,36);
-            NavButton("SHOP",OpenShop,.385f,36);
+            defaultSelectable=NavButton("DUEL",OpenDuel,.735f,65);
+            NavButton("DECK",OnDeck,.635f,44);
+            NavButton("SOLO",OnSolo,.540f,44);
+            NavButton("SHOP",OpenShop,.445f,44);
             var deckPanel=HomeRect("Selected deck",ultraHome,.045f,.19f,.27f,.15f);
             HomePanel(deckPanel,new Color(.055f,.075f,.12f));
             HomeText(deckPanel,"MISSIONS",17,Lime,.055f,.69f,.90f,.22f);
@@ -105,7 +115,8 @@ namespace MDPro3.UI.ServantUI
             var image=rect.gameObject.AddComponent<Image>();image.color=Color.clear;
             var b=rect.gameObject.AddComponent<Button>();b.targetGraphic=image;b.onClick.AddListener(action);
             var glyph=HomeRect("Icon",rect,.34f,.38f,.32f,.55f).gameObject.AddComponent<UltraNavIcon>();glyph.kind=icon;glyph.raycastTarget=false;
-            HomeText(rect,title,15,Color.white,0,0,1,.27f).alignment=TextAlignmentOptions.Center;
+            var adaptive=Resources.Load<Shader>("Ultra/AdaptiveIcon");if(adaptive!=null)glyph.material=UltraAdaptiveMaterial.Get(adaptive);
+            var caption=HomeText(rect,title,15,Color.white,0,0,1,.27f);caption.alignment=TextAlignmentOptions.Center;caption.outlineWidth=.22f;caption.outlineColor=new Color32(0,0,0,240);
         }
         Button NavButton(string title,UnityAction action,float y,float size)
         {
@@ -134,7 +145,7 @@ namespace MDPro3.UI.ServantUI
             profileLabel.text=name+"   >\n<size=70%>Lv. "+UltraAccount.Level+"  /  "+UltraAccount.Rank+"</size>";
             if (string.IsNullOrWhiteSpace(name)) name="Player";
             profileLabel.text=name+"   >\n<size=70%>Lv. "+UltraAccount.Level+"  /  "+UltraAccount.Rank+"</size>";
-            profileAccent.color=FrameColor();gemLabel.text="GEMS  "+UltraAccount.Gems;
+            profileAccent.color=FrameColor();gemLabel.text=UltraAccount.Gems.ToString("N0");
             passLabel.text="DUEL PASS   "+UltraAccount.Tier+" / 20\n<size=65%>"+(UltraAccount.Tier>UltraAccount.Claimed?"Rewards ready to claim":"WIN DUELS · EARN REWARDS")+"</size>";
             homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
             updateLabel.text="UPDATES  /  "+UltraServices.UpdateStatus+"\n<size=80%>New pass & shop · Friends & profiles · Solo fixes</size>";
@@ -144,7 +155,9 @@ namespace MDPro3.UI.ServantUI
         }
         void CloseModal()
         {
-            if(overlay!=null) Destroy(overlay.gameObject);
+            if(overlay!=null){overlay.gameObject.SetActive(false);Destroy(overlay.gameObject);}
+            foreach(var child in hiddenHome)if(child!=null)child.SetActive(true);hiddenHome.Clear();
+            if(Program.instance.currentServant==Program.instance.menu){Program.instance.ui_.wallpaper.gameObject.SetActive(true);Program.instance.ui_.wallpaper.alpha=1;}
             overlay=modal=null;modalStatus=null;modalPage=null;
         }
         RectTransform OpenModal(string title,string subtitle,string page)
@@ -152,12 +165,21 @@ namespace MDPro3.UI.ServantUI
             CloseModal();modalPage=page;
             overlay=HomeRect("Modal overlay",ultraHome,0,0,1,1);
             var shade=overlay.gameObject.AddComponent<Image>();shade.color=new Color(0,0,0,.45f);
-            modal=HomeRect(title,overlay,.16f,.10f,.68f,.80f);
-            HomePanel(modal,new Color(.025f,.045f,.075f,.82f));
+            bool drawer=page=="friends" || page=="login" || page=="friend";
+            bool homeVisible=drawer || page=="start";
+            if(!homeVisible)
+            {
+                foreach(Transform child in ultraHome)if(child!=overlay && child.gameObject.activeSelf){hiddenHome.Add(child.gameObject);child.gameObject.SetActive(false);}
+                Program.instance.ui_.wallpaper.gameObject.SetActive(false);shade.color=Color.clear;
+            }
+            modal=HomeRect(title,overlay,.04f,.055f,.92f,.89f);
+            HomePanel(modal,drawer ? new Color(.012f,.025f,.040f,.99f):Color.clear);
+            if(drawer){modal.anchorMin=new Vector2(.64f,0);modal.anchorMax=Vector2.one;modal.offsetMin=modal.offsetMax=Vector2.zero;}
             HomePanel(HomeRect("Top rule",modal,0,.99f,1,.002f),new Color(.62f,.68f,.75f,.65f));
-            HomeText(modal,title,34,Color.white,.065f,.875f,.79f,.09f).fontStyle=FontStyles.Bold;
+            HomeText(modal,title,34,Color.white,drawer ? .16f:.075f,.885f,drawer ? .79f:.82f,.085f).fontStyle=FontStyles.Bold;
             HomeText(modal,subtitle,18,Muted,.045f,.79f,.90f,.07f);
-            SmallButton(modal,"<",CloseModal,.005f,.89f,.045f,.06f,28);
+            RoundBack(modal,CloseModal,drawer ? .035f:.005f,.89f,drawer ? .10f:.055f,.08f);
+            modal.gameObject.AddComponent<UltraPageTransition>();
             modalStatus=HomeText(modal,"",16,Lime,.045f,.095f,.90f,.035f);
             return modal;
         }
@@ -218,7 +240,7 @@ namespace MDPro3.UI.ServantUI
         void ShowFriends()
         {
             OpenModal("FRIENDS",UltraServices.PlayerName+" / Follow & duel","friends");
-            modal.anchorMin=new Vector2(.65f,0);modal.anchorMax=new Vector2(1,1);modal.offsetMin=modal.offsetMax=Vector2.zero;
+            HomeText(modal,"FOLLOW  /  "+((UltraServices.State?["friends"] as JArray)?.Count??0),20,Color.white,.045f,.785f,.90f,.045f);
             var add=Input(modal,"Enter friend's name",.69f);
             add.GetComponent<RectTransform>().anchorMax=new Vector2(.73f,.78f);
             SmallButton(modal,"+",()=>Run(async()=>{await UltraServices.Request("/friends/request","POST",new{name=add.text});await UltraServices.Refresh();ShowFriends();}),.76f,.69f,.19f,.09f);
@@ -261,29 +283,7 @@ namespace MDPro3.UI.ServantUI
             if(string.IsNullOrEmpty(UltraServices.Token)){OpenLogin();return;}
             ShowRooms();Run(async()=>{await UltraServices.Refresh();if(modalPage=="rooms")ShowRooms();});
         }
-        void ShowRooms()
-        {
-            OpenModal("ROOM MATCH","Private tables hosted on Ultra Duel / Invite friends from your room","rooms");
-            WideModal();
-            SmallButton(modal,DuelFormat.DisplayName,()=>DuelFormat.Select(ShowRooms),.045f,.67f,.42f,.085f,19);
-            SmallButton(modal,"CREATE ROOM",()=>Run(async()=>{
-                var deck=new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK+Config.GetConfigDeckName()+Program.EXPANSION_YDK);
-                if(!DuelFormat.Validate(deck,"Your Deck"))return;
-                var room=await UltraServices.Request("/rooms","POST",new{format=DuelFormat.Genesys?"Genesys":"TCG",cap=DuelFormat.PointCap});
-                CloseModal();await UltraServices.JoinRoom(room);
-            }),.51f,.67f,.44f,.085f);
-            var content=ScrollArea();int index=0;
-            foreach(var room in UltraServices.State?["rooms"] as JArray ?? new JArray())
-            {
-                string id=(string)room["id"];var row=Row(content,index++,(string)room["host"]+"’s room",(string)room["format"]+((string)room["format"]=="Genesys"?" · "+(int)room["cap"]+" points":" Advanced"));
-                SmallButton(row,"JOIN",()=>Run(async()=>{var join=await UltraServices.Request("/rooms/"+id+"/join","POST",new{});CloseModal();await UltraServices.JoinRoom(join);}),.69f,.20f,.17f,.60f,16);
-                if((int)room["hostId"]==(int)UltraServices.State["id"])
-                    SmallButton(row,"X",()=>Run(async()=>{await UltraServices.Request("/rooms/"+id,"DELETE");await UltraServices.Refresh();ShowRooms();}),.88f,.20f,.09f,.60f,16);
-            }
-            if(index==0)Row(content,0,"No friend rooms yet","Create a room, then ask a friend to open DUEL and join.");
-            SmallButton(modal,"REFRESH",()=>Run(async()=>{await UltraServices.Refresh();ShowRooms();}),.045f,.025f,.18f,.065f,16);
-            SmallButton(modal,"OTHER SERVERS",()=>{CloseModal();OnOnline();},.70f,.025f,.25f,.065f,16);
-        }
+        void ShowRooms() { BuildRoomBrowser(); }
         void OpenPass()
         {
             OpenModal("DUEL PASS","FREE PASS / Earn rewards by winning duels · No paid tier","pass");
@@ -312,13 +312,6 @@ namespace MDPro3.UI.ServantUI
             SmallButton(modal,"CLAIM REWARDS",()=>Run(async()=>{await UltraAccount.Claim();OpenPass();}),.30f,.12f,.40f,.09f).interactable=UltraAccount.Tier>UltraAccount.Claimed;
             modalStatus.text=UltraAccount.Profile==null?"Offline progress / Saved on this PC":"Account rewards / Saved on Ultra Duel";
         }
-        void OpenMissions()
-        {
-            OpenModal("MISSIONS","Play Solo or duel a friend to progress your free Duel Pass.","missions");
-            HomeText(modal,"WIN DUELS\n\nWin a duel: +100 XP\nNext Duel Pass tier: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"\n\nReplays, spectators and hand tests do not award XP.",28,Color.white,.055f,.29f,.89f,.43f);
-            SmallButton(modal,"DUEL PASS",OpenPass,.055f,.13f,.42f,.09f);
-            SmallButton(modal,"PLAY SOLO",()=>{CloseModal();OnSolo();},.525f,.13f,.42f,.09f);
-        }
         void OpenShop() { ShowShop("Mate",0); }
         void BuyFrame(string frame)
         {
@@ -346,6 +339,11 @@ namespace MDPro3.UI.ServantUI
         void OpenMenu()
         {
             OpenModal("MENU","Ultra Duel  /  v"+UltraServices.Version,"menu");
+            SmallButton(modal,Config.GetBool("ExtendedArt",false)?"CARD ART: EXTENDED":"CARD ART: STANDARD",()=>{
+                Config.Set("ExtendedArt",Config.GetBool("ExtendedArt",false)?"0":"1");OpenMenu();
+                MessageManager.Cast("Card art preference saved. Reopen Ultra Duel to apply it.");
+            },.64f,.78f,.31f,.065f,19);
+
             SmallButton(modal,"SETTINGS",()=>{CloseModal();OnSetting();},.055f,.61f,.42f,.10f);
             SmallButton(modal,"WALLPAPER",OpenWallpaper,.525f,.61f,.42f,.10f);
             SmallButton(modal,"MATCH HISTORY",OpenHistory,.055f,.46f,.42f,.10f);

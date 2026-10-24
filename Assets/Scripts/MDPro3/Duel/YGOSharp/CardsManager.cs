@@ -344,7 +344,8 @@ namespace MDPro3.Duel.YGOSharp
             string getName,
             List<long> filters,
             Banlist banlist,
-            string pack
+            string pack,
+            bool namesOnly = false
         )
         {
             var returnValue = new List<Card>();
@@ -358,7 +359,15 @@ namespace MDPro3.Duel.YGOSharp
                     bool pass = true;
                     foreach (string s in strings)
                     {
-                        if (s.StartsWith("@"))
+                        if (namesOnly)
+                        {
+                            if (s.Length > 0 && SearchCompareInfo.IndexOf(card.Name ?? string.Empty, s, SearchCompareOptions) < 0)
+                            {
+                                pass = false;
+                                break;
+                            }
+                        }
+                        else if (s.StartsWith("@"))
                         {
                             if (!MatchWithSearchOptions(card.strSetName, s.Substring(1, s.Length - 1)))
                             {

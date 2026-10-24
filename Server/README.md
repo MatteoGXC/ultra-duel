@@ -62,3 +62,8 @@ the engine's two-field assumptions require a separate core/protocol project.
 
 Updaters and installers preserve decks, replay files, local progress, settings and
 account sessions. Keep the persistent state volume when upgrading the service.
+
+Daily missions reset at 00:00 UTC. Daily, Lifetime and Duel Pass mission progress
+is derived from the account game ledger and XP. Mission claims are stored with
+a per-account unique key (and UTC day for daily claims), so Receive All retries
+cannot award a reward twice. Offline mission claims remain local and separate.

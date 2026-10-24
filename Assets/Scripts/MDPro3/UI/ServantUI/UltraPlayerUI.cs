@@ -49,9 +49,6 @@ namespace MDPro3.UI.ServantUI
             modal.anchorMin=new Vector2(.04f,.055f);modal.anchorMax=new Vector2(.96f,.945f);
             modal.offsetMin=modal.offsetMax=Vector2.zero;
             overlay.GetComponent<Image>().color=Color.clear;
-            var background=HomeRect("Duel menu background",overlay,0,0,1,1);
-            background.gameObject.AddComponent<UltraScreenBackdrop>().raycastTarget=true;
-            background.SetAsFirstSibling();
             var panel=modal.GetComponent<Image>();panel.color=Color.clear;
             if(panel is UltraChrome chrome){chrome.rim=0;chrome.rimColor=Color.clear;}
         }

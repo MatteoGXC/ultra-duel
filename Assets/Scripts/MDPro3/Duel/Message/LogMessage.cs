@@ -589,15 +589,7 @@ namespace MDPro3.Duel
 
         protected override UniTask GameMessage_ConfirmCards(BinaryReader reader)
         {
-            try
-            {
-                return GameMessage_ConfirmCardsForTry(reader);
-            }
-            catch
-            {
-                OcgCore.CurrentReplayUseYRP2 = !OcgCore.CurrentReplayUseYRP2;
-                return GameMessage_ConfirmCardsForTry(reader);
-            }
+            return GameMessage_ConfirmCardsForTry(reader);
         }
 
         private UniTask GameMessage_ConfirmCardsForTry(BinaryReader reader)
@@ -607,12 +599,12 @@ namespace MDPro3.Duel
             //var player = LocalPlayer(reader.ReadByte());
             reader.ReadByte();
 
-            if (OcgCore.condition != OcgCore.Condition.Replay || OcgCore.CurrentReplayUseYRP2)
+            if ((reader.BaseStream.Length-reader.BaseStream.Position)%7==2)
                 reader.ReadByte();
 
             var count = reader.ReadByte();
-            if (count == 0)
-                throw new Exception();
+            if (reader.BaseStream.Length-reader.BaseStream.Position != count*7)
+                throw new InvalidDataException("Invalid card-confirmation packet length.");
             for (int i = 0; i < count; i++)
             {
                 var code = reader.ReadInt32();

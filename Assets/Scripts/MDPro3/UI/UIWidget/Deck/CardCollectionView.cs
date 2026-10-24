@@ -1,4 +1,5 @@
 using MDPro3.Duel.YGOSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -241,7 +242,7 @@ namespace MDPro3.UI
         public void PrintSearchCards(string text = "")
         {
             var cards = new List<int>();
-            var results = CardsManager.Search(InputSearch.InputField.text, filters, DeckEditor.Banlist, packName);
+            var results = CardsManager.Search(InputSearch.InputField.text, filters, DeckEditor.Banlist, packName, namesOnly: true);
             SortCards(results);
             foreach(var card in results)
                 cards.Add(card.Id);
@@ -595,6 +596,10 @@ namespace MDPro3.UI
 
         protected void PrintCards(List<int> cards)
         {
+            cards=cards.Select(id=>CardsManager.Get(id)).Where(c=>c!=null && c.Id!=0)
+                .GroupBy(c=>c.Name.Trim(),StringComparer.OrdinalIgnoreCase)
+                .Select(g=>g.OrderBy(c=>c.Alias==0?0:1).ThenBy(c=>c.Id).First().Id).ToList();
+            if(area==Area.Collection)ButtonSearch.SetButtonText(cards.Count==0?InterString.Get("搜索"):cards.Count.ToString());
             TextNoItem.gameObject.SetActive(cards.Count == 0);
             printedCards = cards;
 

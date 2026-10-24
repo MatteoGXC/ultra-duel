@@ -54,6 +54,25 @@ class PlayerFeatures(unittest.TestCase):
         self.assertEqual(player_features.profile(self.db,1)['gems'],100)
         self.call('/games/finish',{'nonce':'unstarted','result':'WIN'})
         self.assertEqual(player_features.profile(self.db,1)['xp'],200)
+    def test_missions_locked_idempotent_and_daily_reset(self):
+        self.call('/missions/claim')
+        self.assertEqual(player_features.profile(self.db,1)['gems'],0)
+        nonce='f'*32
+        self.call('/games/start',{'nonce':nonce,'deck':'Blue-Eyes'})
+        self.call('/games/finish',{'nonce':nonce,'result':'WIN','turns':4})
+        for _ in range(2):self.call('/missions/claim')
+        self.assertEqual(player_features.profile(self.db,1)['gems'],75)
+        rows=player_features.mission_rows(self.db,1)
+        self.assertTrue(all(r['claimed'] for r in rows if r['category']=='Daily'))
+        tomorrow=int(time.time())+86400
+        rows=player_features.mission_rows(self.db,1,tomorrow)
+        self.assertTrue(all(not r['claimed'] and r['progress']==0 for r in rows if r['category']=='Daily'))
+        self.assertEqual(self.db.execute('select count(*) from mission_claims').fetchone()[0],2)
+    def test_mission_claims_stay_with_their_account(self):
+        self.call('/games/start',{'nonce':'e'*32})
+        self.call('/games/finish',{'nonce':'e'*32,'result':'WIN'})
+        self.call('/missions/claim',uid=2)
+        self.assertEqual(player_features.profile(self.db,2)['gems'],0)
     def test_friend_invitation_authorization(self):
         self.call('/invites',{'id':2,'room':'room1'})
         for uid,target in ((1,3),(2,1)):

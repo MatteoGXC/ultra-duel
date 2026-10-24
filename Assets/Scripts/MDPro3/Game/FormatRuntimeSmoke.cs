@@ -135,6 +135,17 @@ namespace MDPro3
                 if (!UltraProgress.Buy("Violet") || UltraProgress.Data.gems != 0) throw new Exception("Owned frame charged twice.");
                 var saved = File.ReadAllText("Progress/profile.json"); fields.SetValue(null, null);
                 if (UltraProgress.Data.frame != "Violet" || UltraProgress.Data.wins != 6) throw new Exception("Pass progress was not persisted.");
+                if(UltraAccount.Profile==null)
+                {
+                    for(int i=0;i<2;i++)
+                    {
+                        var claim=UltraMissions.Claim().AsTask();while(!claim.IsCompleted)yield return null;
+                        if(claim.IsFaulted)throw claim.Exception;
+                        if(UltraProgress.Data.gems!=20)throw new Exception("Offline mission rewards were missing or duplicated.");
+                    }
+                    Debug.Log("ULTRA_MISSIONS_PASSED offline persistent grade reward and duplicate claim");
+                }
+
             }
             finally
             {
@@ -193,6 +204,25 @@ namespace MDPro3
             if(commandLine.Contains("--ultra-ui-pages"))
             {
                 var home=Program.instance.menu.GetUI<MainMenuUI>();
+                if(commandLine.Contains("--wallpaper-theme-check"))
+                {
+                    float green=UltraWallpaperTheme.DominantHue(new[]{new Color32(0,255,0,255),new Color32(255,255,255,255)});
+                    if(Mathf.Abs(Mathf.DeltaAngle(green,120))>1)throw new Exception("Wallpaper color sampling lost the dominant green accent.");
+                    string original=Config.Get("Wallpaper",UIManager.DefaultWallpaper);
+                    var theme=Program.instance.background_.GetComponent<UltraWallpaperTheme>();
+                    foreach(var wallpaper in new[]{"1130001","1135010"})
+                    {
+                        Config.Set("Wallpaper",wallpaper);Program.instance.ui_.ChangeWallpaper(wallpaper);
+                        while(theme.AppliedWallpaper!=wallpaper)yield return null;
+                        yield return new WaitForSecondsRealtime(2);
+                        typeof(MainMenuUI).GetMethod("OpenPass",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                        yield return Capture("wallpaper-theme-"+wallpaper);
+                        typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                    }
+                    Config.Set("Wallpaper",original);Program.instance.ui_.ChangeWallpaper(original);
+                    while(theme.AppliedWallpaper!=original)yield return null;
+                    Debug.Log("WALLPAPER_THEME_PASSED native background follows both selected wallpapers; dominant hue and neutral exclusion verified");
+                }
                 foreach(string page in new[]{"ShowGameStart","OpenProfile","OpenPass","OpenShop","OpenHistory","OpenMissions"})
                 {
                     typeof(MainMenuUI).GetMethod(page,System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
@@ -200,7 +230,9 @@ namespace MDPro3
                     typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
                 }
                 var results=UltraResultsScreen.Show(home.transform,new UltraProgress.Match{result="WIN",damageDealt=3400,spells=2,summons=1,gemsEarned=25,xpEarned=100},null);
-                yield return Capture("duel-results-layout");Destroy(results);
+                yield return Capture("duel-results-layout");
+                yield return new WaitForSecondsRealtime(3);
+                yield return Capture("duel-results-complete");Destroy(results);
             }
             int remoteIndex = Array.IndexOf(commandLine, "--ultra-remote-room");
             if (remoteIndex >= 0)
@@ -257,6 +289,42 @@ namespace MDPro3
             while (Program.instance.deckEditor.servantUI == null) yield return null;
             yield return Capture("deck");
             Debug.Log("FORMAT_SMOKE_DECK_READY " + mode);
+            if(commandLine.Contains("--deck-count-check"))
+            {
+                var nameResults=CardsManager.Search("power",new System.Collections.Generic.List<long>(),DeckEditor.Banlist,string.Empty,namesOnly:true);
+                if(nameResults.Count==0 || nameResults.Any(c=>c.Name.IndexOf("power",StringComparison.OrdinalIgnoreCase)<0))
+                    throw new Exception("Collection search matched text outside card names.");
+                if(!CardsManager.Get(89392810).GetSetName().Contains("Kewl Tune") || CardsManager.Get(89392810).GetSetName().Contains("Power Patron"))
+                    throw new Exception("Kewl Tune Reco archetype is mislabelled.");
+                if(!CardsManager.Get(89631139).GetSetNameWithColor().Contains("Archetype:"))
+                    throw new Exception("Archetype label was not renamed.");
+                Debug.Log("CARD_NAME_SEARCH_PASSED power returns only names; Reco Kewl Tune and Archetype label verified");
+                var editor=Program.instance.deckEditor.GetUI<DeckEditorUI>();
+                while(!editor.DeckView.deckLoaded)yield return null;
+                editor.CardCollectionView.ShowArea(CardCollectionView.Area.Collection);
+                yield return new WaitForSecondsRealtime(1);
+                var sample=MDPro3.Duel.YGOSharp.CardsManager.Get(89631139);
+                typeof(CardCollectionView).GetMethod("PrintCards",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)
+                    .Invoke(editor.CardCollectionView,new object[]{new System.Collections.Generic.List<int>{sample.Id}});
+                yield return new WaitForSecondsRealtime(1);
+                var slot=editor.CardCollectionView.superScrollView.gameObjects.Select(o=>o.GetComponent<SelectionButton_CardInCollection>()).First(c=>c.gameObject.activeInHierarchy && c.CardCode==sample.Id);
+                int originalCount=editor.DeckView.GetCardCount(sample.Id);
+                foreach(var existing in editor.DeckView.cards.Where(c=>c.Card.Id==sample.Id || c.Card.Alias==sample.Id).ToArray())editor.RemoveCard(existing.Card);
+                yield return new WaitForSecondsRealtime(.8f);
+                int code=slot.CardCode;
+                void CheckCount(int expected)
+                {
+                    if(editor.DeckView.GetCardCount(code)!=expected)throw new Exception("Deck model count did not update.");
+                    for(int i=1;i<=3;i++)if(slot.GetComponent<YgomSystem.ElementSystem.ElementObjectManager>().GetElement("IconCardUse"+i).activeSelf!=(i<=expected))throw new Exception("Collection count dots are stale after editing.");
+                }
+                editor.AddCard(slot.card);editor.AddCard(slot.card);CheckCount(2);
+                editor.RemoveCardByDrag(editor.DeckView.GetCardByData(slot.card));CheckCount(1);
+                editor.RemoveCard(slot.card);CheckCount(0);
+                for(int i=0;i<originalCount;i++)editor.AddCard(sample);editor.DeckView.SetDirty(false);
+                yield return Capture("deck-count-after-removal");
+                Debug.Log("DECK_COUNT_PASSED add twice, drag-remove, regular-remove; visible dots 2 to 1 to 0");
+            }
+
             // Exercise the real local-server/AI path, including both deck validators.
             var solo = Program.instance.solo;
             Program.instance.ShiftToServant(solo);

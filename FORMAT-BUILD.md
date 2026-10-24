@@ -187,3 +187,38 @@ Run `Tests/UltraPlayerFeaturesTests.py` for account/ownership/authorization chec
 and compile `Tests/ChainPromptTests.cs` together with `ChainPrompt.cs` for packet
 layout tests. The packaged player accepts opt-in `--format-smoke <folder> TCG
 --solo-ai-audit` to exercise every published AI list through the native server.
+
+## v0.1.4 menu update
+
+Custom home pages now reveal the same selected native background as the Deck
+page, including its animated particles. They use matching perspective/slide
+transitions and circular back buttons. The home icon shader inverts the
+background beneath each glyph; captions retain a contrasting edge. Home profile,
+mission and pass cards share a left edge. The gem wallet has a bordered frame.
+Missions provide persistent Daily, Lifetime and Duel Pass rewards, with atomic
+server claims and separate offline progression. The room browser uses compact
+room cards and a separate options/deck preview column. Dragging a card out of
+the deck now refreshes all collection/detail count indicators.
+
+The original native ClassicRed background (Back0011) is selected once on update;
+the original glow and particles remain the shared menu background.
+The black background uses neutral gray diagonal bands; its glow and sparks
+follow the selected wallpaper's dominant saturated color, sampled from its
+thumbnail. A camera-local color volume keeps the native
+animation, wallpaper art, UI colors and duel field independent of this tint.
+Results reveal each score row, count up the total, reveal rewards and animate earned XP. Gem
+art is Konami's Master Duel gem from
+https://yugioh-duelist-point.konami.net/assets/img/MD_Gem.png.
+
+Collection entries collapse alternate printings by card name. The collection
+search checks names only; it does not match effect text or archetype labels.
+Card details say Archetype. `Tools/card_archetype_compat.py` aligns every mapped
+card's setcodes in all ten locales with the pinned MyCard database used by the
+native scripts, and verifies the English archetype names against that source.
+This corrects Kewl Tune Reco, Branded Opening's Despia filter and Titaniklad's
+Dogmatika filter. The audit records 2,278 corrected IDs. New unnamed subfamilies
+fall back to their named parent archetype. `Tests/NativeArchetypeTests.py` executes
+the reported activation and target filters through the actual native Lua API.
+An optional Extended card-art setting crops the existing artwork to borderless
+card proportions and takes effect on restart. Standard card frames remain the
+default. No artwork is synthesized by this option.

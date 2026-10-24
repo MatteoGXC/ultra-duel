@@ -52,6 +52,9 @@ def main():
     for _ in range(2):api('/pass/claim','POST',{},a['token'])
     profile=api('/profile',token=a['token'])
     assert profile['xp']==200 and profile['gems']==100
+    for _ in range(2):api('/missions/claim','POST',{},a['token'])
+    assert api('/profile',token=a['token'])['gems']==170
+    print('PASS public daily/grade mission claims and duplicate Receive All',flush=True)
     print('PASS register, login, authentication, friend requests, acceptance and presence',flush=True)
     print('PASS public account XP/gems, idempotent win/claim, in-duel presence and unauthorized admin denial',flush=True)
     def frames(client):

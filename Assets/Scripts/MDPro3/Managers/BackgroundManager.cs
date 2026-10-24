@@ -52,6 +52,7 @@ namespace MDPro3
 
         public void Change(int id)
         {
+            if(GetComponent<UltraWallpaperTheme>()==null)gameObject.AddComponent<UltraWallpaperTheme>();
             Destroy(back);
 
             if (id == 0)

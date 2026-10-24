@@ -34,30 +34,6 @@ namespace MDPro3.UI.ServantUI
             for(int i=0;i<=20;i++){float angle=i*Mathf.PI/10;vh.AddVert(new Vector3(r.x+(x+radius*Mathf.Cos(angle))*r.width,r.y+(y+radius*Mathf.Sin(angle))*r.height),Color.white,Vector2.zero);if(i>0)vh.AddTriangle(start,start+i,start+i+1);}
         }
     }
-    public class UltraScreenBackdrop : MaskableGraphic
-    {
-        protected override void OnPopulateMesh(VertexHelper vh)
-        {
-            vh.Clear();var r=rectTransform.rect;
-            Quad(vh,r,new Vector2(0,0),new Vector2(1,0),new Vector2(1,1),new Vector2(0,1),new Color(.008f,.009f,.02f,1f),new Color(.008f,.009f,.02f,1f));
-            Quad(vh,r,new Vector2(.0f,0),new Vector2(.40f,0),new Vector2(.98f,1),new Vector2(.58f,1),new Color(.12f,.07f,.22f),new Color(.13f,.18f,.32f));
-            Quad(vh,r,new Vector2(.28f,0),new Vector2(.56f,0),new Vector2(1,1),new Vector2(.84f,1),new Color(.045f,.025f,.085f),new Color(.04f,.06f,.11f));
-            for(float y=0;y<r.height;y+=4)
-                Quad(vh,r,new Vector2(0,y/r.height),new Vector2(1,y/r.height),new Vector2(1,(y+1)/r.height),new Vector2(0,(y+1)/r.height),new Color(.65f,.75f,1,.035f),new Color(.65f,.75f,1,.035f));
-            for(int i=0;i<36;i++)
-            {
-                float x=((i*47)%97)/100f,y=((i*29)%97)/100f;
-                Quad(vh,r,new Vector2(x,y),new Vector2(x+.0012f,y),new Vector2(x+.0012f,y+.002f),new Vector2(x,y+.002f),new Color(.5f,.4f,1,.55f),new Color(.5f,.4f,1,.55f));
-            }
-        }
-        static void Quad(VertexHelper vh,Rect r,Vector2 a,Vector2 b,Vector2 c,Vector2 d,Color low,Color high)
-        {
-            int start=vh.currentVertCount;
-            var points=new[]{a,b,c,d};
-            for(int i=0;i<4;i++)vh.AddVert(new Vector3(r.x+points[i].x*r.width,r.y+points[i].y*r.height),i<2?low:high,Vector2.zero);
-            vh.AddTriangle(start,start+1,start+2);vh.AddTriangle(start,start+2,start+3);
-        }
-    }
     // Screen-space clipped corners and a thin rim, like the native duel menus.
     public class UltraChrome : Image
     {
@@ -77,15 +53,14 @@ namespace MDPro3.UI.ServantUI
             for(int i=1;i<points.Length-1;i++)vh.AddTriangle(start,start+i,start+i+1);
         }
     }
-    public class UltraGem : MaskableGraphic
+    public class UltraGem : Image
     {
-        protected override void OnPopulateMesh(VertexHelper vh)
+        static Sprite gem;
+        protected override void Awake()
         {
-            vh.Clear();var r=rectTransform.rect;
-            Vector2[] p={new Vector2(.5f,1),new Vector2(.92f,.30f),new Vector2(.5f,0),new Vector2(.08f,.30f),new Vector2(.5f,.38f)};
-            Color[] c={new Color(.78f,.95f,1),new Color(.1f,.6f,1),new Color(.82f,.2f,.95f),new Color(.35f,.3f,.85f),Color.white};
-            for(int i=0;i<p.Length;i++)vh.AddVert(new Vector3(r.x+p[i].x*r.width,r.y+p[i].y*r.height),c[i],Vector2.zero);
-            vh.AddTriangle(0,1,4);vh.AddTriangle(1,2,4);vh.AddTriangle(2,3,4);vh.AddTriangle(3,0,4);
+            base.Awake();
+            if(gem==null){var texture=Resources.Load<Texture2D>("Ultra/Gem");if(texture!=null)gem=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f));}
+            sprite=gem;preserveAspect=true;raycastTarget=false;
         }
     }
 }

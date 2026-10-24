@@ -360,6 +360,9 @@ namespace MDPro3
             for (var j = 0; j < 4; j++)
             {
                 setcodes[j] = (int)((Setcode >> j * 16) & 0xffff);
+                // Unnamed subfamilies still belong to their named parent archetype.
+                if (setcodes[j] != 0 && !setNames.Exists(n => n.hashCode == setcodes[j]))
+                    setcodes[j] &= 0x0fff;
             }
             var returnValue = new List<string>();
             for (var i = 0; i < setNames.Count; i++)

@@ -143,6 +143,8 @@ def main():
         burstProtocolSource='https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&pid=2000001574000&rp=99999&request_locale=en',
         burstProtocolIndexed=len({r['id'] for r in burst}), art=image_results)
     write_json(ROOT/'Data/card-update-audit.json',report)
+    from card_archetype_compat import apply as align_archetypes
+    align_archetypes(ROOT)
     print('CARD_REFRESH',len(missing),'added;',len(flags),'availability corrections;',len(scripts),'scripts;',len(retained),'legacy IDs preserved',flush=True)
     missing_tcg=[r['id'] for r in image_results if r.get('missing') and r.get('tcg')]
     print('TCG_ART_STILL_MISSING',missing_tcg,flush=True)

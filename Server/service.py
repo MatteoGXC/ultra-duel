@@ -85,7 +85,7 @@ def public_room(room):
     return {key:room[key] for key in ('id','host','hostId','format','cap','port','expires')}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'UltraDuel/0.1.3'
+    server_version = 'UltraDuel/0.1.4'
     def log_message(self, *_): pass # Passwords, tokens and private room secrets never enter access logs.
     def reply(self, data, status=200):
         body=json.dumps(data,separators=(',',':')).encode()
@@ -121,7 +121,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.3'}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.4'}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')

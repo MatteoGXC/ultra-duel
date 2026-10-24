@@ -38,7 +38,7 @@ namespace MDPro3.UI.ServantUI
             if(!RoomServant.FromUltraHost){if(friendRoom!=null)friendRoom.gameObject.SetActive(false);return;}
             if(friendRoom==null)
             {
-                friendRoom=R("Ultra Friend Room",Root,0,0,1,1);friendRoom.gameObject.AddComponent<UltraScreenBackdrop>().raycastTarget=true;
+                friendRoom=R("Ultra Friend Room",Root,0,0,1,1);P(friendRoom,Color.clear).raycastTarget=true;
                 T(friendRoom,"ROOM MATCH",33,.09f,.90f,.35f,.065f);
                 P(R("Header rule",friendRoom,.02f,.875f,.96f,.002f),new Color(.5f,.55f,.6f));
                 B(friendRoom,"CHAT",()=>Program.instance.ui_.chatPanel.Switch(),.08f,.075f,.22f,.07f);
@@ -59,6 +59,7 @@ namespace MDPro3.UI.ServantUI
                 deckLabel=T(deckPanel,"",27,.06f,.20f,.88f,.45f);
                 T(friendRoom,"Private friend room / Both players must be ready",20,.08f,.20f,.56f,.07f);
             }
+            foreach(Transform child in Root)if(child!=friendRoom)child.gameObject.SetActive(false);
             friendRoom.gameObject.SetActive(true);friendRoom.SetAsLastSibling();
             int count=0;string names="";
             for(int i=0;i<2;i++)
