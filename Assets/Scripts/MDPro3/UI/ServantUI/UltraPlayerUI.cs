@@ -85,7 +85,7 @@ namespace MDPro3.UI.ServantUI
             foreach(Transform child in modal)child.gameObject.SetActive(false);
             modal.GetComponent<Image>().color=Color.clear;
             var wordmark=HomeText(modal,"ULTRA DUEL",67,new Color(.91f,.94f,1),.055f,.45f,.89f,.15f);
-            wordmark.fontStyle=FontStyles.Bold|FontStyles.Italic;wordmark.alignment=TextAlignmentOptions.Center;
+            wordmark.fontStyle=FontStyles.Bold;wordmark.alignment=TextAlignmentOptions.Center;
             wordmark.outlineWidth=.18f;wordmark.outlineColor=new Color32(84,80,183,255);
             var logoGroup=wordmark.gameObject.AddComponent<CanvasGroup>();logoGroup.alpha=0;
             var logoRect=wordmark.rectTransform;var logoEnd=logoRect.anchoredPosition;logoRect.anchoredPosition+=Vector2.left*45;
@@ -95,6 +95,8 @@ namespace MDPro3.UI.ServantUI
             wordmark.transform.SetAsLastSibling();
             var homeDefault=defaultSelectable;
             defaultSelectable=SmallButton(modal,"GAME START",()=>{CloseModal();defaultSelectable=homeDefault;homeDefault?.Select();},.10f,.23f,.76f,.075f,25);
+            var startFrame=defaultSelectable.GetComponent<UltraChrome>();startFrame.color=Color.clear;startFrame.rim=0;
+            defaultSelectable.transition=Selectable.Transition.None;
             var pulse=defaultSelectable.gameObject.AddComponent<CanvasGroup>();pulse.DOFade(.38f,1.4f).SetLoops(-1,LoopType.Yoyo).SetEase(Ease.InOutSine).SetUpdate(true).SetLink(defaultSelectable.gameObject);
             HomeText(modal,"Ver. "+UltraServices.Version+"\n"+(string.IsNullOrEmpty(UltraServices.PlayerName)?"Welcome, Duelist":UltraServices.PlayerName),18,Muted,.10f,.84f,.80f,.09f);
         }
