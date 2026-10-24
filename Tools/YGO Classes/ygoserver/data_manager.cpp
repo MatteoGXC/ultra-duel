@@ -96,7 +96,7 @@ bool DataManager::ReadDB(sqlite3* pDB) {
 bool DataManager::LoadDB(const wchar_t* wfile) {
 	char file[256];
 	BufferIO::EncodeUTF8(wfile, file);
-#if defined(YGOPRO_SERVER_MODE) && (!defined(SERVER_ZIP_SUPPORT) || !defined(_WIN32))
+#if defined(YGOPRO_SERVER_MODE) && !defined(SERVER_ZIP_SUPPORT)
 	bool ret{};
 	sqlite3* pDB{};
 	if (sqlite3_open_v2(file, &pDB, SQLITE_OPEN_READONLY, 0) != SQLITE_OK)
