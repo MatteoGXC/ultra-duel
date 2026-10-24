@@ -1,0 +1,32 @@
+name: Apple Silicon native engine
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Apple Silicon libraries
+        run: |
+          test "$(uname -m)" = arm64
+          brew list libevent >/dev/null || brew install libevent
+          cmake -S Server -B build/mac -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_PREFIX_PATH="$(brew --prefix libevent)"
+          cmake --build build/mac -j 3
+          file build/mac/libocgcore.dylib build/mac/libygoserver.dylib
+          otool -L build/mac/libygoserver.dylib
+      - name: Verify native format support
+        run: |
+          python3 - <<'PY'
+          import ctypes
+          ctypes.CDLL('build/mac/libocgcore.dylib',mode=ctypes.RTLD_GLOBAL)
+          server=ctypes.CDLL('build/mac/libygoserver.dylib')
+          assert server.get_server_format_capabilities() & 3 == 3
+          print('PASS Apple Silicon native TCG and Genesys capabilities')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ultra-duel-native-arm64
+          path: build/mac/*.dylib
+          retention-days: 7
