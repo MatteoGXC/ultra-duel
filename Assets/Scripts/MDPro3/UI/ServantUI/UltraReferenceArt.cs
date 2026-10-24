@@ -25,7 +25,7 @@ namespace MDPro3.UI.ServantUI
             vh.Clear();var texture=mainTexture;if(texture==null)return;var r=rectTransform.rect;
             // Preserve the original Yu-Gi-Oh emblem and silver background triangle.
             // The original title lettering occupies the omitted middle band.
-            foreach(var band in new[]{new Vector2(0,.30f),new Vector2(.61f,1)})
+            foreach(var band in new[]{new Vector2(0,.30f),new Vector2(.67f,1)})
                 UltraReferenceArt.Quad(vh,new Rect(r.x,r.y+r.height*band.x,r.width,r.height*(band.y-band.x)),new Rect(0,band.x,1,band.y-band.x),color);
         }
     }
