@@ -189,7 +189,8 @@ namespace MDPro3.UI.ServantUI
         void ShowShop(string category,int page)
         {
             OpenModal("SHOP","Accessories", "shop");WideModal();
-            HomeText(modal,"◆ "+UltraAccount.Gems+" GEMS",22,Color.white,.74f,.89f,.21f,.06f);
+            HomeRect("Wallet crystal",modal,.71f,.88f,.035f,.08f).gameObject.AddComponent<UltraGem>();
+            HomeText(modal,UltraAccount.Gems+" GEMS",22,Color.white,.75f,.89f,.20f,.06f);
             SmallButton(modal,"ACCESSORIES",()=>ShowShop(category,page),.045f,.71f,.42f,.065f,21);
             SmallButton(modal,"DUEL PASS",OpenPass,.49f,.71f,.46f,.065f,21);
             HomePanel(HomeRect("Category underline",modal,.045f,.70f,.42f,.003f),Lime);
@@ -215,7 +216,7 @@ namespace MDPro3.UI.ServantUI
                 var preview=HomeRect("Preview",card,.055f,.35f,.89f,.53f).gameObject.AddComponent<Image>();preview.preserveAspect=true;preview.raycastTarget=false;
                 LoadProduct(preview,item).Forget();
                 HomeText(card,item.Name,17,Color.white,.055f,.17f,.89f,.17f).alignment=TextAlignmentOptions.Center;
-                SmallButton(card,owned?(item.kind=="Frame"?"EQUIP":"OWNED"):"◆ "+item.price,()=>Run(async()=>{await UltraAccount.Buy(item);ShowShop(category,page);modalStatus.text=item.Name+" unlocked.";}),.07f,.035f,.86f,.12f,18).interactable=!owned || item.kind=="Frame";
+                SmallButton(card,owned?(item.kind=="Frame"?"EQUIP":"OWNED"):item.price+" GEMS",()=>Run(async()=>{await UltraAccount.Buy(item);ShowShop(category,page);modalStatus.text=item.Name+" unlocked.";}),.07f,.035f,.86f,.12f,18).interactable=!owned || item.kind=="Frame";
             }
             if(category=="Field")HomeText(modal,"Each set includes the duel field, mate base and field parts.",17,Muted,.25f,.125f,.70f,.04f);
             SmallButton(modal,"<",()=>ShowShop(category,page-1),.25f,.025f,.10f,.07f,24).interactable=page>0;

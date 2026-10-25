@@ -1,5 +1,6 @@
 """Account cosmetics, invitations and owner tools. No client can grant currency."""
 import json
+import deck_backups
 import os
 from pathlib import Path
 import re
@@ -7,6 +8,7 @@ import time
 
 
 def initialize(db):
+    deck_backups.initialize(db)
     db.executescript('''
     create table if not exists mission_claims(user integer not null, mission text not null, primary key(user,mission));
     create table if not exists profiles(user integer primary key references users(id), gems integer not null default 0,
@@ -79,6 +81,8 @@ def profile(db, uid):
 
 def route(h, db, method, path, body, now, user, api):
     uid = user['id']; state, Problem, are_friends, rooms, lock = api
+    if path == '/decks':
+        return deck_backups.route(db,method,body,now,uid,Problem)
     if path == '/profile' and method == 'GET':
         return profile(db, uid)
     if path == '/profile/avatar' and method == 'POST':

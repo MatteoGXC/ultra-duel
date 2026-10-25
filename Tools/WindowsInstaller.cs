@@ -81,6 +81,10 @@ public class WindowsInstaller : Form
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             string target = Path.GetFullPath(destination.Text.Trim());
             Directory.CreateDirectory(target);
+            string personalStore=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Ultra Duel","UserData");
+            var personalBackup=new MDPro3.UltraUserDataBackup(target,personalStore);
+            status.Text="Backing up existing decks and settings…";
+            await Task.Run(()=>personalBackup.Capture());
             string cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UltraDuelInstaller", "Downloads");
             Directory.CreateDirectory(cache);
             long[] received=new long[manifest.parts.Length];
@@ -139,6 +143,8 @@ public class WindowsInstaller : Form
             string exe = Path.Combine(target, "Ultra-Duel.exe");
             if (!File.Exists(exe)) exe = Path.Combine(target, "Matteo-Duel.exe");
             if (!File.Exists(exe)) throw new IOException("The game executable was not installed.");
+            status.Text="Restoring your decks and settings…";
+            await Task.Run(()=>{personalBackup.Restore();personalBackup.Capture();});
             try
             {
                 dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));

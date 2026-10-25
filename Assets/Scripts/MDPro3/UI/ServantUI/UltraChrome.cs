@@ -84,7 +84,7 @@ namespace MDPro3.UI.ServantUI
         protected override void Awake()
         {
             base.Awake();
-            if(gem==null){var texture=Resources.Load<Texture2D>("Ultra/Gem");if(texture!=null)gem=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f));}
+            if(gem==null){var texture=Resources.Load<Texture2D>("Ultra/Crystal");if(texture!=null)gem=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f));}
             sprite=gem;preserveAspect=true;raycastTarget=false;
         }
     }

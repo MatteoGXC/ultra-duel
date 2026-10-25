@@ -315,19 +315,25 @@ namespace MDPro3.UI.ServantUI
             {
                 int tier=first+col;float x=.17f+col*.128f;
                 var cell=HomeRect("Grade "+tier,modal,x,.27f,.12f,.31f);
-                HomePanel(cell,new Color(.065f,.10f,.19f));
-                HomePanel(HomeRect("Grade header",cell,0,.82f,1,.18f),tier<=UltraAccount.Tier?Lime:new Color(.23f,.27f,.34f));
-                HomeText(cell,tier.ToString(),24,tier<=UltraAccount.Tier?Color.black:Color.white,.1f,.83f,.8f,.16f).alignment=TextAlignmentOptions.Center;
-                var reward=HomeRect("Gem reward",cell,.25f,.48f,.50f,.26f);
-                HomePanel(reward,new Color(.015f,.025f,.045f));
-                HomeRect("Gem",reward,.15f,.13f,.70f,.75f).gameObject.AddComponent<UltraGem>().raycastTarget=false;
-                HomeText(cell,(tier<=UltraAccount.Claimed?"✓  ":"")+"×50",20,Color.white,.04f,.39f,.92f,.10f).alignment=TextAlignmentOptions.Center;
-                string milestone=tier==5?"RISING DUELIST TITLE":tier==10?"NEON FRAME":tier==20?"CHAMPION FRAME":"50 GEMS";
-                HomeText(cell,milestone,15,Color.white,.04f,.10f,.92f,.20f).alignment=TextAlignmentOptions.Center;
+                bool claimed=tier<=UltraAccount.Claimed,available=tier<=UltraAccount.Tier;
+                HomePanel(cell,new Color(.055f,.075f,.13f));
+                var border=cell.GetComponent<UltraChrome>();border.rim=available && !claimed?2:1;border.rimColor=available && !claimed?Lime:new Color(.24f,.30f,.40f);
+                HomePanel(HomeRect("Grade header",cell,0,.82f,1,.18f),claimed?new Color(.42f,.49f,.56f):available?Lime:new Color(.23f,.27f,.34f));
+                HomeText(cell,tier.ToString(),24,available?Color.black:Color.white,.1f,.83f,.8f,.16f).alignment=TextAlignmentOptions.Center;
+                HomeRect("Gem reward",cell,.14f,.43f,.72f,.36f).gameObject.AddComponent<UltraGem>();
+                var amount=HomeText(cell,"50 GEMS",22,Color.white,.06f,.275f,.88f,.13f);amount.alignment=TextAlignmentOptions.Center;amount.fontStyle=FontStyles.Bold;
+                string milestone=tier==5?"+ DUELIST TITLE":tier==10?"+ NEON FRAME":tier==20?"+ CHAMPION FRAME":"FREE REWARD";
+                HomeText(cell,milestone,12,Muted,.04f,.15f,.92f,.095f).alignment=TextAlignmentOptions.Center;
+                HomePanel(HomeRect("Reward state",cell,.06f,.04f,.88f,.075f),claimed?new Color(.12f,.17f,.22f):new Color(.025f,.04f,.07f));
+                HomeText(cell,claimed?"CLAIMED":available?"READY TO CLAIM":"LOCKED",11,available && !claimed?Lime:Muted,.07f,.045f,.86f,.065f).alignment=TextAlignmentOptions.Center;
+                var reveal=cell.gameObject.AddComponent<CanvasGroup>();reveal.alpha=0;
+                reveal.DOFade(1,.25f).SetDelay(col*.045f).SetUpdate(true).SetLink(cell.gameObject);
             }
             SmallButton(modal,"<",()=>{passPage=Math.Max(0,passPage-1);OpenPass();},.045f,.16f,.09f,.07f,28);
             SmallButton(modal,">",()=>{passPage=Math.Min(3,passPage+1);OpenPass();},.86f,.16f,.09f,.07f,28);
+            HomeText(modal,(passPage+1)+" / 4",16,Muted,.44f,.225f,.12f,.035f).alignment=TextAlignmentOptions.Center;
             SmallButton(modal,"CLAIM REWARDS",()=>Run(async()=>{await UltraAccount.Claim();OpenPass();}),.30f,.12f,.40f,.09f).interactable=UltraAccount.Tier>UltraAccount.Claimed;
+            modalStatus.rectTransform.anchorMin=new Vector2(.045f,.035f);modalStatus.rectTransform.anchorMax=new Vector2(.945f,.075f);
             modalStatus.text=UltraAccount.Profile==null?"Offline progress / Saved on this PC":"Account rewards / Saved on Ultra Duel";
         }
         void OpenShop() { ShowShop("Mate",0); }
@@ -354,6 +360,14 @@ namespace MDPro3.UI.ServantUI
             foreach(var tab in page)
                 if(tab.name.Contains("Wallpaper")){tab.SetToggleOn();break;}
         }
+        void OpenBackups()
+        {
+            OpenModal("DECK BACKUPS",UltraDeckCloud.Status,"backups");
+            HomeText(modal,"Signed-in decks are backed up to your Ultra Duel account.\nSign in after reinstalling to restore them.\nLocal backups also protect offline decks, settings and replays.",24,Color.white,.06f,.35f,.88f,.37f).alignment=TextAlignmentOptions.Center;
+            SmallButton(modal,"SYNC DECKS",()=>SyncBackups().Forget(),.08f,.16f,.40f,.12f);
+            SmallButton(modal,"LOCAL BACKUPS",()=>{if(!string.IsNullOrEmpty(UltraSaveSafety.Location))Application.OpenURL(new Uri(UltraSaveSafety.Location+System.IO.Path.DirectorySeparatorChar).AbsoluteUri);},.52f,.16f,.40f,.12f);
+        }
+        async UniTaskVoid SyncBackups(){await UltraDeckCloud.Sync(true);OpenBackups();}
         void OpenMenu()
         {
             OpenModal("MENU","Ultra Duel  /  v"+UltraServices.Version,"menu");
@@ -366,6 +380,7 @@ namespace MDPro3.UI.ServantUI
             SmallButton(modal,"GITHUB",()=>Application.OpenURL(UltraServices.Repository),.055f,.16f,.42f,.10f);
             SmallButton(modal,"EXIT",()=>{CloseModal();OnExit();},.525f,.16f,.42f,.10f);
             SmallButton(modal,"GUI SCALE  "+UltraGuiScale.Percent+"%",OpenGuiScale,.055f,.025f,.42f,.08f);
+            SmallButton(modal,"SAVE BACKUPS",OpenBackups,.525f,.025f,.42f,.08f);
         }
     }
 }

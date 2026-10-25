@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.11'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.12'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -29,17 +29,13 @@ def main():
     manifest = json.loads((OUTPUT/'windows-manifest.json').read_text())
     version = manifest['version']
     tag = 'v'+version
-    body = ('## Ultra Duel '+version+' — Online Duels & UI Options\n\n'
-            'New players: download **Ultra-Duel-Setup.exe**. Existing players: use **Ultra-Duel-Updater.zip** beside the game executable. Decks, settings and accounts are preserved.\n\n'
-            '- GUI Scale: choose 70% through 125% in 5% steps from Menu, without resizing the wallpaper.\n'
-            '- Online Duel: find a random player using the same format and Genesys point cap, then automatically ready the selected decks and start.\n'
-            '- Updates now loads actual published release notes in a scrollable view.\n'
-            '- Profile and statistics pages show the selected player icon; the animated mate stays on the profile page.\n'
-            '- Wallpaper-specific profile banners use matching colors and constellation designs.\n'
-            '- Separates Friends labels and profile-statistics controls, including the large GUI setting.\n'
-            '- Daily mission reset verified at 00:00 UTC; lifetime missions do not reset.\n'
-            '- Retains friend tables, spectating, five-minute duel timers, owner controls and all 100 Beyond the Brave cards.\n\n'
-            'Windows download. Mac installers are listed in separate macOS releases.\n\n'
+    body = ('## Ultra Duel '+version+' — Deck Backups & Duel Pass\n\n'
+            'New players: download **Ultra-Duel-Setup.exe**. Existing players: use **Ultra-Duel-Updater.zip** beside the game executable.\n\n'
+            '- Decks are backed up privately to your signed-in Ultra Duel account on the VPS and restored after reinstalling. Conflicting edits keep both copies.\n'
+            '- Independent local backups preserve offline decks, settings, progress and replays outside the installation. Menu → Save Backups opens sync and recovery options.\n'
+            '- New rainbow crystal gem artwork across currency displays and a cleaner Duel Pass reward layout, quantities and claim labels.\n'
+            '- Includes adjustable GUI scale, random online matchmaking, friend tables, spectating, five-minute timers and all 100 Beyond the Brave cards.\n\n'
+            'Intel Mac downloads are published in a separate macOS release. No macOS auto-updater is included.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:
@@ -51,7 +47,7 @@ def main():
     except urllib.error.HTTPError as error:
         if error.code != 404: raise
         release = api(REPO+'/releases', 'POST', dict(tag_name=tag, target_commitish=manifest['buildCommit'],
-            name='Ultra Duel '+version+' — Windows', body=body, draft=True, prerelease=False))
+            name='Ultra Duel '+version+' â€” Windows', body=body, draft=True, prerelease=False))
     if not release['draft']: raise RuntimeError('Release is already public; refusing to replace its assets.')
     endpoint = REPO+'/releases/'+str(release['id'])
     api(endpoint, 'PATCH', {'body': body})

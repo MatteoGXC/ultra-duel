@@ -126,7 +126,7 @@ jobs:
           lines=config.read_text(encoding='utf-8-sig').splitlines()
           lines=[line for line in lines if not line.startswith(('Background->','UltraReferenceBackgroundApplied->'))]
           config.write_text('\n'.join(lines+['Background->16','UltraReferenceBackgroundApplied->1'])+'\n',encoding='utf-8')
-          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--rps-art-check','--friend-tables-layout','--ultra-features','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
+          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--rps-art-check','--friend-tables-layout','--ultra-features','--ultra-layout','--ultra-rewards-check','--ultra-ui-pages','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
           process=subprocess.Popen(command,env=env)
           def desktop_capture():
               for _ in range(1200):

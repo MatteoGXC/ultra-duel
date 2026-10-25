@@ -16,7 +16,7 @@ namespace MDPro3.Net
 {
     public static class UltraServices
     {
-        public const string Version = "0.1.11";
+        public const string Version = "0.1.12";
         public const string Repository = "https://github.com/MatteoGXC/ultra-duel";
         const string SessionPath = "Data/friends-session.json";
         public static string Token { get; private set; } = "";
@@ -122,7 +122,7 @@ namespace MDPro3.Net
         {
             if (friendsBusy || string.IsNullOrEmpty(Token)) return;
             friendsBusy = true;
-            try { State = await Request("/state"); Changed?.Invoke(); await UltraProgress.SyncPending(); }
+            try { State = await Request("/state"); Changed?.Invoke(); await UltraProgress.SyncPending(); await UltraDeckCloud.Sync(); }
             finally { friendsBusy = false; }
         }
 

@@ -34,6 +34,7 @@ namespace MDPro3
             Directory.SetCurrentDirectory(Environment.GetEnvironmentVariable("ULTRA_DUEL_DATA")
                 ?? Path.GetFullPath(Path.Combine(Application.dataPath,"../..")));
 #endif
+            UltraSaveSafety.Initialize();
             Application.targetFrameRate = 0;
 
 #if !UNITY_EDITOR && (UNITY_ANDROID || UNITY_IOS)

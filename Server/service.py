@@ -167,7 +167,7 @@ def matchmaking(user, body, method, now):
         return {'status':'waiting'}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'UltraDuel/0.1.11'
+    server_version = 'UltraDuel/0.1.12'
     def log_message(self, *_): pass # Passwords, tokens and private room secrets never enter access logs.
     def reply(self, data, status=200):
         body=json.dumps(data,separators=(',',':')).encode()
@@ -190,7 +190,7 @@ class Handler(BaseHTTPRequestHandler):
                 RATES[bucket]=RATES.get(bucket,0)+1
                 if RATES[bucket]>(12 if bucket[2]=='auth' else 180): raise Problem('Please wait before trying again.',429)
             length=int(self.headers.get('Content-Length','0'))
-            if length<0 or length>8192: raise Problem('Request too large.',413)
+            if length<0 or length>(131072 if path=='/decks' else 8192): raise Problem('Request too large.',413)
             body=json.loads(self.rfile.read(length)) if length else {}
             if not isinstance(body,dict): raise Problem('Expected a JSON object.')
             with contextlib.closing(database()) as db:
@@ -203,7 +203,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.11','ownerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300,'matchmaking':True,'dailyResetUtc':'00:00'}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.12','ownerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300,'matchmaking':True,'dailyResetUtc':'00:00','cloudDecks':True}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')

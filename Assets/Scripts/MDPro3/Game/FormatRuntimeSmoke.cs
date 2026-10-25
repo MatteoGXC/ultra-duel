@@ -31,7 +31,7 @@ namespace MDPro3
             smoke.output = Path.GetFullPath(args[index + 1]);
             smoke.mode = args[index + 2];
             Directory.CreateDirectory(smoke.output);
-            smoke.deadline = Time.realtimeSinceStartup + 180;
+            smoke.deadline = Time.realtimeSinceStartup + 300;
             smoke.StartCoroutine(smoke.Run());
         }
 
@@ -250,6 +250,26 @@ namespace MDPro3
                     throw new Exception("Friend room did not render three spectator entries.");
                 typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
                 Debug.Log("FRIEND_TABLES_LAYOUT_PASSED three entry and watch rows");
+            }
+            if(commandLine.Contains("--cloud-backup-check"))
+            {
+                var cloudCheck=MDPro3.Net.UltraDeckCloudVerification.Run().AsTask();
+                while(!cloudCheck.IsCompleted)yield return null;
+                if(cloudCheck.IsFaulted)throw cloudCheck.Exception;
+            }
+            if(commandLine.Contains("--ultra-rewards-check"))
+            {
+                Debug.Log(UltraBackupVerification.Run());
+                var home=Program.instance.menu.GetUI<MainMenuUI>();
+                foreach(string page in new[]{"OpenPass","OpenShop","OpenBackups"})
+                {
+                    typeof(MainMenuUI).GetMethod(page,System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                    yield return Capture("rewards-"+page);
+                    foreach(var gem in home.GetComponentsInChildren<UltraGem>())
+                        if(gem.sprite==null || gem.sprite.texture.name!="Crystal")throw new Exception("Currency did not use the supplied crystal.");
+                    typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                }
+                Debug.Log("ULTRA_REWARDS_PASSED crystal, reward layout and reinstall protection");
             }
             if(commandLine.Contains("--ultra-layout"))
             {
