@@ -12,6 +12,10 @@ on:
       sha256:
         description: Input archive checksum
         required: true
+      runtime_sha:
+        description: Immutable runtime archive checksum for cache isolation
+        default: ddd688f1b23825950afaad75fe519b953ae61c8a587ee4b9cbff8ff6c049019a
+        required: true
 permissions:
   # GitHub requires collaborator access to retrieve assets from an unpublished draft.
   # This workflow has no release-publishing step.
@@ -66,7 +70,7 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/mac-runtime.tar.zst
-          key: mac-runtime-ddd688f1b23825950afaad75fe519b953ae61c8a587ee4b9cbff8ff6c049019a
+          key: mac-runtime-${{ inputs.runtime_sha }}
       - name: Download and verify runtime archive
         id: runtime
         env:
@@ -78,7 +82,7 @@ jobs:
         if: steps.runtime.outcome == 'success'
         with:
           path: ${{ runner.temp }}/mac-runtime.tar.zst
-          key: mac-runtime-ddd688f1b23825950afaad75fe519b953ae61c8a587ee4b9cbff8ff6c049019a
+          key: mac-runtime-${{ inputs.runtime_sha }}
       - name: Verify actual first-launch installation
         run: |
           APP="$RUNNER_TEMP/Applications/Ultra Duel.app"
