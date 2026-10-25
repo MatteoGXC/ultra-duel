@@ -14,6 +14,8 @@ namespace MDPro3
         private float nextCheck;
         private Volume intelDuelVolume;
         private VolumeProfile intelDuelProfile;
+        private UniversalAdditionalCameraData intelMain, intelUi;
+        private bool mainPostProcessing, uiPostProcessing;
         private readonly bool intelProcess=RuntimeInformation.ProcessArchitecture==Architecture.X64;
 
         private void UpdateIntelDuelBloom()
@@ -21,6 +23,19 @@ namespace MDPro3
             if(!intelProcess)return;
             bool inDuel=Program.instance!=null && Program.instance.ocgcore!=null
                 && Program.instance.currentServant==Program.instance.ocgcore;
+            // Intel Metal can produce a completely black HDR post-process frame,
+            // including the overlay UI. Keep field animations and restore the
+            // authored menu effects when leaving the duel camera stack.
+            if(inDuel && intelMain==null)
+            {
+                intelMain=Program.instance.camera_.cameraMain.GetUniversalAdditionalCameraData();
+                intelUi=Program.instance.camera_.cameraUI.GetUniversalAdditionalCameraData();
+                mainPostProcessing=intelMain.renderPostProcessing;
+                uiPostProcessing=intelUi.renderPostProcessing;
+                Debug.Log("MAC_INTEL_DUEL_POST_PROCESS_COMPATIBILITY_ENABLED");
+            }
+            if(intelMain!=null)intelMain.renderPostProcessing=inDuel?false:mainPostProcessing;
+            if(intelUi!=null)intelUi.renderPostProcessing=inDuel?false:uiPostProcessing;
             if(inDuel && intelDuelVolume==null)
             {
                 var holder=new GameObject("Intel duel HDR compatibility");holder.transform.SetParent(transform,false);

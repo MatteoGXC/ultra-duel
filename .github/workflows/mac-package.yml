@@ -118,6 +118,7 @@ jobs:
           ULTRA_SPECTATOR_TEST=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
       - name: Verify graphical game launch
         run: |
+          caffeinate -d -i -u -t 1800 &
           python3 - <<'PY'
           import os,subprocess,pathlib,threading,time
           root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
