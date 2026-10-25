@@ -34,6 +34,7 @@ jobs:
             /Tools/package-mac.py
             /Tools/download-verified-runtime.py
             /Tests/NativeCardScriptTests.py
+            /Tests/NativeEffectDescriptionsTests.py
             /Tests/NativeBeyondTheBraveTests.py
             /Tests/NativeAdminDuelTests.py
             /Tests/MacFieldVisualCheck.swift
