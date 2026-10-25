@@ -1060,37 +1060,29 @@ namespace MDPro3.UI.ServantUI
             while (DeckEditor.Deck == null)
                 await TaskUtility.WaitOneFrame(gameObject);
 
-            var sprite = await Program.items.LoadDeckCaseIconAsync(DeckEditor.Deck.Case, "_L_SD");
-            if (sprite != null)
-            {
-                IconCase.color = Color.white;
-                IconCase.sprite = sprite;
-            }
-
-            IconProtector.material = await ABLoader.LoadProtectorMaterial(DeckEditor.Deck.Protector.ToString(), Application.exitCancellationToken);
-            IconProtector.color = Color.white;
-
-            IconField.sprite = await Program.items.LoadItemIconAsync(DeckEditor.Deck.Field.ToString(), Items.ItemType.Mat);
-            IconField.color = Color.white;
-
-            IconGrave.sprite = await Program.items.LoadItemIconAsync(DeckEditor.Deck.Grave.ToString(), Items.ItemType.Grave);
-            IconGrave.color = Color.white;
-
-            IconStand.sprite = await Program.items.LoadItemIconAsync(DeckEditor.Deck.Stand.ToString(), Items.ItemType.Stand);
-            IconStand.color = Color.white;
-
-            var mate = DeckEditor.Deck.Mate.ToString();
-            if (mate.Length == 7 && mate.StartsWith("100"))
-            {
-                IconMate.sprite = await Program.items.LoadItemIconAsync(mate, Items.ItemType.Mate);
-                IconMate.color = Color.white;
-            }
-            else
-            {
-                var art = await CardImageLoader.LoadArtAsync(DeckEditor.Deck.Mate, true);
-                IconMate.sprite = TextureManager.Texture2Sprite(art);
-                IconMate.color = Color.white;
-            }
+            var deck=DeckEditor.Deck;
+            var caseIcon=IconCase;var protectorIcon=IconProtector;var fieldIcon=IconField;
+            var graveIcon=IconGrave;var standIcon=IconStand;var mateIcon=IconMate;
+            var sprite=await Program.items.LoadDeckCaseIconAsync(deck.Case,"_L_SD");
+            if(this==null || caseIcon==null)return;
+            if(sprite!=null){caseIcon.color=Color.white;caseIcon.sprite=sprite;}
+            var protector=await ABLoader.LoadProtectorMaterial(deck.Protector.ToString(),Application.exitCancellationToken);
+            if(this==null || protectorIcon==null)return;
+            protectorIcon.material=protector;protectorIcon.color=Color.white;
+            sprite=await Program.items.LoadItemIconAsync(deck.Field.ToString(),Items.ItemType.Mat);
+            if(this==null || fieldIcon==null)return;
+            fieldIcon.sprite=sprite;fieldIcon.color=Color.white;
+            sprite=await Program.items.LoadItemIconAsync(deck.Grave.ToString(),Items.ItemType.Grave);
+            if(this==null || graveIcon==null)return;
+            graveIcon.sprite=sprite;graveIcon.color=Color.white;
+            sprite=await Program.items.LoadItemIconAsync(deck.Stand.ToString(),Items.ItemType.Stand);
+            if(this==null || standIcon==null)return;
+            standIcon.sprite=sprite;standIcon.color=Color.white;
+            var mate=deck.Mate.ToString();
+            if(mate.Length==7 && mate.StartsWith("100"))sprite=await Program.items.LoadItemIconAsync(mate,Items.ItemType.Mate);
+            else sprite=TextureManager.Texture2Sprite(await CardImageLoader.LoadArtAsync(deck.Mate,true));
+            if(this==null || mateIcon==null)return;
+            mateIcon.sprite=sprite;mateIcon.color=Color.white;
         }
 
         public void ShiftToAppearance()
