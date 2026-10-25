@@ -48,6 +48,17 @@ namespace MDPro3
         {
             yield return new WaitForSecondsRealtime(2);
             string path = Path.Combine(output, name + ".png");
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+            // Capture the real composited frame. Changing an Overlay camera to
+            // Base removes it from the URP camera stack on Metal and corrupts
+            // subsequent diagnostic renders, even after restoring renderType.
+            ScreenCapture.CaptureScreenshot(path);
+            yield return new WaitForEndOfFrame();
+            float captureDeadline=Time.realtimeSinceStartup+10;
+            while(!File.Exists(path) && Time.realtimeSinceStartup<captureDeadline)yield return null;
+            if(!File.Exists(path))throw new Exception("The Mac framebuffer capture did not complete.");
+            yield break;
+#else
             var cameras = Program.instance.camera_;
             var camera = cameras.cameraMain.gameObject.activeInHierarchy ? cameras.cameraMain : cameras.camera2D;
             var target = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.ARGB32);
@@ -97,6 +108,7 @@ namespace MDPro3
             Destroy(target);
             Destroy(texture);
             Destroy(scene);
+#endif
         }
 
         private IEnumerator CheckUltraFeatures()
