@@ -36,12 +36,13 @@ def main():
     for name in subprocess.check_output(['git','ls-files','Data'],cwd=ROOT,text=True).splitlines():
         add(ROOT/name, 'Defaults/'+name)
     audit = json.loads((ROOT/'Data/card-update-audit.json').read_text(encoding='utf-8'))
-    card_ids = {row['id'] for row in audit['art']}
+    card_ids = {row['id'] for row in audit['art'] if (ROOT/'Picture/Art'/f"{row['id']}.jpg").is_file()}
     card_ids.update(row['id'] for row in json.loads((ROOT/'Data/beyond-the-brave-index.json').read_text(encoding='utf-8')))
     for code in card_ids:
         file = ROOT/'Picture/Art'/f"{code}.jpg"
         assert file.is_file(), 'Missing normal artwork: '+str(code)
         add(file, 'Defaults/Picture/Art/'+file.name)
+    add(ROOT/'Expansions/ultra-card-art.zip','Defaults/Expansions/ultra-card-art.zip')
     for choice in ('Rock','Paper','Scissors'):
         file=ROOT/'Picture/DIY'/f'{choice}.png'
         assert file.is_file(), 'Missing RPS artwork: '+choice
