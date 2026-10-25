@@ -2,6 +2,12 @@
 
 A Yu-Gi-Oh! practice and multiplayer client based on [MDPro3](https://github.com/daominah/mdpro3fork), with TCG Advanced and Genesys rules, AI opponents, a deck editor, and the original duel presentation.
 
+## Choose your download
+
+[**Windows**](https://github.com/MatteoGXC/ultra-duel/releases/tag/v0.1.12) | [**macOS - Intel**](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.12) | [**macOS - Apple Silicon**](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.10)
+
+See [all downloads sorted by version and platform](DOWNLOADS.md). Mac users should choose the DMG matching their processor.
+
 ## Download for Windows
 
 [Download Ultra Duel Setup](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Setup.exe), run it, and choose an installation folder. Setup downloads the complete game, verifies the archives, and creates a desktop shortcut. No Unity installation is needed. Keep the game's runtime and asset folders together; the game EXE alone is insufficient.
