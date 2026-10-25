@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System;
 using UnityEngine.EventSystems;
+using MDPro3.UI.ServantUI;
 
 namespace MDPro3.UI
 {
@@ -14,7 +15,7 @@ namespace MDPro3.UI
         public Image shadow;
         public RectTransform window;
         public Text title;
-        public float transitionTime = 0.3f;
+        public float transitionTime = 0.25f;
         public Button btnConfirm;
         public Button btnCancel;
         public float buttomOffest = 180;
@@ -72,7 +73,8 @@ namespace MDPro3.UI
         public virtual void Show()
         {
             Initialize();
-            window.DOAnchorPos(new Vector2(0f, showY), transitionTime).OnComplete(() =>
+            UltraScreenSkin.Apply(gameObject);
+            window.DOAnchorPos(new Vector2(0f, showY), transitionTime).SetEase(Ease.OutCubic).OnComplete(() =>
             {
                 Program.instance.currentServant.returnAction = Hide;
             });

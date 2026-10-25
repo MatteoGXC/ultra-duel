@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MDPro3.UI.ServantUI;
 using TMPro;
 using System.Collections;
 using UnityEngine;
@@ -34,7 +35,7 @@ namespace MDPro3.UI.Popup
             rect.anchorMax = new Vector2(.98f, .23f);
             rect.offsetMin = rect.offsetMax = Vector2.zero;
             var background = bar.GetComponent<Image>();
-            background.color = new Color(0, 0, 0, .8f);
+            background.color = new Color(UltraTheme.Ink.r, UltraTheme.Ink.g, UltraTheme.Ink.b, .86f);
             background.raycastTarget = false;
             var label = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
             label.transform.SetParent(bar.transform, false);
@@ -45,6 +46,7 @@ namespace MDPro3.UI.Popup
             text.rectTransform.offsetMin = text.rectTransform.offsetMax = Vector2.zero;
             text.font = Program.instance.ui_.tmpFont;
             text.text = title;
+            UltraTheme.Style(text, true, 8f);
             text.fontSize = 28;
             text.enableAutoSizing = true;
             text.fontSizeMin = 16;

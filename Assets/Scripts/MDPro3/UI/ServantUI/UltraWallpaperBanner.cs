@@ -12,9 +12,9 @@ namespace MDPro3.UI.ServantUI
         float hue=-1;
         void Update()
         {
-            var theme=Program.instance.background_.GetComponent<UltraWallpaperTheme>();
-            if(theme!=null && theme.Ready && theme.AppliedWallpaper==seed.ToString() && !Mathf.Approximately(hue,theme.TargetHue))
-            {hue=theme.TargetHue;accent=Color.HSVToRGB(Mathf.Repeat(hue/360f,1),.6f,.95f);SetVerticesDirty();}
+            var theme=Program.instance!=null && Program.instance.background_!=null?Program.instance.background_.GetComponent<UltraWallpaperTheme>():null;
+            if(theme!=null && theme.Ready && theme.AppliedWallpaper==seed.ToString() && (accent!=theme.Accent || !Mathf.Approximately(hue,theme.TargetHue)))
+            {hue=theme.TargetHue;accent=theme.Accent;SetVerticesDirty();}
         }
         void Quad(VertexHelper vh,Vector2 a,Vector2 b,Vector2 c,Vector2 d,Color left,Color right)
         {

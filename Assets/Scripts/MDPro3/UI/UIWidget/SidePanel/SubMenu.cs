@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
 using YgomSystem.ElementSystem;
+using MDPro3.UI.ServantUI;
 
 namespace MDPro3.UI
 {
@@ -78,18 +79,18 @@ namespace MDPro3.UI
                     title.SetActive(true);
 
                     var rect = title.transform.GetChild(0).GetComponent<RectTransform>();
-                    rect.anchoredPosition3D = new Vector3(150f, 0f, 0f);
+                    rect.anchoredPosition3D = new Vector3(70f, 0f, 0f);
                     DOTween.Sequence()
-                        .AppendInterval(0.09f)
-                        .Append(rect.DOAnchorPosX(0f, 0.3f).SetEase(Ease.OutQuart));
+                        .AppendInterval(0.04f)
+                        .Append(rect.DOAnchorPosX(0f, 0.16f).SetEase(Ease.OutCubic));
 
                     var cg = rect.GetComponent<CanvasGroup>();
                     cg.alpha = 0f;
                     DOTween.Sequence()
-                        .AppendInterval(0.09f)
-                        .Append(cg.DOFade(1f, 0.3f));
+                        .AppendInterval(0.04f)
+                        .Append(cg.DOFade(1f, 0.16f).SetEase(Ease.OutCubic));
 
-                    yield return new WaitForSeconds(0.03f);
+                    yield return new WaitForSeconds(0.02f);
                 }
                 else
                 {
@@ -115,20 +116,21 @@ namespace MDPro3.UI
                     });
 
                     var rect = button.transform.GetChild(0).GetComponent<RectTransform>();
-                    rect.anchoredPosition3D = new Vector3(150f, 0f, 0f);
+                    rect.anchoredPosition3D = new Vector3(70f, 0f, 0f);
                     DOTween.Sequence()
-                        .AppendInterval(0.12f)
-                        .Append(rect.DOAnchorPosX(0f, 0.3f).SetEase(Ease.OutQuart));
+                        .AppendInterval(0.04f)
+                        .Append(rect.DOAnchorPosX(0f, 0.16f).SetEase(Ease.OutCubic));
 
                     var cg = rect.GetComponent<CanvasGroup>();
                     cg.alpha = 0f;
                     DOTween.Sequence()
-                        .AppendInterval(0.12f)
-                        .Append(cg.DOFade(1f, 0.3f));
+                        .AppendInterval(0.04f)
+                        .Append(cg.DOFade(1f, 0.16f).SetEase(Ease.OutCubic));
 
-                    yield return new WaitForSeconds(0.03f);
+                    yield return new WaitForSeconds(0.02f);
                 }
             }
+            UltraScreenSkin.Apply(gameObject);
         }
     }
 }

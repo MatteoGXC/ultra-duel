@@ -59,23 +59,86 @@ namespace MDPro3.UI.ServantUI
             for(int i=0;i<=20;i++){float angle=i*Mathf.PI/10;vh.AddVert(new Vector3(r.x+(x+radius*Mathf.Cos(angle))*r.width,r.y+(y+radius*Mathf.Sin(angle))*r.height),Color.white,Vector2.zero);if(i>0)vh.AddTriangle(start,start+i,start+i+1);}
         }
     }
-    // Screen-space clipped corners and a thin rim, like the native duel menus.
+    public enum UltraCut { Auto, Panel, Small, Flat }
+
+    // Hanko ink panels: notched left edge and one clipped bottom-right corner.
+    // Small controls keep only the clipped corner.
     public class UltraChrome : Image
     {
-        public float corner=12, rim=1;
-        public Color rimColor=new Color(.52f,.61f,.68f,.7f);
+        public UltraCut cut = UltraCut.Auto;
+        public float corner = 12, rim = 1.5f;
+        public Color rimColor = new Color(236f / 255f, 230f / 255f, 218f / 255f, 0.16f);
+        public bool followThemeRim = true;
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            UltraTheme.Changed += OnTheme;
+            OnTheme();
+        }
+        protected override void OnDisable()
+        {
+            UltraTheme.Changed -= OnTheme;
+            base.OnDisable();
+        }
+        void OnTheme()
+        {
+            if (!followThemeRim) return;
+            rimColor = UltraTheme.Line;
+            SetVerticesDirty();
+        }
         protected override void OnPopulateMesh(VertexHelper vh)
         {
-            vh.Clear();var r=rectTransform.rect;
-            Add(vh,r,rimColor);
-            Add(vh,new Rect(r.x+rim,r.y+rim,Mathf.Max(0,r.width-2*rim),Mathf.Max(0,r.height-2*rim)),color);
+            vh.Clear();
+            var rect = rectTransform.rect;
+            if (rect.width < 2f || rect.height < 2f) return;
+            bool thin = rect.width < 22f || rect.height < 22f || cut == UltraCut.Flat;
+            if (thin)
+            {
+                Fan(vh, new[] { new Vector2(rect.xMin, rect.yMin), new Vector2(rect.xMax, rect.yMin), new Vector2(rect.xMax, rect.yMax), new Vector2(rect.xMin, rect.yMax) }, color);
+                return;
+            }
+            bool panel = cut != UltraCut.Small;
+            float clip = Mathf.Min(panel ? 20f : 10f, rect.height * 0.34f, rect.width * 0.22f);
+            var outer = Outline(rect, clip, panel);
+            if (rim > 0.4f)
+            {
+                Fan(vh, outer, rimColor.a > 0.01f ? rimColor : UltraTheme.Line);
+                var inner = new Rect(rect.x + rim, rect.y + rim, Mathf.Max(1f, rect.width - rim * 2f), Mathf.Max(1f, rect.height - rim * 2f));
+                Fan(vh, Outline(inner, Mathf.Max(0f, clip - rim), panel), color);
+            }
+            else Fan(vh, outer, color);
         }
-        void Add(VertexHelper vh,Rect r,Color tint)
+        static Vector2[] Outline(Rect rect, float clip, bool panel)
         {
-            int start=vh.currentVertCount;float c=Mathf.Min(corner,r.height*.28f,r.width*.15f);
-            Vector2[] points={new Vector2(r.xMin+c,r.yMin),new Vector2(r.xMax-c,r.yMin),new Vector2(r.xMax,r.yMin+c),new Vector2(r.xMax,r.yMax-c*.4f),new Vector2(r.xMax-c*.4f,r.yMax),new Vector2(r.xMin+c,r.yMax),new Vector2(r.xMin,r.yMax-c),new Vector2(r.xMin,r.yMin+c*.4f)};
-            foreach(var p in points)vh.AddVert(p,tint,Vector2.zero);
-            for(int i=1;i<points.Length-1;i++)vh.AddTriangle(start,start+i,start+i+1);
+            var points = new System.Collections.Generic.List<Vector2>
+            {
+                new Vector2(rect.xMin, rect.yMax),
+                new Vector2(rect.xMax, rect.yMax),
+                new Vector2(rect.xMax, rect.yMin + clip),
+                new Vector2(rect.xMax - clip, rect.yMin),
+                new Vector2(rect.xMin, rect.yMin)
+            };
+            if (panel && rect.height > 48f && rect.width > 48f)
+            {
+                float notch = Mathf.Min(9f, rect.width * 0.06f);
+                points.Add(new Vector2(rect.xMin, rect.yMin + rect.height * 0.38f));
+                points.Add(new Vector2(rect.xMin + notch, rect.yMin + rect.height * 0.43f));
+                points.Add(new Vector2(rect.xMin + notch, rect.yMin + rect.height * 0.57f));
+                points.Add(new Vector2(rect.xMin, rect.yMin + rect.height * 0.62f));
+            }
+            return points.ToArray();
+        }
+        static void Fan(VertexHelper vh, Vector2[] points, Color tint)
+        {
+            if (points.Length < 3) return;
+            int start = vh.currentVertCount;
+            Vector2 center = Vector2.zero;
+            foreach (var point in points) center += point;
+            center /= points.Length;
+            vh.AddVert(center, tint, Vector2.zero);
+            for (int i = 0; i < points.Length; i++) vh.AddVert(points[i], tint, Vector2.zero);
+            for (int i = 0; i < points.Length; i++) vh.AddTriangle(start, start + 1 + i, start + 1 + ((i + 1) % points.Length));
         }
     }
     public class UltraGem : Image

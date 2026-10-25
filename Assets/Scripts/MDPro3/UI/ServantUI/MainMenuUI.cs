@@ -67,7 +67,10 @@ namespace MDPro3.UI.ServantUI
         {
             var panel = rect.gameObject.AddComponent<UltraChrome>();
             panel.color = color;
-            panel.rim = 0; panel.rimColor = color;
+            panel.cut = UltraCut.Panel;
+            panel.rim = color.a < 0.05f ? 0f : 1.5f;
+            panel.rimColor = UltraTheme.Line;
+            panel.followThemeRim = color.a >= 0.05f;
             panel.raycastTarget = false;
         }
 
@@ -75,15 +78,17 @@ namespace MDPro3.UI.ServantUI
             float x, float y, float w, float h)
         {
             var label = HomeRect("Label", parent, x, y, w, h).gameObject.AddComponent<TextMeshProUGUI>();
-            label.font = TMP_Settings.defaultFontAsset != null ? TMP_Settings.defaultFontAsset : Title.font;
+            label.font = TMP_Settings.defaultFontAsset != null ? TMP_Settings.defaultFontAsset : Title != null ? Title.font : label.font;
             label.text = text;
             label.fontSize = size;
             label.color = color;
             label.raycastTarget = false;
             label.enableAutoSizing = true;
-            label.fontSizeMin = size * 0.7f;
+            label.fontSizeMin = Mathf.Max(14f, size * 0.62f);
             label.fontSizeMax = size;
             label.alignment = TextAlignmentOptions.MidlineLeft;
+            bool display = size >= 26f;
+            UltraTheme.Style(label, display, display ? 4f : 0f);
             return label;
         }
 

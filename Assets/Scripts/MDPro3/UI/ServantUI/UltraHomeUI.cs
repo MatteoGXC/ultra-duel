@@ -29,8 +29,8 @@ namespace MDPro3.UI.ServantUI
 
     public partial class MainMenuUI
     {
-        static readonly Color Lime = new Color(.75f, 1f, .10f);
-        static readonly Color Muted = new Color(.60f, .70f, .78f);
+        static Color Lime => UltraTheme.Accent;
+        static Color Muted => UltraTheme.Mute;
         RectTransform ultraHome, overlay, modal;
         TextMeshProUGUI profileLabel, gemLabel, passLabel, updateLabel, friendLabel, modalStatus;
         Image profileAccent;
@@ -44,12 +44,25 @@ namespace MDPro3.UI.ServantUI
             if(matchmakingActive)CancelMatchmaking().Forget();
             UltraServices.Changed -= RefreshUltraHome;
             UltraProgress.Changed -= RefreshUltraHome;
+            UltraTheme.Changed -= RefreshUltraHome;
         }
         Color FrameColor()
         {
             return UltraProgress.Data.frame switch {
                 "Violet" => new Color(.72f,.35f,1), "Emerald" => new Color(.15f,1,.65f),
                 "Neon" => new Color(.15f,.85f,1), "Champion" => new Color(1,.78f,.22f), _ => Lime };
+        }
+        RectTransform Px(string name, Transform parent, float left, float top, float width, float height)
+        {
+            var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.gameObject.layer = gameObject.layer;
+            rect.SetParent(parent, false);
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(left, -top);
+            rect.sizeDelta = new Vector2(width, height);
+            return rect;
         }
         void BuildUltraHome()
         {
@@ -60,86 +73,123 @@ namespace MDPro3.UI.ServantUI
             }
             foreach (Transform child in Root) child.gameObject.SetActive(false);
             ultraHome = HomeRect("Ultra Duel Home", Root, 0, 0, 1, 1);
-            HomePanel(ultraHome, new Color(.018f,.029f,.053f,0));
-            var nav=HomeRect("Angular navigation",ultraHome,0,0,.52f,1).gameObject.AddComponent<UltraHomeShape>();
-            nav.color=Color.clear; nav.raycastTarget=false;
-            var profile=HomeRect("Profile",ultraHome,.045f,.855f,.27f,.105f);
-            HomePanel(profile,new Color(.015f,.02f,.028f));
-            profile.GetComponent<UltraChrome>().rim=5;
-            profileAccent=HomeRect("Profile frame",profile,0,0,.012f,1).gameObject.AddComponent<Image>();
-            profileAccent.raycastTarget=false;
-            var avatar=profile.gameObject.AddComponent<UltraProfileHeader>();avatar.Initialize();
-            profileLabel=HomeText(profile,"",25,Color.white,.35f,.49f,.58f,.43f);
-            var profileClick=profile.gameObject.AddComponent<Button>(); profileClick.onClick.AddListener(OpenProfile);
-            profileClick.targetGraphic=profile.GetComponent<Image>();
-            profile.GetComponent<Image>().raycastTarget=true;
-            profile.gameObject.AddComponent<UltraButtonMotion>();
-            var wallet=HomeRect("Gem wallet",ultraHome,.385f,.90f,.135f,.055f);
-            var walletFrame=wallet.gameObject.AddComponent<UltraChrome>();walletFrame.color=new Color(.06f,.08f,.12f,.88f);walletFrame.rim=2;walletFrame.rimColor=new Color(.70f,.75f,.80f);walletFrame.raycastTarget=false;
-            HomeRect("Gem",wallet,.055f,.15f,.16f,.70f).gameObject.AddComponent<UltraGem>().raycastTarget=false;
-            gemLabel=HomeText(wallet,"",24,Color.white,.26f,.08f,.66f,.84f);gemLabel.alignment=TextAlignmentOptions.MidlineRight;
-            TopButton("NOTICES",OpenNotifications,.54f,0);
+            var scrim = HomeRect("Home scrim", ultraHome, 0, 0, 1, 1).gameObject.AddComponent<UltraScrim>();
+            scrim.strong = false; scrim.raycastTarget = false;
+            var profile = Px("Profile", ultraHome, 64, 36, 560, 132);
+            HomePanel(profile, UltraTheme.Panel);
+            profileAccent = Px("Profile frame", profile, 0, 28, 6, 56).gameObject.AddComponent<Image>();
+            profileAccent.raycastTarget = false;
+            profileAccent.gameObject.AddComponent<UltraAccentFill>();
+            var avatar = profile.gameObject.AddComponent<UltraProfileHeader>(); avatar.Initialize();
+            profileLabel = HomeText(profile, "", 40, UltraTheme.Fg, .30f, .46f, .66f, .40f);
+            UltraTheme.Style(profileLabel, true, 2f);
+            var profileClick = profile.gameObject.AddComponent<Button>(); profileClick.onClick.AddListener(OpenProfile);
+            profileClick.targetGraphic = profile.GetComponent<Image>();
+            profile.GetComponent<Image>().raycastTarget = true;
+            var wallet = Px("Gem wallet", ultraHome, 648, 58, 300, 80);
+            var walletFrame = wallet.gameObject.AddComponent<UltraChrome>();
+            walletFrame.color = UltraTheme.Panel; walletFrame.cut = UltraCut.Panel; walletFrame.rim = 1.5f; walletFrame.followThemeRim = true; walletFrame.raycastTarget = false;
+            var gem = Px("Gem", wallet, 18, 14, 52, 52); gem.gameObject.AddComponent<UltraGem>().raycastTarget = false;
+            gemLabel = HomeText(wallet, "", 36, UltraTheme.Fg, .26f, .12f, .52f, .76f);
+            UltraTheme.Style(gemLabel, true, 2f);
+            var plus = SmallButton(wallet, "+", OpenShop, .78f, .22f, .16f, .56f, 28, UltraTier.Primary);
+            TopButton("NOTICES", OpenNotifications, 394, 0);
             BuildNotificationsHome();
-            TopButton("MISSIONS",OpenMissions,.65f,1);
-            TopButton("FRIENDS",OpenFriends,.76f,2);
-            TopButton("MENU",OpenMenu,.87f,3);
-            defaultSelectable=NavButton("DUEL",OpenDuel,.735f,78);
-            NavButton("DECK",OnDeck,.615f,58);
-            NavButton("SOLO",OnSolo,.495f,58);
-            NavButton("SHOP",OpenShop,.375f,58);
-            var deckPanel=HomeRect("Selected deck",ultraHome,.045f,.19f,.27f,.15f);
-            HomePanel(deckPanel,new Color(.055f,.075f,.12f));
-            HomeText(deckPanel,"MISSIONS",17,Lime,.055f,.69f,.90f,.22f);
-            homeStatus=HomeText(deckPanel,"",23,Color.white,.055f,.13f,.90f,.53f);
-            SmallButton(deckPanel,"VIEW",OpenMissions,.69f,.73f,.27f,.20f,14);
-            var pass=HomeRect("Duel Pass",ultraHome,.045f,.055f,.27f,.105f);
-            HomePanel(pass,new Color(.09f,.085f,.23f));
-            HomeRect("Duel Pass emblem",pass,.75f,.10f,.23f,.80f).gameObject.AddComponent<UltraPassIcon>().raycastTarget=false;
-            passLabel=HomeText(pass,"",23,Color.white,.055f,.12f,.60f,.78f);
-            pass.GetComponent<Image>().raycastTarget=true;
-            pass.GetComponent<Image>().raycastTarget=true;
-            var passButton=pass.gameObject.AddComponent<Button>(); passButton.targetGraphic=pass.GetComponent<Image>(); passButton.onClick.AddListener(OpenPass);
-            friendLabel=HomeText(ultraHome,"",17,Muted,0,0,0,0);
-            updateLabel=HomeText(ultraHome,"",16,Muted,0,0,0,0);
-            HomeText(ultraHome,"v"+UltraServices.Version,15,Muted,.045f,.015f,.10f,.025f);
-            ownerAdminButton=SmallButton(ultraHome,"ADMIN",OpenAdmin,.84f,.012f,.11f,.038f,16);
+            TopButton("MISSIONS", OpenMissions, 284, 1);
+            TopButton("FRIENDS", OpenFriends, 174, 2);
+            TopButton("MENU", OpenMenu, 64, 3);
+            var menu = Px("Menu", ultraHome, 48, 184, 680, 560);
+            var layout = menu.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.childControlWidth = layout.childControlHeight = true;
+            layout.childForceExpandWidth = true; layout.childForceExpandHeight = false;
+            layout.spacing = 0f;
+            defaultSelectable = NavButton(menu, "DUEL", OpenDuel, true);
+            NavButton(menu, "DECK", OnDeck, false);
+            NavButton(menu, "SOLO", OnSolo, false);
+            NavButton(menu, "SHOP", OpenShop, false);
+            var missions = Px("Missions", ultraHome, 64, 772, 560, 146);
+            HomePanel(missions, UltraTheme.Panel);
+            var missionEdge = Px("Mission edge", missions, 0, 0, 6, 56); missionEdge.gameObject.AddComponent<Image>().raycastTarget = false; missionEdge.gameObject.AddComponent<UltraAccentFill>();
+            var missionKicker = HomeText(missions, "MISSIONS", 16, Lime, .06f, .68f, .55f, .22f);
+            UltraTheme.StyleEmphasis(missionKicker, 14f);
+            missionKicker.gameObject.AddComponent<UltraAccentText>();
+            homeStatus = HomeText(missions, "", 30, UltraTheme.Fg, .06f, .16f, .62f, .50f);
+            UltraTheme.Style(homeStatus, true, 2f);
+            SmallButton(missions, "VIEW", OpenMissions, .68f, .58f, .26f, .28f, 18, UltraTier.Secondary);
+            var pass = Px("Duel Pass", ultraHome, 64, 934, 560, 96);
+            HomePanel(pass, UltraTheme.Panel);
+            var passEdge = Px("Pass edge", pass, 0, 0, 6, 48); passEdge.gameObject.AddComponent<Image>().raycastTarget = false; passEdge.gameObject.AddComponent<UltraAccentFill>();
+            passLabel = HomeText(pass, "", 32, UltraTheme.Fg, .06f, .16f, .62f, .70f);
+            UltraTheme.Style(passLabel, true, 2f);
+            pass.GetComponent<Image>().raycastTarget = true;
+            var passButton = pass.gameObject.AddComponent<Button>(); passButton.targetGraphic = pass.GetComponent<Image>(); passButton.onClick.AddListener(OpenPass);
+            var claim = Px("Claim", pass, 430, 22, 100, 52);
+            var claimChrome = claim.gameObject.AddComponent<UltraChrome>(); claimChrome.cut = UltraCut.Small; claimChrome.raycastTarget = true;
+            var claimButton = claim.gameObject.AddComponent<Button>(); claimButton.targetGraphic = claimChrome; claimButton.onClick.AddListener(OpenPass);
+            var claimLabel = HomeText(claim, "▼", 28, Color.white, 0, 0, 1, 1); claimLabel.alignment = TextAlignmentOptions.Center;
+            var claimTheme = claim.gameObject.AddComponent<UltraThemedButton>(); claimTheme.Configure(UltraTier.Hero);
+            friendLabel = HomeText(ultraHome, "", 17, Muted, 0, 0, 0, 0);
+            updateLabel = HomeText(ultraHome, "", 16, Muted, 0, 0, 0, 0);
+            var version = Px("Version", ultraHome, 66, 0, 240, 28);
+            version.anchorMin = version.anchorMax = new Vector2(0f, 0f); version.pivot = new Vector2(0f, 0f); version.anchoredPosition = new Vector2(66f, 16f);
+            var versionLabel = HomeText(version, "v" + UltraServices.Version, 16, Muted, 0, 0, 1, 1);
+            UltraTheme.StyleEmphasis(versionLabel, 10f);
+            var admin = Px("Admin slot", ultraHome, 0, 0, 180, 56);
+            admin.anchorMin = admin.anchorMax = new Vector2(1f, 0f); admin.pivot = new Vector2(1f, 0f); admin.anchoredPosition = new Vector2(-64f, 28f);
+            ownerAdminButton = SmallButton(admin, "ADMIN", OpenAdmin, 0, 0, 1, 1, 20, UltraTier.Secondary);
             ownerAdminButton.gameObject.SetActive(false);
-            friendLabel.gameObject.SetActive(false);updateLabel.gameObject.SetActive(false);
+            friendLabel.gameObject.SetActive(false); updateLabel.gameObject.SetActive(false);
             UltraServices.Initialize();
             UltraServices.Changed += RefreshUltraHome;
             UltraProgress.Changed += RefreshUltraHome;
+            UltraTheme.Changed += RefreshUltraHome;
             RefreshUltraHome();
             UltraServices.CheckUpdates();
-            var keys=ultraHome.gameObject.AddComponent<UltraHomeKeyboard>();keys.open=OpenAdmin;
-            if(!Array.Exists(Environment.GetCommandLineArgs(),x=>x=="--format-smoke"))ShowGameStart();
+            var keys = ultraHome.gameObject.AddComponent<UltraHomeKeyboard>(); keys.open = OpenAdmin;
+            if(!Array.Exists(Environment.GetCommandLineArgs(), x => x == "--format-smoke")) ShowGameStart();
         }
-        void TopButton(string title,UnityAction action,float x,int icon)
+        void TopButton(string title, UnityAction action, float right, int icon)
         {
-            var rect=HomeRect(title,ultraHome,x,.878f,.09f,.095f);
-            var image=rect.gameObject.AddComponent<Image>();image.color=Color.clear;
-            var b=rect.gameObject.AddComponent<Button>();b.targetGraphic=image;b.onClick.AddListener(action);
-            var glyph=HomeRect("Icon",rect,.34f,.38f,.32f,.55f).gameObject.AddComponent<UltraNavIcon>();glyph.kind=icon;glyph.raycastTarget=false;
-            rect.gameObject.AddComponent<UltraButtonMotion>();
-            var caption=HomeText(rect,title,15,Color.white,0,0,1,.27f);caption.alignment=TextAlignmentOptions.Center;caption.outlineWidth=.22f;caption.outlineColor=new Color32(0,0,0,240);
+            var rect = Px(title, ultraHome, 0, 48, 100, 112);
+            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-right, -48f);
+            var hit = rect.gameObject.AddComponent<Image>(); hit.color = Color.clear; hit.raycastTarget = true;
+            var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = hit; button.transition = Selectable.Transition.None; button.onClick.AddListener(action);
+            var plate = Px("Plate", rect, 12, 0, 76, 76);
+            var chrome = plate.gameObject.AddComponent<UltraChrome>(); chrome.cut = UltraCut.Small; chrome.color = UltraTheme.Panel; chrome.raycastTarget = false;
+            var glyph = Px("Icon", plate, 18, 18, 40, 40).gameObject.AddComponent<UltraNavIcon>(); glyph.kind = icon; glyph.raycastTarget = false; glyph.color = UltraTheme.Fg;
+            var caption = HomeText(rect, title, 15, UltraTheme.Fg, 0f, 0f, 1f, .28f);
+            caption.alignment = TextAlignmentOptions.Center;
+            var iconButton = rect.gameObject.AddComponent<UltraIconButton>(); iconButton.Bind(chrome, caption);
         }
-        Button NavButton(string title,UnityAction action,float y,float size)
+        Button NavButton(Transform menu, string title, UnityAction action, bool hero)
         {
-            var rect=HomeRect(title,ultraHome,.065f,y,.34f,.10f);
-            var image=rect.gameObject.AddComponent<Image>();image.color=Color.white;
-            var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=image;
-            var colors=button.colors;colors.normalColor=new Color(0,0,0,0);colors.highlightedColor=colors.selectedColor=new Color(.16f,.24f,.22f,.8f);colors.pressedColor=new Color(.24f,.35f,.24f);button.colors=colors;
-            HomePanel(HomeRect("Accent",rect,0,.20f,.005f,.60f),Lime);
-            HomeText(rect,title,size,Color.white,.025f,0,.94f,1).fontStyle=FontStyles.Bold;
-            button.onClick.AddListener(action);rect.gameObject.AddComponent<UltraButtonMotion>();return button;
+            var rect = new GameObject(title, typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.gameObject.layer = gameObject.layer;
+            rect.SetParent(menu, false);
+            var element = rect.gameObject.AddComponent<LayoutElement>();
+            element.preferredHeight = hero ? 210f : 100f;
+            element.minHeight = element.preferredHeight;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.onClick.AddListener(action);
+            rect.gameObject.AddComponent<UltraMenuItem>().Bind(button, title, hero);
+            return button;
         }
-        Button SmallButton(Transform parent,string text,UnityAction action,float x,float y,float w,float h,float size=18)
+        Button SmallButton(Transform parent, string text, UnityAction action, float x, float y, float w, float h, float size = 18, UltraTier tier = UltraTier.Secondary)
         {
-            var rect=HomeRect(text,parent,x,y,w,h);
-            var image=rect.gameObject.AddComponent<UltraChrome>();image.color=new Color(.23f,.22f,.22f,.96f);image.rim=0;
-            var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=image;
-            var colors=button.colors;colors.normalColor=Color.white;colors.highlightedColor=colors.selectedColor=new Color(.60f,.85f,.75f);colors.pressedColor=new Color(.40f,.65f,.50f);button.colors=colors;
-            var label=HomeText(rect,text,size,Color.white,.05f,.05f,.90f,.90f);label.alignment=TextAlignmentOptions.Center;
-            button.onClick.AddListener(action);rect.gameObject.AddComponent<UltraButtonMotion>();return button;
+            var rect = HomeRect(text, parent, x, y, w, h);
+            var image = rect.gameObject.AddComponent<UltraChrome>();
+            image.raycastTarget = true;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            var label = HomeText(rect, text, size, UltraTheme.Fg, .06f, .08f, .88f, .84f);
+            label.alignment = TextAlignmentOptions.Center;
+            if (tier == UltraTier.Secondary && UltraTheme.IsDanger(text)) tier = UltraTier.Danger;
+            var themed = rect.gameObject.AddComponent<UltraThemedButton>();
+            themed.Configure(tier);
+            button.onClick.AddListener(action);
+            return button;
         }
         void RefreshUltraHome()
         {
@@ -178,26 +228,32 @@ namespace MDPro3.UI.ServantUI
             if(!homeVisible)
             {
                 foreach(Transform child in ultraHome)if(child!=overlay && child.gameObject.activeSelf){hiddenHome.Add(child.gameObject);child.gameObject.SetActive(false);}
-                if(page!="start")Program.instance.ui_.wallpaper.gameObject.SetActive(false);shade.color=Color.clear;
+                shade.color=Color.clear;
+                var scrim=HomeRect("Page scrim",overlay,0,0,1,1).gameObject.AddComponent<UltraScrim>();
+                scrim.strong=page!="start";scrim.raycastTarget=false;
             }
             modal=HomeRect(title,overlay,.04f,.055f,.92f,.89f);
-            HomePanel(modal,drawer ? new Color(.012f,.025f,.040f,.99f):Color.clear);
-            if(drawer){modal.anchorMin=new Vector2(.64f,0);modal.anchorMax=Vector2.one;modal.offsetMin=modal.offsetMax=Vector2.zero;}
-            HomePanel(HomeRect("Top rule",modal,0,.99f,1,.002f),new Color(.62f,.68f,.75f,.65f));
-            HomeText(modal,title,34,Color.white,drawer ? .16f:.075f,.885f,drawer ? .79f:.82f,.085f).fontStyle=FontStyles.Bold;
-            HomeText(modal,subtitle,18,Muted,.045f,.79f,.90f,.07f);
-            RoundBack(modal,CloseModal,drawer ? .035f:.005f,.89f,drawer ? .10f:.055f,.08f);
+            HomePanel(modal,drawer ? new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.96f):Color.clear);
+            if(drawer){modal.anchorMin=new Vector2(.62f,0);modal.anchorMax=Vector2.one;modal.offsetMin=modal.offsetMax=Vector2.zero;shade.color=new Color(0,0,0,.55f);}
+            if(drawer){var strip=HomeRect("Drawer accent",modal,0,.78f,.008f,.22f);HomePanel(strip,UltraTheme.Accent);strip.gameObject.AddComponent<UltraAccentFill>();}
+            HomePanel(HomeRect("Top rule",modal,.04f,.84f,.92f,.002f),UltraTheme.Line);
+            var heading=HomeText(modal,title,64,UltraTheme.Fg,drawer?.16f:.075f,.875f,drawer?.78f:.70f,.09f);
+            UltraTheme.Style(heading,true,4f);
+            var sub=HomeText(modal,subtitle,18,Muted,.075f,.80f,.84f,.05f);
+            UltraTheme.StyleEmphasis(sub,8f);
+            SquareBack(modal,CloseModal,drawer?.03f:.012f,.875f,drawer?.09f:.045f,.075f);
             modal.gameObject.AddComponent<UltraPageTransition>();
-            modalStatus=HomeText(modal,"",16,Lime,.045f,.095f,.90f,.035f);
+            modalStatus=HomeText(modal,"",16,Lime,.045f,.02f,.90f,.04f);
+            modalStatus.gameObject.AddComponent<UltraAccentText>();
             return modal;
         }
         TMP_InputField Input(Transform parent,string placeholder,float y,bool password=false)
         {
-            var rect=HomeRect(placeholder,parent,.055f,y,.89f,.09f);HomePanel(rect,new Color(.10f,.15f,.19f));
+            var rect=HomeRect(placeholder,parent,.055f,y,.89f,.09f);HomePanel(rect,UltraTheme.PanelSolid);
             rect.GetComponent<Image>().raycastTarget=true;
             var field=rect.gameObject.AddComponent<TMP_InputField>();
-            var text=HomeText(rect,"",24,Color.white,.035f,.08f,.93f,.84f);
-            var hint=HomeText(rect,placeholder,23,Muted,.035f,.08f,.93f,.84f);
+            var text=HomeText(rect,"",24,UltraTheme.Fg,.035f,.08f,.93f,.84f);UltraTheme.Style(text,false);
+            var hint=HomeText(rect,placeholder,23,Muted,.035f,.08f,.93f,.84f);UltraTheme.Style(hint,false);
             field.textViewport=rect;field.textComponent=text;field.placeholder=hint;
             field.characterLimit=password?128:24;
             field.contentType=password?TMP_InputField.ContentType.Password:TMP_InputField.ContentType.Standard;
@@ -221,19 +277,19 @@ namespace MDPro3.UI.ServantUI
         void OpenLogin()
         {
             OpenModal("DUELIST ACCESS","Sign in to connect with your friends and keep your account rewards.","login");WideModal();
-            var card=HomeRect("Access terminal",modal,.25f,.13f,.50f,.66f);HomePanel(card,new Color(.035f,.04f,.055f,.97f));
+            var card=HomeRect("Access terminal",modal,.25f,.13f,.50f,.66f);HomePanel(card,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.94f));
             HomeText(card,"ULTRA DUEL",39,Color.white,.06f,.78f,.88f,.13f).alignment=TextAlignmentOptions.Center;
             HomePanel(HomeRect("Access rule",card,.06f,.74f,.88f,.004f),Muted);
             var name=Input(card,"Username (3–24 characters)",.57f);
             var password=Input(card,"Password (8 characters minimum)",.39f,true);
-            SmallButton(card,"SIGN IN",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();}),.055f,.15f,.42f,.13f,23);
+            SmallButton(card,"SIGN IN",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();}),.055f,.15f,.42f,.13f,23,UltraTier.Hero);
             SmallButton(card,"CREATE ACCOUNT",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,true);password.text="";ShowFriends();}),.525f,.15f,.42f,.13f,23);
             HomeText(modal,"Connect with friends, see who is online, and join private TCG or Genesys rooms.",20,Muted,.055f,.13f,.89f,.11f);
         }
         RectTransform ScrollArea()
         {
             var viewport=HomeRect("List viewport",modal,.045f,.135f,.91f,.50f);
-            var image=viewport.gameObject.AddComponent<Image>();image.color=new Color(.02f,.035f,.06f);
+            var image=viewport.gameObject.AddComponent<Image>();image.color=new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.45f);
             viewport.gameObject.AddComponent<RectMask2D>();
             var content=HomeRect("List content",viewport,0,1,1,0);content.pivot=new Vector2(.5f,1);
             var scroll=viewport.gameObject.AddComponent<ScrollRect>();scroll.viewport=viewport;scroll.content=content;scroll.horizontal=false;scroll.scrollSensitivity=30;scroll.movementType=ScrollRect.MovementType.Clamped;
@@ -242,7 +298,7 @@ namespace MDPro3.UI.ServantUI
         RectTransform Row(RectTransform content,int index,string title,string detail)
         {
             var row=HomeRect("Row",content,0,1,1,0);row.pivot=new Vector2(.5f,1);row.sizeDelta=new Vector2(0,70);row.anchoredPosition=new Vector2(0,-index*76);
-            HomePanel(row,new Color(.065f,.095f,.14f));
+            HomePanel(row,UltraTheme.Panel);
             HomeText(row,title,23,Color.white,.025f,.43f,.67f,.48f);
             HomeText(row,detail,17,Muted,.025f,.08f,.67f,.35f);
             content.sizeDelta=new Vector2(0,(index+1)*76);
@@ -254,7 +310,7 @@ namespace MDPro3.UI.ServantUI
             HomeText(modal,"FOLLOW  /  "+((UltraServices.State?["friends"] as JArray)?.Count??0),20,Color.white,.045f,.735f,.90f,.04f);
             var add=Input(modal,"Enter friend's name",.62f);
             add.GetComponent<RectTransform>().anchorMax=new Vector2(.73f,.71f);
-            SmallButton(modal,"+",()=>Run(async()=>{await UltraServices.Request("/friends/request","POST",new{name=add.text});await UltraServices.Refresh();ShowFriends();}),.76f,.62f,.19f,.09f);
+            SmallButton(modal,"+",()=>Run(async()=>{await UltraServices.Request("/friends/request","POST",new{name=add.text});await UltraServices.Refresh();ShowFriends();}),.76f,.62f,.19f,.09f,28,UltraTier.Primary);
             var content=ScrollArea();int index=0;
             var listViewport=(RectTransform)content.parent;listViewport.anchorMax=new Vector2(.955f,.58f);
             var state=UltraServices.State;
@@ -293,10 +349,10 @@ namespace MDPro3.UI.ServantUI
         void OpenDuel()
         {
             OpenModal("DUEL","Choose how you want to play","duel-modes");WideModal();
-            SmallButton(modal,"ONLINE DUEL  >",OpenOnlineDuel,.12f,.63f,.76f,.10f,30);
-            SmallButton(modal,"FRIEND DUELS  >",()=>OpenFriendDuels("1v1"),.12f,.47f,.76f,.10f,30);
-            SmallButton(modal,"DUOS 2v2  >",()=>OpenFriendDuels("2v2"),.12f,.31f,.76f,.10f,30);
-            SmallButton(modal,"SOLO  >",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.12f,.15f,.76f,.10f,26);
+            SmallButton(modal,"ONLINE DUEL",OpenOnlineDuel,.08f,.52f,.84f,.20f,40,UltraTier.Hero);
+            SmallButton(modal,"FRIEND DUELS",()=>OpenFriendDuels("1v1"),.08f,.34f,.40f,.14f,26);
+            SmallButton(modal,"DUOS 2v2",()=>OpenFriendDuels("2v2"),.52f,.34f,.40f,.14f,26);
+            SmallButton(modal,"SOLO",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.08f,.16f,.84f,.13f,26,UltraTier.Primary);
         }
         public void OpenFriendDuels(string mode="1v1")
         {
@@ -312,17 +368,19 @@ namespace MDPro3.UI.ServantUI
             StatPanel(modal,"GRADE",UltraAccount.Tier+" / 20",.045f,.65f,.43f,.12f);
             StatPanel(modal,"NEXT GRADE",UltraAccount.Tier>=20?"COMPLETE":(200-UltraAccount.XP%200)+" XP",.50f,.65f,.45f,.12f);
             HomePanel(HomeRect("XP track",modal,.06f,.615f,.88f,.012f),new Color(.17f,.22f,.28f));
-            HomePanel(HomeRect("XP fill",modal,.06f,.615f,.88f*(UltraAccount.Tier>=20?1:(UltraAccount.XP%200)/200f),.012f),Lime);
+            var xpFill=HomeRect("XP fill",modal,.06f,.615f,.88f*(UltraAccount.Tier>=20?1:(UltraAccount.XP%200)/200f),.012f);HomePanel(xpFill,UltraTheme.Accent);xpFill.gameObject.AddComponent<UltraAccentFill>();
             HomeText(modal,"FREE\nPASS",20,Color.white,.045f,.40f,.105f,.12f);
             for(int col=0;col<6 && first+col<=20;col++)
             {
                 int tier=first+col;float x=.17f+col*.128f;
                 var cell=HomeRect("Grade "+tier,modal,x,.27f,.12f,.31f);
                 bool claimed=tier<=UltraAccount.Claimed,available=tier<=UltraAccount.Tier;
-                HomePanel(cell,new Color(.055f,.075f,.13f));
-                var border=cell.GetComponent<UltraChrome>();border.rim=available && !claimed?2:1;border.rimColor=available && !claimed?Lime:new Color(.24f,.30f,.40f);
-                HomePanel(HomeRect("Grade header",cell,0,.82f,1,.18f),claimed?new Color(.42f,.49f,.56f):available?Lime:new Color(.23f,.27f,.34f));
-                HomeText(cell,tier.ToString(),24,available?Color.black:Color.white,.1f,.83f,.8f,.16f).alignment=TextAlignmentOptions.Center;
+                HomePanel(cell,UltraTheme.PanelSolid);
+                var border=cell.GetComponent<UltraChrome>();border.rim=available && !claimed?2:1;border.followThemeRim=false;border.rimColor=available && !claimed?UltraTheme.Accent:UltraTheme.Line;
+                var header=HomeRect("Grade header",cell,0,.82f,1,.18f);
+                HomePanel(header,claimed?UltraTheme.PanelHover:available?UltraTheme.Accent:UltraTheme.PanelSolid);
+                if(available && !claimed)header.gameObject.AddComponent<UltraAccentFill>();
+                HomeText(cell,tier.ToString(),24,available && !claimed?UltraTheme.AccentInk:UltraTheme.Fg,.1f,.83f,.8f,.16f).alignment=TextAlignmentOptions.Center;
                 HomeRect("Gem reward",cell,.14f,.43f,.72f,.36f).gameObject.AddComponent<UltraGem>();
                 var amount=HomeText(cell,"50 GEMS",22,Color.white,.06f,.275f,.88f,.13f);amount.alignment=TextAlignmentOptions.Center;amount.fontStyle=FontStyles.Bold;
                 string milestone=tier==5?"+ DUELIST TITLE":tier==10?"+ NEON FRAME":tier==20?"+ CHAMPION FRAME":"FREE REWARD";
@@ -335,7 +393,7 @@ namespace MDPro3.UI.ServantUI
             SmallButton(modal,"<",()=>{passPage=Math.Max(0,passPage-1);OpenPass();},.045f,.16f,.09f,.07f,28);
             SmallButton(modal,">",()=>{passPage=Math.Min(3,passPage+1);OpenPass();},.86f,.16f,.09f,.07f,28);
             HomeText(modal,(passPage+1)+" / 4",16,Muted,.44f,.225f,.12f,.035f).alignment=TextAlignmentOptions.Center;
-            SmallButton(modal,"CLAIM REWARDS",()=>Run(async()=>{await UltraAccount.Claim();OpenPass();}),.30f,.12f,.40f,.09f).interactable=UltraAccount.Tier>UltraAccount.Claimed;
+            SmallButton(modal,"CLAIM REWARDS",()=>Run(async()=>{await UltraAccount.Claim();OpenPass();}),.30f,.12f,.40f,.09f,24,UltraTier.Hero).interactable=UltraAccount.Tier>UltraAccount.Claimed;
             modalStatus.rectTransform.anchorMin=new Vector2(.045f,.035f);modalStatus.rectTransform.anchorMax=new Vector2(.945f,.075f);
             modalStatus.text=UltraAccount.Profile==null?"Offline progress / Saved on this PC":"Account rewards / Saved on Ultra Duel";
         }

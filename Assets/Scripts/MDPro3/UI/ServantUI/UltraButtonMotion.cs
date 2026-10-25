@@ -4,18 +4,46 @@ using UnityEngine.EventSystems;
 
 namespace MDPro3.UI.ServantUI
 {
-    public sealed class UltraButtonMotion : MonoBehaviour,IPointerEnterHandler,IPointerExitHandler,IPointerDownHandler,IPointerUpHandler,ISelectHandler,IDeselectHandler
+    // Hover lifts over 160ms. Press scales to 95% in 70ms. Both ease out.
+    public sealed class UltraButtonMotion : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, ISelectHandler, IDeselectHandler
     {
-        Tween tween;
-        bool hover;
-        float animationScale=1;
-        void Scale(float scale){tween?.Kill();tween=DOTween.To(()=>animationScale,x=>{animationScale=x;transform.localScale=Vector3.one*x;},scale,.16f).SetEase(Ease.OutQuad).SetUpdate(true).SetLink(gameObject);}
-        public void OnPointerEnter(PointerEventData e){hover=true;Scale(1.035f);}
-        public void OnPointerExit(PointerEventData e){hover=false;Scale(1);}
-        public void OnPointerDown(PointerEventData e)=>Scale(.97f);
-        public void OnPointerUp(PointerEventData e)=>Scale(hover?1.035f:1);
-        public void OnSelect(BaseEventData e)=>Scale(1.035f);
-        public void OnDeselect(BaseEventData e)=>Scale(1);
-        void OnDisable(){tween?.Kill();animationScale=1;transform.localScale=Vector3.one;}
+        Tween lift, press;
+        Vector2 rest;
+        float scale = 1f;
+        bool hover, captured;
+
+        void Capture()
+        {
+            if (captured) return;
+            rest = ((RectTransform)transform).anchoredPosition;
+            captured = true;
+        }
+        void Lift(float y, float time)
+        {
+            Capture();
+            lift?.Kill();
+            lift = ((RectTransform)transform).DOAnchorPos(rest + new Vector2(0f, y), time).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
+        }
+        void Scale(float target, float time)
+        {
+            press?.Kill();
+            press = DOTween.To(() => scale, value => { scale = value; transform.localScale = Vector3.one * value; }, target, time)
+                .SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
+        }
+        public void OnPointerEnter(PointerEventData eventData) { hover = true; Lift(3f, 0.16f); }
+        public void OnPointerExit(PointerEventData eventData) { hover = false; Lift(0f, 0.14f); Scale(1f, 0.14f); }
+        public void OnPointerDown(PointerEventData eventData) => Scale(0.95f, 0.07f);
+        public void OnPointerUp(PointerEventData eventData) => Scale(1f, 0.14f);
+        public void OnSelect(BaseEventData eventData) => Lift(3f, 0.16f);
+        public void OnDeselect(BaseEventData eventData) { if (!hover) Lift(0f, 0.14f); }
+        void OnDisable()
+        {
+            lift?.Kill();
+            press?.Kill();
+            scale = 1f;
+            transform.localScale = Vector3.one;
+            if (captured) ((RectTransform)transform).anchoredPosition = rest;
+            hover = false;
+        }
     }
 }

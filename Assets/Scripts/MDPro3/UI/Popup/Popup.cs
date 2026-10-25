@@ -1,6 +1,7 @@
 using DG.Tweening;
 using System;
 using System.Collections.Generic;
+using MDPro3.UI.ServantUI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -43,7 +44,7 @@ namespace MDPro3.UI.Popup
                 if (closeButton.TryGetComponent<CanvasGroup>(out var cg))
                     cg.alpha = 0f;
             }
-            Manager.GetElement<RectTransform>("Content").anchoredPosition = new Vector2(0f, -1080f);
+            Manager.GetElement<RectTransform>("Content").anchoredPosition = new Vector2(0f, -72f);
 
             UIManager.Translate(gameObject);
             SetButtonsLayout();
@@ -63,6 +64,8 @@ namespace MDPro3.UI.Popup
         public virtual void Show()
         {
             Initialize();
+            transitionTime = 0.25f;
+            UltraScreenSkin.Apply(gameObject);
             Manager.GetElement<RectTransform>("Content").DOAnchorPosY(0f, transitionTime).SetEase(Ease.OutCubic).OnComplete(() =>
             {
                 inTransition = false;
@@ -76,7 +79,7 @@ namespace MDPro3.UI.Popup
         public virtual void Hide()
         {
             inTransition = true;
-            Manager.GetElement<RectTransform>("Content").DOAnchorPosY(-1080f, transitionTime).SetEase(Ease.InCubic).OnComplete(() =>
+            Manager.GetElement<RectTransform>("Content").DOAnchorPosY(-72f, transitionTime).SetEase(Ease.OutCubic).OnComplete(() =>
             {
                 Destroy(gameObject);
                 Program.instance.ui_.currentPopupB = lastPopup;

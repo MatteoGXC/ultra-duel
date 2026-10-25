@@ -55,10 +55,10 @@ namespace MDPro3.UI.ServantUI
         }
         void StatPanel(Transform parent,string heading,string value,float x,float y,float w,float h)
         {
-            var panel=HomeRect(heading,parent,x,y,w,h);HomePanel(panel,new Color(.12f,.15f,.21f,.96f));
-            HomePanel(HomeRect("Heading strip",panel,0,.65f,1,.35f),new Color(.68f,.72f,.77f));
-            HomeText(panel,heading,17,new Color(.04f,.06f,.08f),.04f,.68f,.92f,.28f);
-            HomeText(panel,value,27,Color.white,.04f,.04f,.92f,.54f);
+            var panel=HomeRect(heading,parent,x,y,w,h);HomePanel(panel,UltraTheme.Panel);
+            var edge=HomeRect("Accent",panel,0,.18f,.014f,.64f);HomePanel(edge,UltraTheme.Accent);edge.gameObject.AddComponent<UltraAccentFill>();
+            var headingLabel=HomeText(panel,heading,14,UltraTheme.Mute,.07f,.62f,.88f,.28f);UltraTheme.StyleEmphasis(headingLabel,8f);
+            var valueLabel=HomeText(panel,value,28,UltraTheme.Fg,.07f,.10f,.88f,.50f);UltraTheme.Style(valueLabel,true,2f);
         }
         async UniTask LoadMatePortrait(Image image,int id=0)
         {
@@ -85,32 +85,28 @@ namespace MDPro3.UI.ServantUI
             // The existing selected wallpaper stays visible on the right.
             foreach(Transform child in modal)child.gameObject.SetActive(false);
             modal.GetComponent<Image>().color=Color.clear;
-            var wordmark=HomeText(modal,"ULTRA DUEL",67,new Color(.91f,.94f,1),.055f,.45f,.89f,.15f);
-            wordmark.fontStyle=FontStyles.Bold;wordmark.alignment=TextAlignmentOptions.Center;
-            wordmark.outlineWidth=.18f;wordmark.outlineColor=new Color32(84,80,183,255);
+            var wordmark=HomeText(modal,"ULTRA DUEL",72,UltraTheme.Fg,.055f,.46f,.89f,.14f);
+            wordmark.alignment=TextAlignmentOptions.Center;UltraTheme.Style(wordmark,true,6f);
             var logoGroup=wordmark.gameObject.AddComponent<CanvasGroup>();logoGroup.alpha=0;
-            var logoRect=wordmark.rectTransform;var logoEnd=logoRect.anchoredPosition;logoRect.anchoredPosition+=Vector2.left*45;
-            logoGroup.DOFade(1,.8f).SetUpdate(true).SetLink(wordmark.gameObject);
-            logoRect.DOAnchorPos(logoEnd,1).SetEase(Ease.OutQuart).SetUpdate(true).SetLink(wordmark.gameObject);
+            var logoRect=wordmark.rectTransform;var logoEnd=logoRect.anchoredPosition;logoRect.anchoredPosition+=Vector2.left*70;
+            logoGroup.DOFade(1,.25f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(wordmark.gameObject);
+            logoRect.DOAnchorPos(logoEnd,.25f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(wordmark.gameObject);
             var titleTriangle=HomeRect("Original title artwork",modal,.055f,.32f,.89f,.40f).gameObject.AddComponent<UltraNativeTitle>();titleTriangle.raycastTarget=false;
             wordmark.transform.SetAsLastSibling();
             var homeDefault=defaultSelectable;
-            defaultSelectable=SmallButton(modal,"GAME START",()=>{CloseModal();defaultSelectable=homeDefault;homeDefault?.Select();},.10f,.23f,.76f,.075f,25);
-            var startFrame=defaultSelectable.GetComponent<UltraChrome>();startFrame.color=startFrame.rimColor=Color.clear;startFrame.rim=0;
-            defaultSelectable.transition=Selectable.Transition.None;
-            var pulse=defaultSelectable.gameObject.AddComponent<CanvasGroup>();pulse.DOFade(.38f,1.4f).SetLoops(-1,LoopType.Yoyo).SetEase(Ease.InOutSine).SetUpdate(true).SetLink(defaultSelectable.gameObject);
+            defaultSelectable=SmallButton(modal,"GAME START",()=>{CloseModal();defaultSelectable=homeDefault;homeDefault?.Select();},.12f,.22f,.76f,.09f,32,UltraTier.Hero);
             HomeText(modal,"Ver. "+UltraServices.Version+"\n"+(string.IsNullOrEmpty(UltraServices.PlayerName)?"Welcome, Duelist":UltraServices.PlayerName),18,Muted,.10f,.84f,.80f,.09f);
         }
         void OpenProfile()
         {
             string name=string.IsNullOrEmpty(UltraServices.PlayerName)?Config.Get("DuelPlayerName0","Player"):UltraServices.PlayerName;
             OpenModal("PROFILE","", "profile");WideModal();
-            var card=HomeRect("Profile card",modal,.27f,.20f,.29f,.62f);HomePanel(card,new Color(.02f,.025f,.035f,.96f));
-            var frame=card.GetComponent<UltraChrome>();frame.rim=2;frame.rimColor=new Color(.72f,.74f,.78f);
+            var card=HomeRect("Profile card",modal,.27f,.20f,.29f,.62f);HomePanel(card,UltraTheme.Panel);
+            var frame=card.GetComponent<UltraChrome>();frame.rim=2;frame.followThemeRim=false;frame.rimColor=UltraTheme.Accent;
             var bannerClip=HomeRect("Profile banner",card,.015f,.72f,.97f,.265f);bannerClip.gameObject.AddComponent<RectMask2D>();
             var banner=HomeRect("Banner art",bannerClip,0,0,1,1).gameObject.AddComponent<Image>();
             LoadBanner(banner).Forget();
-            HomePanel(HomeRect("Name band",card,.015f,.49f,.97f,.225f),new Color(.25f,.26f,.28f,.70f));
+            HomePanel(HomeRect("Name band",card,.015f,.49f,.97f,.225f),new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.72f));
             var avatar=HomeRect("Profile icon",card,.035f,.56f,.23f,.19f).gameObject.AddComponent<Image>();avatar.preserveAspect=true;LoadProfileIcon(avatar,ProfileIconId()).Forget();
             HomeText(card,name,28,Color.white,.30f,.60f,.65f,.105f);
             int uid=(int?)UltraServices.State?["id"]??0;
@@ -139,7 +135,7 @@ namespace MDPro3.UI.ServantUI
             var design=canvas.gameObject.AddComponent<UltraWallpaperBanner>();design.raycastTarget=false;design.seed=id;
             var theme=UnityEngine.Object.FindFirstObjectByType<UltraWallpaperTheme>();
             float hue=theme!=null?theme.TargetHue:Mathf.Repeat(id*137.5f,360);
-            design.accent=Color.HSVToRGB(Mathf.Repeat(hue/360f,1),.60f,.95f);
+            design.accent=theme!=null && theme.Ready ? theme.Accent : Color.HSVToRGB(Mathf.Repeat(hue/360f,1),.60f,.95f);
             HomeText(canvas,"ULTRA DUEL",13,new Color(.78f,.85f,.96f),.05f,.65f,.65f,.20f);
             var title=HomeText(canvas,string.IsNullOrWhiteSpace(item.name)?"DUELIST":item.name.ToUpperInvariant(),19,Color.white,.05f,.22f,.65f,.40f);title.enableAutoSizing=true;title.fontSizeMin=11;title.fontSizeMax=19;
             await UniTask.CompletedTask;
@@ -191,16 +187,16 @@ namespace MDPro3.UI.ServantUI
             OpenModal("SHOP","Accessories", "shop");WideModal();
             HomeRect("Wallet crystal",modal,.71f,.88f,.035f,.08f).gameObject.AddComponent<UltraGem>();
             HomeText(modal,UltraAccount.Gems+" GEMS",22,Color.white,.75f,.89f,.20f,.06f);
-            SmallButton(modal,"ACCESSORIES",()=>ShowShop(category,page),.045f,.71f,.42f,.065f,21);
+            var accessories=SmallButton(modal,"ACCESSORIES",()=>ShowShop(category,page),.045f,.71f,.42f,.065f,21,UltraTier.Primary);
+            accessories.GetComponent<UltraThemedButton>().SetSelected(true);
             SmallButton(modal,"DUEL PASS",OpenPass,.49f,.71f,.46f,.065f,21);
             HomePanel(HomeRect("Category underline",modal,.045f,.70f,.42f,.003f),Lime);
             string[] categories={"Mate","Case","Protector","Field","Frame"};
             for(int i=0;i<categories.Length;i++)
             {
                 string type=categories[i];
-                var b=SmallButton(modal,type=="Field"?"FIELD SETS":type.ToUpperInvariant(),()=>ShowShop(type,0),.045f,.59f-i*.082f,.17f,.068f,19);
-                b.GetComponent<Image>().color=type==category?new Color(.5f,.7f,.02f):new Color(.06f,.13f,.18f);
-                if(type==category)b.GetComponentInChildren<TextMeshProUGUI>().color=Color.black;
+                var b=SmallButton(modal,type=="Field"?"FIELD SETS":type.ToUpperInvariant(),()=>ShowShop(type,0),.045f,.59f-i*.082f,.17f,.068f,19,type==category?UltraTier.Primary:UltraTier.Secondary);
+                b.GetComponent<UltraThemedButton>().SetSelected(type==category);
             }
             var list=UltraAccount.Catalog.Where(p=>p.kind==category).ToList();int pages=Math.Max(1,(list.Count+4)/5);page=Mathf.Clamp(page,0,pages-1);
             HomeText(modal,category=="Field"?"DUEL FIELD SETS":category.ToUpperInvariant()+" COLLECTION",22,Color.white,.25f,.61f,.68f,.055f);
@@ -243,8 +239,8 @@ namespace MDPro3.UI.ServantUI
         {
             int id=(int)person["id"];string name=(string)person["name"];
             OpenModal(name,(string)person["activity"]??"Friend","friend");
-            HomeText(modal,"CHALLENGE A FRIEND",32,Color.white,.055f,.57f,.89f,.15f);
-            SmallButton(modal,"INVITE TO DUEL",()=>InviteFriend(id),.055f,.40f,.89f,.11f);
+            HomeText(modal,"CHALLENGE A FRIEND",32,UltraTheme.Fg,.055f,.57f,.89f,.15f);
+            SmallButton(modal,"INVITE TO DUEL",()=>InviteFriend(id),.055f,.40f,.89f,.11f,24,UltraTier.Hero);
             SmallButton(modal,"REMOVE FRIEND",()=>UIManager.ShowPopupYesOrNo(new System.Collections.Generic.List<string>{"Remove friend","Remove "+name+"?","Remove","Cancel",Config.STRING_YES},()=>RemoveFriend(id),null),.055f,.23f,.42f,.09f);
             SmallButton(modal,"BACK",ShowFriends,.525f,.23f,.42f,.09f);
         }

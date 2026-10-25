@@ -1,5 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
+using MDPro3.UI.ServantUI;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -19,6 +20,8 @@ namespace MDPro3
         public string AppliedWallpaper { get; private set; }
         float nextCheck, targetHue;
         public float TargetHue => targetHue;
+        public Color Accent { get; private set; } = UltraTheme.Hex("4C9BE8");
+        public Color Highlight { get; private set; } = UltraTheme.Hex("F25C2A");
         public bool Ready => adjustment != null && AppliedWallpaper == wallpaper && wallpaper != null;
 
         void Start()
@@ -71,7 +74,12 @@ namespace MDPro3
                     Graphics.Blit(sprite.texture,target,new Vector2(rect.width/sprite.texture.width,rect.height/sprite.texture.height),new Vector2(rect.x/sprite.texture.width,rect.y/sprite.texture.height));
                     RenderTexture.active=target;
                     sample=new Texture2D(48,48,TextureFormat.RGBA32,false);sample.ReadPixels(new Rect(0,0,48,48),0,0);sample.Apply();
-                    targetHue=DominantHue(sample.GetPixels32());
+                    var pixels=sample.GetPixels32();
+                    targetHue=DominantHue(pixels);
+                    float second=SecondaryHue(pixels, targetHue, out bool hasSecond);
+                    UltraTheme.ApplyPalette(targetHue, second, hasSecond);
+                    Accent=UltraTheme.Accent;
+                    Highlight=UltraTheme.Highlight;
                     AppliedWallpaper=selected;
                     Debug.Log("ULTRA_WALLPAPER_THEME "+selected+" hue="+targetHue);
                 }
@@ -99,6 +107,27 @@ namespace MDPro3
             }
             float degrees=bestWeight==0?210:Mathf.Atan2(y,x)*Mathf.Rad2Deg;
             return Mathf.DeltaAngle(0,degrees);
+        }
+
+        public static float SecondaryHue(Color32[] pixels, float primary, out bool found)
+        {
+            var weights=new float[36];
+            foreach(var pixel in pixels)
+            {
+                Color c=pixel;Color.RGBToHSV(c,out float h,out float s,out float v);
+                if(s<.22f || v<.15f || c.a<.5f)continue;
+                weights[Mathf.Min(35,(int)(h*36))]+=s*s*v*c.a;
+            }
+            int best=-1;float bestWeight=0;
+            for(int i=0;i<36;i++)
+            {
+                float degrees=i*10f;
+                if(Mathf.Abs(Mathf.DeltaAngle(primary, degrees))<26f)continue;
+                float weight=weights[(i+35)%36]+weights[i]+weights[(i+1)%36];
+                if(weight>bestWeight){best=i;bestWeight=weight;}
+            }
+            found=best>=0 && bestWeight>0;
+            return found ? best*10f : primary+36f;
         }
 
         void OnDestroy()

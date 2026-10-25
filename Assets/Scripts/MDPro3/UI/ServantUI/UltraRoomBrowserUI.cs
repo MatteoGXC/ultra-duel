@@ -27,9 +27,9 @@ namespace MDPro3.UI.ServantUI
             {
                 string id=(string)room["id"];string host=(string)room["host"];
                 var row=HomeRect("Friend room",content,0,1,1,0);row.pivot=new Vector2(.5f,1);row.sizeDelta=new Vector2(0,180);row.anchoredPosition=new Vector2(0,-i++*198);
-                HomePanel(row,new Color(.17f,.19f,.25f,.92f));
-                HomePanel(HomeRect("Room heading",row,0,.76f,1,.24f),new Color(.63f,.66f,.71f));
-                HomeText(row,host+"'s room",22,Color.black,.025f,.77f,.90f,.22f);
+                HomePanel(row,UltraTheme.Panel);
+                var accent=HomeRect("Room accent",row,0,.14f,.01f,.72f);HomePanel(accent,UltraTheme.Accent);accent.gameObject.AddComponent<UltraAccentFill>();
+                HomeText(row,host+"'s room",22,UltraTheme.Fg,.04f,.74f,.90f,.22f);
                 var avatar=HomeRect("Host mate",row,.035f,.12f,.14f,.56f).gameObject.AddComponent<Image>();avatar.preserveAspect=true;LoadMatePortrait(avatar).Forget();
                 HomeText(row,(string)room["format"]=="Genesys"?"GENESYS / "+(int)room["cap"]+" POINTS":"TCG ADVANCED",22,Color.white,.20f,.40f,.50f,.23f);
                 HomeText(row,"Private friend duel",17,Muted,.20f,.15f,.50f,.18f);
@@ -46,14 +46,13 @@ namespace MDPro3.UI.ServantUI
             HomeText(modal,"ROOM OPTIONS",23,Color.white,.70f,.76f,.25f,.055f);
             SmallButton(modal,friendRoomMode=="2v2"?"MODE: DUOS 2v2":"MODE: 1v1",()=>{friendRoomMode=friendRoomMode=="1v1"?"2v2":"1v1";ShowRooms();},.70f,.85f,.25f,.075f,20);
             SmallButton(modal,DuelFormat.DisplayName,()=>DuelFormat.Select(ShowRooms),.70f,.65f,.25f,.085f,21);
-            var create=SmallButton(modal,"CREATE ROOM",()=>Run(async()=>{
+            SmallButton(modal,"CREATE ROOM",()=>Run(async()=>{
                 var deck=new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK+Config.GetConfigDeckName()+Program.EXPANSION_YDK);
                 if(!DuelFormat.Validate(deck,"Your Deck"))return;
                 var room=await UltraServices.Request("/rooms","POST",new{format=DuelFormat.Genesys?"Genesys":"TCG",cap=DuelFormat.PointCap,mode=friendRoomMode});
                 ShowFriendTables(room);
-            }),.70f,.53f,.25f,.085f,24);
-            create.GetComponent<UltraChrome>().rimColor=Lime;create.GetComponent<UltraChrome>().rim=2;
-            HomeText(modal,"SELECTED DECK",17,Muted,.70f,.43f,.25f,.045f);
+            }),.70f,.53f,.25f,.085f,24,UltraTier.Hero);
+            HomeText(modal,"YOUR DECK",17,Muted,.70f,.43f,.25f,.045f);
             var caseImage=HomeRect("Deck case",modal,.775f,.20f,.10f,.21f).gameObject.AddComponent<Image>();caseImage.preserveAspect=true;LoadRoomDeckCase(caseImage).Forget();
             HomeText(modal,Config.GetConfigDeckName(),22,Color.white,.70f,.13f,.25f,.065f).alignment=TextAlignmentOptions.Center;
             SmallButton(modal,"REFRESH",()=>Run(async()=>{await UltraServices.Refresh();ShowRooms();}),.045f,.025f,.20f,.075f,20);
@@ -72,11 +71,11 @@ namespace MDPro3.UI.ServantUI
             {
                 int number=i+1;
                 var table=HomeRect("Table "+number,modal,.05f,.61f-i*.23f,.59f,.19f);
-                HomePanel(table,new Color(.20f,.21f,.25f,.88f));
-                HomePanel(HomeRect("Heading",table,0,.76f,1,.24f),new Color(.69f,.70f,.73f));
-                HomeText(table,"Table "+number,23,Color.black,.025f,.77f,.94f,.21f);
+                HomePanel(table,UltraTheme.Panel);
+                var accent=HomeRect("Table accent",table,0,.16f,.012f,.68f);HomePanel(accent,UltraTheme.Accent);accent.gameObject.AddComponent<UltraAccentFill>();
+                HomeText(table,"Table "+number,23,UltraTheme.Fg,.04f,.74f,.90f,.22f);
                 HomeText(table,((string)room["mode"]=="2v2"?"DUOS 2v2":"1v1")+"  /  300 seconds",20,Muted,.035f,.20f,.43f,.35f);
-                SmallButton(table,"ENTRY",()=>JoinFriendRoom(id,false,number),.46f,.20f,.25f,.38f,23);
+                SmallButton(table,"ENTRY",()=>JoinFriendRoom(id,false,number),.46f,.20f,.25f,.38f,23,UltraTier.Primary);
                 SmallButton(table,"WATCH",()=>JoinFriendRoom(id,true,number),.74f,.20f,.22f,.38f,21);
             }
             HomeText(modal,"ROOM OPTIONS",24,Color.white,.69f,.78f,.27f,.06f);

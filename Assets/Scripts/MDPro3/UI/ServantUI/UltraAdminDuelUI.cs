@@ -47,7 +47,7 @@ namespace MDPro3.UI.ServantUI
             overlay=Rect("Owner duel controls",transform,0,0,1,1);
             var shade=overlay.gameObject.AddComponent<Image>();shade.color=new Color(0,0,0,.76f);
             var panel=Rect("Admin panel",overlay,.23f,.18f,.54f,.64f);
-            var background=panel.gameObject.AddComponent<UltraChrome>();background.color=new Color(.045f,.05f,.06f,.99f);background.rim=.0015f;
+            var background=panel.gameObject.AddComponent<UltraChrome>();background.color=new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.98f);background.cut=UltraCut.Panel;background.rim=1.5f;
             Text(panel,"ADMIN / CURRENT DUEL",30,.05f,.85f,.75f,.09f);
             Button(panel,"CLOSE",Close,.80f,.86f,.15f,.08f);
             Text(panel,"Actions run only when you press a button. Hand and LP controls require your Main Phase.",18,.05f,.72f,.9f,.12f);
@@ -57,7 +57,7 @@ namespace MDPro3.UI.ServantUI
             card=Input(panel,"Exact card name or ID",.45f);
             Button(panel,"ADD TO MY HAND",GiveCard,.56f,.45f,.39f,.09f);
             Button(panel,"CLEAR OPPONENT HAND → GY",()=>Apply("clear-hand",1,0).Forget(),.05f,.30f,.56f,.10f);
-            Button(panel,"WIN THIS DUEL",()=>Apply("win",0,0).Forget(),.64f,.30f,.31f,.10f);
+            Button(panel,"WIN THIS DUEL",()=>Apply("win",0,0).Forget(),.64f,.30f,.31f,.10f,UltraTier.Danger);
             status=Text(panel,"No changes made.",18,.05f,.055f,.9f,.18f);
         }
 
@@ -111,19 +111,23 @@ namespace MDPro3.UI.ServantUI
         static TextMeshProUGUI Text(Transform parent,string value,float size,float x,float y,float w,float h)
         {
             var t=Rect("Label",parent,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();
-            t.font=Program.instance.ui_.tmpFont;t.text=value;t.fontSize=size;t.color=Color.white;t.raycastTarget=false;
-            t.enableAutoSizing=true;t.fontSizeMin=size*.7f;t.fontSizeMax=size;t.alignment=TextAlignmentOptions.MidlineLeft;return t;
+            t.font=Program.instance.ui_.tmpFont;t.text=value;t.fontSize=size;t.color=UltraTheme.Fg;t.raycastTarget=false;
+            t.enableAutoSizing=true;t.fontSizeMin=size*.7f;t.fontSizeMax=size;t.alignment=TextAlignmentOptions.MidlineLeft;
+            UltraTheme.Style(t,size>=26f,size>=26f?4f:0f);return t;
         }
-        static Button Button(Transform parent,string label,UnityAction action,float x,float y,float w,float h)
+        static Button Button(Transform parent,string label,UnityAction action,float x,float y,float w,float h,UltraTier tier=UltraTier.Secondary)
         {
-            var r=Rect(label,parent,x,y,w,h);var image=r.gameObject.AddComponent<UltraChrome>();image.color=new Color(.21f,.22f,.24f);
-            var b=r.gameObject.AddComponent<Button>();b.targetGraphic=image;b.onClick.AddListener(action);
-            Text(r,label,19,.04f,.05f,.92f,.9f).alignment=TextAlignmentOptions.Center;r.gameObject.AddComponent<UltraButtonMotion>();return b;
+            var r=Rect(label,parent,x,y,w,h);var image=r.gameObject.AddComponent<UltraChrome>();image.raycastTarget=true;
+            var b=r.gameObject.AddComponent<Button>();b.targetGraphic=image;
+            Text(r,label,19,.04f,.05f,.92f,.9f).alignment=TextAlignmentOptions.Center;
+            if(tier==UltraTier.Secondary && UltraTheme.IsDanger(label))tier=UltraTier.Danger;
+            r.gameObject.AddComponent<UltraThemedButton>().Configure(tier);
+            b.onClick.AddListener(action);return b;
         }
         static TMP_InputField Input(Transform parent,string hint,float y)
         {
             var r=Rect("Input",parent,.05f,y,hint=="Life points"?.34f:.48f,.09f);
-            var image=r.gameObject.AddComponent<Image>();image.color=new Color(.11f,.12f,.14f);
+            var image=r.gameObject.AddComponent<UltraChrome>();image.color=UltraTheme.PanelSolid;image.cut=UltraCut.Small;image.raycastTarget=true;
             var input=r.gameObject.AddComponent<TMP_InputField>();input.targetGraphic=image;input.characterLimit=120;
             input.textViewport=Rect("Viewport",r,.035f,.05f,.93f,.9f);
             input.textComponent=Text(input.textViewport,"",20,0,0,1,1);

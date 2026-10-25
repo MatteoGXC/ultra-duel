@@ -9,6 +9,7 @@ using DG.Tweening;
 using static YgomSystem.UI.ColorContainer;
 using UnityEngine.Events;
 using TMPro;
+using MDPro3.UI.ServantUI;
 
 namespace MDPro3.UI
 {
@@ -102,6 +103,9 @@ namespace MDPro3.UI
         protected bool hovering;
         protected bool pressing;
         protected bool hoverd;
+        RectTransform pressPlate;
+        Vector3 pressRest = Vector3.one;
+        Tweener pressTween;
         public bool selected;
 
         protected bool clickIsSubmit = true;
@@ -131,6 +135,7 @@ namespace MDPro3.UI
         public virtual void OnPointerExit(PointerEventData eventData)
         {
             hovering = false;
+            if (pressing) ReleasePress();
             pressing = false;
             OnExit();
         }
@@ -192,6 +197,8 @@ namespace MDPro3.UI
 
         protected virtual void OnDisable()
         {
+            pressTween?.Kill();
+            if (pressPlate != null) pressPlate.localScale = pressRest;
             SetColor(SelectMode.Unselected, StatusMode.Normal, Selectable.interactable);
         }
 
@@ -254,6 +261,10 @@ namespace MDPro3.UI
         protected virtual void OnDown()
         {
             SetColor(selected ? SelectMode.Selected : SelectMode.Unselected, StatusMode.Down, Selectable.interactable);
+            var plate = PressPlate();
+            if (plate == null) return;
+            pressTween?.Kill();
+            pressTween = plate.DOScale(pressRest * 0.95f, 0.07f).SetEase(Ease.OutCubic).SetUpdate(true);
         }
 
         /// <summary>
@@ -263,6 +274,24 @@ namespace MDPro3.UI
         {
             SetColor(selected ? SelectMode.Selected : SelectMode.Unselected
                 , hovering ? StatusMode.Enter : StatusMode.Normal, Selectable.interactable);
+            ReleasePress();
+        }
+
+        RectTransform PressPlate()
+        {
+            if (pressPlate != null) return pressPlate;
+            if (GetType().Name.Contains("Card")) return null;
+            pressPlate = transform.Find("DisplayGroup") as RectTransform;
+            if (pressPlate == null && transform.childCount > 0) pressPlate = transform.GetChild(0) as RectTransform;
+            if (pressPlate != null) pressRest = pressPlate.localScale;
+            return pressPlate;
+        }
+
+        void ReleasePress()
+        {
+            if (pressPlate == null) return;
+            pressTween?.Kill();
+            pressTween = pressPlate.DOScale(pressRest, 0.14f).SetEase(Ease.OutCubic).SetUpdate(true);
         }
 
         /// <summary>
@@ -326,7 +355,7 @@ namespace MDPro3.UI
             {
                 Corner.offsetMin = new Vector2(-16f, -16f);
                 Corner.offsetMax = new Vector2(16f, 16f);
-                hoverOnTweens.Add(Corner.DOSizeDelta(Vector2.zero, 0.2f).SetEase(Ease.OutQuart));
+                hoverOnTweens.Add(Corner.DOSizeDelta(Vector2.zero, 0.16f).SetEase(Ease.OutCubic));
             }
 
             if(Hover != null)
@@ -337,7 +366,7 @@ namespace MDPro3.UI
             if(Arrow != null)
             {
                 Arrow.anchoredPosition3D = new Vector3(-12f, 0f, 0f);
-                hoverOnTweens.Add(Arrow.DOAnchorPos3D(Vector3.zero, 0.3f).SetEase(Ease.OutCubic));
+                hoverOnTweens.Add(Arrow.DOAnchorPos3D(Vector3.zero, 0.16f).SetEase(Ease.OutCubic));
             }
 
             CallHoverOnEvent();
@@ -370,7 +399,7 @@ namespace MDPro3.UI
                 Hover.alpha = 0f;
 
             if(Arrow != null)
-                hoverOffTweens.Add(Arrow.DOAnchorPos3D(Vector3.zero, 0.3f).SetEase(Ease.OutCubic));
+                hoverOffTweens.Add(Arrow.DOAnchorPos3D(Vector3.zero, 0.16f).SetEase(Ease.OutCubic));
 
             CallHoverOffEvent();
         }
@@ -436,7 +465,14 @@ namespace MDPro3.UI
         public virtual void SetButtonText(string title)
         {
             if(ButtonText != null)
+            {
                 ButtonText.text = title;
+                if (!GetType().Name.Contains("Card"))
+                {
+                    UltraTheme.Style(ButtonText, true, 8f);
+                    if (UltraTheme.IsDanger(title)) ButtonText.color = UltraTheme.Danger;
+                }
+            }
         }
 
         public virtual string GetButtonText()

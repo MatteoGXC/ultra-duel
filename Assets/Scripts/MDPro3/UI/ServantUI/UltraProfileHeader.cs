@@ -50,24 +50,43 @@ namespace MDPro3.UI.ServantUI
         }
         public void Initialize()
         {
-            chrome=GetComponent<UltraChrome>();chrome.color=chrome.rimColor=Color.clear;chrome.rim=0;
-            plate=R("Rounded profile plate",transform,.20f,0,.80f,1).gameObject.AddComponent<UltraProfilePlate>();plate.raycastTarget=false;
-            var band=R("Name band",transform,.23f,.46f,.43f,.49f).gameObject.AddComponent<UltraChrome>();band.color=new Color(.21f,.20f,.20f);band.rimColor=Color.clear;band.rim=0;band.raycastTarget=false;
-            var circle=R("Profile icon rim",transform,-.015f,-.17f,.29f,1.34f);circle.gameObject.AddComponent<AspectRatioFitter>().aspectMode=AspectRatioFitter.AspectMode.HeightControlsWidth;
-            ring=circle.gameObject.AddComponent<UltraCircleGraphic>();ring.raycastTarget=false;
-            var clip=R("Icon mask",circle,.065f,.065f,.87f,.87f);clip.gameObject.AddComponent<UltraCircleGraphic>();clip.gameObject.AddComponent<Mask>().showMaskGraphic=false;
-            portrait=R("Card portrait",clip,0,0,1,1).gameObject.AddComponent<RawImage>();portrait.raycastTarget=false;
-            var label=R("Level",transform,.30f,.12f,.20f,.25f);level=label.gameObject.AddComponent<TextMeshProUGUI>();level.font=Program.instance.ui_.tmpFont;level.fontSize=17;level.color=Color.white;level.raycastTarget=false;
-            R("XP track",transform,.48f,.18f,.29f,.13f).gameObject.AddComponent<Image>().color=new Color(.20f,.20f,.20f);
-            progress=R("XP fill",transform,.48f,.18f,0,.13f);progress.gameObject.AddComponent<Image>().color=new Color(.82f,.82f,.82f);
+            chrome = GetComponent<UltraChrome>();
+            if (chrome != null) { chrome.color = chrome.rimColor = Color.clear; chrome.rim = 0; }
+            var circle = R("Profile icon rim", transform, .025f, .08f, .0f, .84f);
+            circle.gameObject.AddComponent<AspectRatioFitter>().aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
+            ring = circle.gameObject.AddComponent<UltraCircleGraphic>();
+            ring.raycastTarget = false;
+            var clip = R("Icon mask", circle, .07f, .07f, .86f, .86f);
+            clip.gameObject.AddComponent<UltraCircleGraphic>();
+            clip.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+            portrait = R("Card portrait", clip, 0, 0, 1, 1).gameObject.AddComponent<RawImage>();
+            portrait.raycastTarget = false;
+            var label = R("Level", transform, .30f, .08f, .62f, .28f);
+            level = label.gameObject.AddComponent<TextMeshProUGUI>();
+            level.font = Program.instance.ui_.tmpFont;
+            level.fontSize = 18;
+            level.color = UltraTheme.Mute;
+            level.raycastTarget = false;
+            UltraTheme.StyleEmphasis(level, 8f);
+            var track = R("XP track", transform, .30f, .40f, .62f, .08f);
+            track.gameObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.1f);
+            progress = R("XP fill", transform, .30f, .40f, 0f, .08f);
+            var fill = progress.gameObject.AddComponent<Image>();
+            fill.color = UltraTheme.Accent;
+            fill.gameObject.AddComponent<UltraAccentFill>();
+            UltraTheme.Changed += OnTheme;
+            OnTheme();
         }
+        void OnTheme() { if (ring != null) ring.color = UltraTheme.Accent; }
+        void OnDestroy() { UltraTheme.Changed -= OnTheme; if (loaded != 0) CardImageLoader.ReleaseArt(loaded); }
         void Update()
         {
             if(portrait==null)return;
             int.TryParse(Config.Get("DuelFace0", "1010001"), out int id);
             if(id<1010000 || id>=1030000)id=1010001;
             if(id!=shown){shown=id;Load(id).Forget();}
-            level.text="Lv. "+UltraAccount.Level;progress.anchorMax=new Vector2(.48f+.29f*(UltraAccount.XP%500)/500f,.31f);
+            level.text = "LV.  " + UltraAccount.Level + "     " + (UltraAccount.XP % 500) + " / 500 XP";
+            progress.anchorMax = new Vector2(.30f + .62f * (UltraAccount.XP % 500) / 500f, .48f);
         }
         async UniTaskVoid Load(int id)
         {
@@ -76,15 +95,7 @@ namespace MDPro3.UI.ServantUI
             if(this==null || shown!=id || sprite==null)return;
             portrait.texture=sprite.texture;
             portrait.uvRect=new Rect(sprite.textureRect.x/sprite.texture.width,sprite.textureRect.y/sprite.texture.height,sprite.textureRect.width/sprite.texture.width,sprite.textureRect.height/sprite.texture.height);
-            SampleAccent(sprite.texture,portrait.uvRect);
+            OnTheme();
         }
-        void SampleAccent(Texture texture,Rect uv)
-        {
-            var target=RenderTexture.GetTemporary(32,32);var old=RenderTexture.active;Texture2D sample=null;
-            try{Graphics.Blit(texture,target,uv.size,uv.position);RenderTexture.active=target;sample=new Texture2D(32,32);sample.ReadPixels(new Rect(0,0,32,32),0,0);sample.Apply();float hue=UltraWallpaperTheme.DominantHue(sample.GetPixels32());SetAccent(Color.HSVToRGB(Mathf.Repeat(hue/360,1),.62f,.68f));}
-            finally{RenderTexture.active=old;RenderTexture.ReleaseTemporary(target);if(sample!=null)Destroy(sample);}
-        }
-        void SetAccent(Color accent){plate.accent=accent;plate.SetVerticesDirty();ring.color=Color.Lerp(accent,Color.white,.25f);}
-        void OnDestroy(){if(loaded!=0)CardImageLoader.ReleaseArt(loaded);}
     }
 }

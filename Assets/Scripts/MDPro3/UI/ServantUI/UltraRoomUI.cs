@@ -27,14 +27,17 @@ namespace MDPro3.UI.ServantUI
         TextMeshProUGUI T(Transform p,string s,float size,float x,float y,float w,float h)
         {
             var t=R("Label",p,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();t.text=s;t.font=Program.instance.ui_.tmpFont;
-            t.fontSize=size;t.color=Color.white;t.raycastTarget=false;t.enableAutoSizing=true;t.fontSizeMin=size*.7f;t.fontSizeMax=size;return t;
+            t.fontSize=size;t.color=UltraTheme.Fg;t.raycastTarget=false;t.enableAutoSizing=true;t.fontSizeMin=size*.7f;t.fontSizeMax=size;
+            UltraTheme.Style(t,size>=26f,size>=26f?4f:0f);return t;
         }
-        Button B(Transform p,string s,UnityEngine.Events.UnityAction action,float x,float y,float w,float h)
+        Button B(Transform p,string s,UnityEngine.Events.UnityAction action,float x,float y,float w,float h,UltraTier tier=UltraTier.Secondary)
         {
-            var r=R(s,p,x,y,w,h);var image=r.gameObject.AddComponent<UltraChrome>();image.color=new Color(.02f,.025f,.035f);image.rimColor=new Color(.65f,.68f,.71f);image.raycastTarget=true;
-            var b=r.gameObject.AddComponent<Button>();b.targetGraphic=image;b.onClick.AddListener(action);
-            var t=T(r,s,23,.04f,.1f,.92f,.8f);t.alignment=TextAlignmentOptions.Center;t.color=new Color(.78f,1,0);
-            var colors=b.colors;colors.highlightedColor=colors.selectedColor=new Color(.7f,1,.15f);b.colors=colors;r.gameObject.AddComponent<UltraButtonMotion>();return b;
+            var r=R(s,p,x,y,w,h);var image=r.gameObject.AddComponent<UltraChrome>();image.raycastTarget=true;
+            var b=r.gameObject.AddComponent<Button>();b.targetGraphic=image;
+            var t=T(r,s,22,.06f,.1f,.88f,.8f);t.alignment=TextAlignmentOptions.Center;
+            if(tier==UltraTier.Secondary && UltraTheme.IsDanger(s))tier=UltraTier.Danger;
+            r.gameObject.AddComponent<UltraThemedButton>().Configure(tier);
+            b.onClick.AddListener(action);return b;
         }
         void RefreshFriendRoom()
         {
@@ -46,7 +49,7 @@ namespace MDPro3.UI.ServantUI
                     T(matchRoom,"ONLINE DUEL",34,.08f,.86f,.84f,.08f);
                     var heading=T(matchRoom,"OPPONENT FOUND",40,.10f,.53f,.80f,.12f);heading.alignment=TextAlignmentOptions.Center;
                     matchStatus=T(matchRoom,"Connecting players…",24,.10f,.38f,.80f,.10f);matchStatus.alignment=TextAlignmentOptions.Center;
-                    B(matchRoom,"LEAVE MATCH",()=>Program.instance.room.OnExit(),.35f,.17f,.30f,.08f);
+                    B(matchRoom,"LEAVE MATCH",()=>Program.instance.room.OnExit(),.35f,.17f,.30f,.08f,UltraTier.Danger);
                 }
                 foreach(Transform child in Root)child.gameObject.SetActive(child==matchRoom);
                 matchRoom.SetAsLastSibling();
@@ -62,14 +65,17 @@ namespace MDPro3.UI.ServantUI
                 friendRoom=R("Ultra Friend Room",Root,0,0,1,1);P(friendRoom,Color.clear).raycastTarget=true;
                 friendRoom.gameObject.AddComponent<UltraPageTransition>();
                 var back=R("Back",friendRoom,.012f,.905f,.042f,.065f);
-                var backArt=back.gameObject.AddComponent<UltraCircleBack>();
-                var backButton=back.gameObject.AddComponent<Button>();backButton.targetGraphic=backArt;backButton.onClick.AddListener(()=>Program.instance.room.OnExit());back.gameObject.AddComponent<UltraButtonMotion>();
+                var backChrome=back.gameObject.AddComponent<UltraChrome>();backChrome.cut=UltraCut.Small;backChrome.color=UltraTheme.Panel;backChrome.raycastTarget=true;
+                var chevron=R("Chevron",back,.22f,.22f,.56f,.56f).gameObject.AddComponent<UltraChevron>();chevron.color=UltraTheme.Fg;chevron.raycastTarget=false;
+                var backButton=back.gameObject.AddComponent<Button>();backButton.targetGraphic=backChrome;backButton.onClick.AddListener(()=>Program.instance.room.OnExit());
+                back.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);
                 T(friendRoom,"Room Match",29,.065f,.905f,.35f,.065f);
-                P(R("Header rule",friendRoom,.015f,.885f,.97f,.002f),new Color(.5f,.55f,.6f));
+                P(R("Header rule",friendRoom,.015f,.885f,.97f,.002f),UltraTheme.Line);
                 membersLabel=T(friendRoom,"",19,.48f,.905f,.49f,.06f);
-                var table=R("Table 1",friendRoom,.11f,.56f,.50f,.29f);P(table,new Color(.28f,.28f,.32f,.75f));
-                P(R("Table header",table,0,.84f,1,.16f),new Color(.72f,.72f,.75f));
-                T(table,"Table "+UltraServices.CurrentTable,21,.025f,.84f,.8f,.16f).color=Color.black;
+                var table=R("Table 1",friendRoom,.11f,.56f,.50f,.29f);
+                var tableChrome=table.gameObject.AddComponent<UltraChrome>();tableChrome.color=UltraTheme.Panel;tableChrome.cut=UltraCut.Panel;tableChrome.raycastTarget=false;
+                var tableEdge=R("Table accent",table,0,.18f,.016f,.64f);P(tableEdge,UltraTheme.Accent);tableEdge.gameObject.AddComponent<UltraAccentFill>();
+                T(table,"Table "+UltraServices.CurrentTable,21,.04f,.82f,.8f,.14f);
                 tableAvatars=new Image[required];
                 for(int i=0;i<required;i++)
                 {
@@ -79,15 +85,15 @@ namespace MDPro3.UI.ServantUI
                     tableAvatars[i]=P(seat,new Color(.8f,.8f,.85f));
                 }
                 tableLabel=T(table,"",19,.025f,.05f,.95f,.21f);tableLabel.alignment=TextAlignmentOptions.Center;
-                readyButton=required==4?B(friendRoom,"ENTRY",OnReady,.11f,.43f,.23f,.075f):B(table,"ENTRY",OnReady,.31f,.39f,.38f,.27f);
-                beginButton=B(friendRoom,"BEGIN DUEL",OnStart,required==4?.38f:.23f,.43f,required==4?.23f:.26f,.075f);
+                readyButton=required==4?B(friendRoom,"ENTRY",OnReady,.11f,.43f,.23f,.075f,UltraTier.Primary):B(table,"ENTRY",OnReady,.31f,.39f,.38f,.27f,UltraTier.Primary);
+                beginButton=B(friendRoom,"BEGIN DUEL",OnStart,required==4?.38f:.23f,.43f,required==4?.23f:.26f,.075f,UltraTier.Hero);
                 B(friendRoom,"Room Details  >",()=>ShowRoomInfo(false),.65f,.775f,.25f,.065f);
                 B(friendRoom,"Room Members  >",()=>ShowRoomInfo(true),.65f,.69f,.25f,.065f);
                 B(friendRoom,"Replays  >",()=>{Program.instance.room.OnExit();Program.instance.ShiftToServant(Program.instance.replay);},.65f,.605f,.25f,.065f);
                 B(friendRoom,"Invite Friends  >",InviteFromRoom,.65f,.52f,.25f,.065f);
-                var leave=B(friendRoom,"Leave Table  >",()=>Program.instance.room.OnExit(),.65f,.435f,.25f,.065f);
-                leave.GetComponentInChildren<TextMeshProUGUI>().color=new Color(.95f,.22f,.20f);
-                var deckPanel=R("Deck preview",friendRoom,.65f,.145f,.25f,.23f);P(deckPanel,new Color(.23f,.22f,.28f,.78f));
+                B(friendRoom,"Leave Table  >",()=>Program.instance.room.OnExit(),.65f,.435f,.25f,.065f,UltraTier.Danger);
+                var deckPanel=R("Deck preview",friendRoom,.65f,.145f,.25f,.23f);
+                var deckChrome=deckPanel.gameObject.AddComponent<UltraChrome>();deckChrome.color=UltraTheme.Panel;deckChrome.cut=UltraCut.Panel;deckChrome.raycastTarget=true;
                 var deckHit=deckPanel.gameObject.AddComponent<Button>();deckPanel.GetComponent<Image>().raycastTarget=true;deckHit.targetGraphic=deckPanel.GetComponent<Image>();deckHit.onClick.AddListener(OnSelectDeck);deckPanel.gameObject.AddComponent<UltraButtonMotion>();
                 var deckCase=P(R("Deck case",deckPanel,.36f,.31f,.28f,.60f),Color.white);deckCase.preserveAspect=true;LoadFriendDeckCase(deckCase).Forget();
                 deckLabel=T(deckPanel,"",21,.04f,.025f,.92f,.22f);deckLabel.alignment=TextAlignmentOptions.Center;

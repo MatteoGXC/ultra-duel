@@ -1,5 +1,6 @@
 using DG.Tweening;
 using System;
+using MDPro3.UI.ServantUI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -79,6 +80,7 @@ namespace MDPro3.UI
 
             showing = true;
             shifting = true;
+            UltraScreenSkin.Apply(gameObject);
             AudioManager.PlaySE("SE_MENU_SLIDE_01");
 
             if (Permanent)

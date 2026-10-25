@@ -26,13 +26,15 @@ namespace MDPro3.UI.ServantUI
         {
             var envelope=(RectTransform)ultraHome.Find("NOTICES");
             noticeBadge=HomeRect("Unread notifications",envelope,.62f,.73f,.30f,.28f);
-            HomePanel(noticeBadge,new Color(.95f,.08f,.29f));
+            var badge=noticeBadge.gameObject.AddComponent<Image>();badge.color=UltraTheme.Highlight;badge.raycastTarget=false;
             noticeCount=HomeText(noticeBadge,"",14,Color.white,0,0,1,1);noticeCount.alignment=TextAlignmentOptions.Center;
-            noticePreview=HomeRect("Home notification",ultraHome,.64f,.15f,.29f,.105f);
-            HomePanel(noticePreview,new Color(.025f,.035f,.055f,.92f));
-            HomePanel(HomeRect("Notice accent",noticePreview,0,.08f,.009f,.84f),Lime);
-            noticeHeading=HomeText(noticePreview,"NOTIFICATIONS",13,Lime,.05f,.68f,.90f,.23f);
-            noticeSummary=HomeText(noticePreview,"",18,Color.white,.05f,.09f,.88f,.56f);
+            noticePreview=Px("Home notification",ultraHome,0,176,420,108);
+            noticePreview.anchorMin=noticePreview.anchorMax=new Vector2(1f,1f);noticePreview.pivot=new Vector2(1f,1f);noticePreview.anchoredPosition=new Vector2(-64f,-176f);
+            HomePanel(noticePreview,UltraTheme.Panel);
+            var edge=Px("Notice accent",noticePreview,0,16,6,76);edge.gameObject.AddComponent<Image>().raycastTarget=false;edge.gameObject.AddComponent<UltraAccentFill>();
+            noticeHeading=HomeText(noticePreview,"NOTIFICATIONS",13,Lime,.06f,.62f,.88f,.28f);
+            noticeHeading.gameObject.AddComponent<UltraAccentText>();UltraTheme.StyleEmphasis(noticeHeading,8f);
+            noticeSummary=HomeText(noticePreview,"",18,UltraTheme.Fg,.06f,.10f,.88f,.48f);UltraTheme.Style(noticeSummary,false);
             var button=noticePreview.gameObject.AddComponent<Button>();button.targetGraphic=noticePreview.GetComponent<Image>();button.onClick.AddListener(OpenNotifications);
             noticePreview.GetComponent<Image>().raycastTarget=true;
             noticePreview.gameObject.AddComponent<UltraButtonMotion>();
@@ -52,6 +54,7 @@ namespace MDPro3.UI.ServantUI
         {
             if(noticeBadge==null)return;
             int unread=UnreadNotifications;
+            var badgeImage=noticeBadge.GetComponent<Image>();if(badgeImage!=null)badgeImage.color=UltraTheme.Highlight;
             noticeBadge.gameObject.SetActive(unread>0);
             noticeCount.text=unread>99?"99+":unread.ToString();
             var latest=NotificationRows.FirstOrDefault(n=>(int?)n["seen"]!=1)??NotificationRows.FirstOrDefault();

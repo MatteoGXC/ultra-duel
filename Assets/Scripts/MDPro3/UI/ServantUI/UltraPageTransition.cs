@@ -11,12 +11,13 @@ namespace MDPro3.UI.ServantUI
         void Start()
         {
             var rect=(RectTransform)transform;
-            var end=rect.anchoredPosition3D;
-            var group=gameObject.AddComponent<CanvasGroup>();group.alpha=0;group.blocksRaycasts=false;
-            rect.anchoredPosition3D=end+new Vector3(-240,0,-360);rect.localEulerAngles=new Vector3(0,15,0);
-            rect.DOAnchorPos3D(end,.5f).SetEase(Ease.OutQuart).SetUpdate(true).SetLink(gameObject);
-            rect.DOLocalRotate(Vector3.zero,.5f).SetEase(Ease.OutQuart).SetUpdate(true).SetLink(gameObject);
-            group.DOFade(1,.3f).SetDelay(.15f).SetUpdate(true).SetLink(gameObject).OnComplete(()=>group.blocksRaycasts=true);
+            var end=rect.anchoredPosition;
+            var group=gameObject.GetComponent<CanvasGroup>()??gameObject.AddComponent<CanvasGroup>();
+            group.alpha=0;group.blocksRaycasts=false;
+            rect.localEulerAngles=Vector3.zero;
+            rect.anchoredPosition=end+new Vector2(-70f,0f);
+            rect.DOAnchorPos(end,.25f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
+            group.DOFade(1,.25f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject).OnComplete(()=>group.blocksRaycasts=true);
         }
     }
     public static class UltraAdaptiveMaterial
@@ -48,6 +49,17 @@ namespace MDPro3.UI.ServantUI
         {
             var r=HomeRect("Back",parent,x,y,w,h);var icon=r.gameObject.AddComponent<UltraCircleBack>();
             var button=r.gameObject.AddComponent<Button>();button.targetGraphic=icon;button.onClick.AddListener(action);r.gameObject.AddComponent<UltraButtonMotion>();return button;
+        }
+        Button SquareBack(Transform parent,UnityAction action,float x,float y,float w,float h)
+        {
+            var r=HomeRect("Back",parent,x,y,w,h);
+            var chrome=r.gameObject.AddComponent<UltraChrome>();
+            chrome.cut=UltraCut.Small;chrome.color=UltraTheme.Panel;chrome.raycastTarget=true;
+            var chevron=HomeRect("Chevron",r,.22f,.22f,.56f,.56f).gameObject.AddComponent<UltraChevron>();
+            chevron.color=UltraTheme.Fg;chevron.raycastTarget=false;
+            var button=r.gameObject.AddComponent<Button>();button.targetGraphic=chrome;button.onClick.AddListener(action);
+            r.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);
+            return button;
         }
     }
 }
