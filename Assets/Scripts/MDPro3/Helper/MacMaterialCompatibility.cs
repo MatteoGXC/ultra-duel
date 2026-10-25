@@ -1,4 +1,7 @@
 using UnityEngine;
+using System.Runtime.InteropServices;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace MDPro3
 {
@@ -9,6 +12,29 @@ namespace MDPro3
     {
 #if UNITY_STANDALONE_OSX && !UNITY_EDITOR
         private float nextCheck;
+        private Volume intelDuelVolume;
+        private VolumeProfile intelDuelProfile;
+        private readonly bool intelProcess=RuntimeInformation.ProcessArchitecture==Architecture.X64;
+
+        private void UpdateIntelDuelBloom()
+        {
+            if(!intelProcess)return;
+            bool inDuel=Program.instance!=null && Program.instance.ocgcore!=null
+                && Program.instance.currentServant==Program.instance.ocgcore;
+            if(inDuel && intelDuelVolume==null)
+            {
+                var holder=new GameObject("Intel duel HDR compatibility");holder.transform.SetParent(transform,false);
+                intelDuelProfile=ScriptableObject.CreateInstance<VolumeProfile>();
+                intelDuelProfile.Add<Bloom>().intensity.Override(0);
+                intelDuelVolume=holder.AddComponent<Volume>();intelDuelVolume.isGlobal=true;
+                intelDuelVolume.priority=10000;intelDuelVolume.sharedProfile=intelDuelProfile;
+                var camera=Program.instance.camera_.cameraMain;
+                if(camera!=null)camera.GetUniversalAdditionalCameraData().volumeLayerMask|=1<<holder.layer;
+                Debug.Log("MAC_INTEL_DUEL_BLOOM_COMPATIBILITY_ENABLED");
+            }
+            if(intelDuelVolume!=null)intelDuelVolume.weight=inDuel?1:0;
+        }
+        private void OnDestroy(){if(intelDuelProfile!=null)Destroy(intelDuelProfile);}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Install()
         {
@@ -17,6 +43,9 @@ namespace MDPro3
         }
         private void LateUpdate()
         {
+            // The Intel HDR path over-amplifies legacy field effects. Preserve their
+            // animations and limit this bloom override to the 3D duel camera.
+            UpdateIntelDuelBloom();
             if(Time.unscaledTime<nextCheck)return;
             nextCheck=Time.unscaledTime+0.25f;
             foreach(var material in Resources.FindObjectsOfTypeAll<Material>())Repair(material);
