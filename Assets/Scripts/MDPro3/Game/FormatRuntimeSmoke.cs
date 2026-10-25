@@ -479,6 +479,12 @@ namespace MDPro3
                 yield return null;
             }
             yield return new WaitForSecondsRealtime(12);
+            float cardsReadyDeadline=Time.realtimeSinceStartup+60;
+            while((Program.instance.ocgcore.GetLocationCardCount(CardLocation.Hand,0)==0
+                || Program.instance.ocgcore.GetLocationCardCount(CardLocation.Deck,1)==0)
+                && Time.realtimeSinceStartup<cardsReadyDeadline)yield return null;
+            if(Program.instance.ocgcore.GetLocationCardCount(CardLocation.Hand,0)==0)
+                throw new Exception("The installed duel did not finish loading its opening hand.");
             yield return Capture("duel");
             Debug.Log("FORMAT_SMOKE_DUEL_READY " + mode);
             if(commandLine.Contains("--owner-admin-check"))
