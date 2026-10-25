@@ -13,6 +13,13 @@ jobs:
     runs-on: ${{ inputs.arch == 'x86_64' && 'macos-15-intel' || 'macos-15' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /Server/
+            /Tools/YGO Classes/
+            /Data/
+            /Tests/
       - name: Build Apple Silicon libraries
         run: |
           test "$(uname -m)" = '${{ inputs.arch }}'
