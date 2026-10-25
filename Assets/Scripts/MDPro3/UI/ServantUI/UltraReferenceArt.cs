@@ -16,7 +16,8 @@ namespace MDPro3.UI.ServantUI
             vh.AddTriangle(n,n+1,n+2);vh.AddTriangle(n,n+2,n+3);
         }
     }
-    public sealed class UltraNativeTitle : MaskableGraphic
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class UltraNativeTitle : UltraMesh
     {
         static Texture2D artwork;
         public override Texture mainTexture=>artwork!=null?artwork:(artwork=Resources.Load<Texture2D>("Ultra/OriginalTitleLogo"));

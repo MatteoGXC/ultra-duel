@@ -3,7 +3,8 @@ using UnityEngine.UI;
 
 namespace MDPro3.UI.ServantUI
 {
-    public class UltraNavIcon : MaskableGraphic
+    [RequireComponent(typeof(CanvasRenderer))]
+    public class UltraNavIcon : UltraMesh
     {
         public int kind;
         static Texture2D supplied;
@@ -63,6 +64,7 @@ namespace MDPro3.UI.ServantUI
 
     // Hanko ink panels: notched left edge and one clipped bottom-right corner.
     // Small controls keep only the clipped corner.
+    [RequireComponent(typeof(CanvasRenderer))]
     public class UltraChrome : Image
     {
         public UltraCut cut = UltraCut.Auto;
@@ -72,6 +74,7 @@ namespace MDPro3.UI.ServantUI
 
         protected override void OnEnable()
         {
+            UltraUi.EnsureRenderer(gameObject);
             base.OnEnable();
             UltraTheme.Changed += OnTheme;
             OnTheme();
@@ -141,9 +144,15 @@ namespace MDPro3.UI.ServantUI
             for (int i = 0; i < points.Length; i++) vh.AddTriangle(start, start + 1 + i, start + 1 + ((i + 1) % points.Length));
         }
     }
+    [RequireComponent(typeof(CanvasRenderer))]
     public class UltraGem : Image
     {
         static Sprite gem;
+        protected override void OnEnable()
+        {
+            UltraUi.EnsureRenderer(gameObject);
+            base.OnEnable();
+        }
         protected override void Awake()
         {
             base.Awake();

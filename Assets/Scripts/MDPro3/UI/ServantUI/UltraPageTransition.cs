@@ -25,7 +25,8 @@ namespace MDPro3.UI.ServantUI
         static Material material;
         public static Material Get(Shader shader)=>material!=null?material:(material=new Material(shader));
     }
-    public sealed class UltraCircleBack : MaskableGraphic
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class UltraCircleBack : UltraMesh
     {
         static Texture2D supplied;
         public override Texture mainTexture=>supplied!=null?supplied:(supplied=Resources.Load<Texture2D>("Ultra/UserBackIcon"));
@@ -47,15 +48,18 @@ namespace MDPro3.UI.ServantUI
     {
         Button RoundBack(Transform parent,UnityAction action,float x,float y,float w,float h)
         {
-            var r=HomeRect("Back",parent,x,y,w,h);var icon=r.gameObject.AddComponent<UltraCircleBack>();
+            var r=HomeRect("Back",parent,x,y,w,h);UltraUi.EnsureRenderer(r.gameObject);var icon=r.gameObject.AddComponent<UltraCircleBack>();
             var button=r.gameObject.AddComponent<Button>();button.targetGraphic=icon;button.onClick.AddListener(action);r.gameObject.AddComponent<UltraButtonMotion>();return button;
         }
         Button SquareBack(Transform parent,UnityAction action,float x,float y,float w,float h)
         {
             var r=HomeRect("Back",parent,x,y,w,h);
+            UltraUi.EnsureRenderer(r.gameObject);
             var chrome=r.gameObject.AddComponent<UltraChrome>();
             chrome.cut=UltraCut.Small;chrome.color=UltraTheme.Panel;chrome.raycastTarget=true;
-            var chevron=HomeRect("Chevron",r,.22f,.22f,.56f,.56f).gameObject.AddComponent<UltraChevron>();
+            var chevronHost=HomeRect("Chevron",r,.22f,.22f,.56f,.56f);
+            UltraUi.EnsureRenderer(chevronHost.gameObject);
+            var chevron=chevronHost.gameObject.AddComponent<UltraChevron>();
             chevron.color=UltraTheme.Fg;chevron.raycastTarget=false;
             var button=r.gameObject.AddComponent<Button>();button.targetGraphic=chrome;button.onClick.AddListener(action);
             r.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);

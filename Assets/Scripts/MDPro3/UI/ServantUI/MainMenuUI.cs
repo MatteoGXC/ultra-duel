@@ -65,6 +65,7 @@ namespace MDPro3.UI.ServantUI
 
         private void HomePanel(RectTransform rect, Color color)
         {
+            UltraUi.EnsureRenderer(rect.gameObject);
             var panel = rect.gameObject.AddComponent<UltraChrome>();
             panel.color = color;
             panel.cut = UltraCut.Panel;
@@ -77,7 +78,9 @@ namespace MDPro3.UI.ServantUI
         private TextMeshProUGUI HomeText(Transform parent, string text, float size, Color color,
             float x, float y, float w, float h)
         {
-            var label = HomeRect("Label", parent, x, y, w, h).gameObject.AddComponent<TextMeshProUGUI>();
+            var labelHost = HomeRect("Label", parent, x, y, w, h).gameObject;
+            var label = UltraUi.Text(labelHost);
+            if (label == null) return null;
             label.font = TMP_Settings.defaultFontAsset != null ? TMP_Settings.defaultFontAsset : Title != null ? Title.font : label.font;
             label.text = text;
             label.fontSize = size;

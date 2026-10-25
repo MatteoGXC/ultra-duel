@@ -26,7 +26,7 @@ namespace MDPro3.UI.ServantUI
         Image P(RectTransform r,Color c){var i=r.gameObject.AddComponent<Image>();i.color=c;i.raycastTarget=false;return i;}
         TextMeshProUGUI T(Transform p,string s,float size,float x,float y,float w,float h)
         {
-            var t=R("Label",p,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();t.text=s;t.font=Program.instance.ui_.tmpFont;
+            var t=UltraUi.Text(R("Label",p,x,y,w,h).gameObject);t.text=s;t.font=Program.instance.ui_.tmpFont;
             t.fontSize=size;t.color=UltraTheme.Fg;t.raycastTarget=false;t.enableAutoSizing=true;t.fontSizeMin=size*.7f;t.fontSizeMax=size;
             UltraTheme.Style(t,size>=26f,size>=26f?4f:0f);return t;
         }
@@ -66,7 +66,7 @@ namespace MDPro3.UI.ServantUI
                 friendRoom.gameObject.AddComponent<UltraPageTransition>();
                 var back=R("Back",friendRoom,.012f,.905f,.042f,.065f);
                 var backChrome=back.gameObject.AddComponent<UltraChrome>();backChrome.cut=UltraCut.Small;backChrome.color=UltraTheme.Panel;backChrome.raycastTarget=true;
-                var chevron=R("Chevron",back,.22f,.22f,.56f,.56f).gameObject.AddComponent<UltraChevron>();chevron.color=UltraTheme.Fg;chevron.raycastTarget=false;
+                var chevronHost=R("Chevron",back,.22f,.22f,.56f,.56f);UltraUi.EnsureRenderer(chevronHost.gameObject);var chevron=chevronHost.gameObject.AddComponent<UltraChevron>();chevron.color=UltraTheme.Fg;chevron.raycastTarget=false;
                 var backButton=back.gameObject.AddComponent<Button>();backButton.targetGraphic=backChrome;backButton.onClick.AddListener(()=>Program.instance.room.OnExit());
                 back.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);
                 T(friendRoom,"Room Match",29,.065f,.905f,.35f,.065f);

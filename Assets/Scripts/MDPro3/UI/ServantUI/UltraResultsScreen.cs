@@ -34,7 +34,7 @@ namespace MDPro3.UI.ServantUI
         static void Panel(RectTransform r,Color color){var i=r.gameObject.AddComponent<UltraChrome>();i.color=color;i.rimColor=new Color(.45f,.5f,.6f,.35f);i.raycastTarget=false;}
         static TextMeshProUGUI Text(Transform parent,string value,float size,float x,float y,float w,float h)
         {
-            var t=R(value,parent,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();t.font=resultsFont;t.text=value;t.fontSize=size;
+            var t=UltraUi.Text(R(value,parent,x,y,w,h).gameObject);t.font=resultsFont;t.text=value;t.fontSize=size;
             t.enableAutoSizing=true;t.fontSizeMax=size;t.fontSizeMin=size*.7f;t.color=UltraTheme.Fg;t.raycastTarget=false;
             UltraTheme.Style(t,size>=26f,size>=26f?4f:0f);return t;
         }

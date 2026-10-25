@@ -6,15 +6,22 @@ using UnityEngine.UI;
 
 namespace MDPro3.UI.ServantUI
 {
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class UltraCircleGraphic : Image
     {
+        protected override void OnEnable()
+        {
+            UltraUi.EnsureRenderer(gameObject);
+            base.OnEnable();
+        }
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();var r=rectTransform.rect;vh.AddVert(r.center,color,new Vector2(.5f,.5f));
             for(int i=0;i<=64;i++){float a=i*Mathf.PI/32;var p=new Vector2(Mathf.Cos(a),Mathf.Sin(a));vh.AddVert(r.center+Vector2.Scale(p,r.size*.5f),color,(p+Vector2.one)*.5f);if(i>0)vh.AddTriangle(0,i,i+1);}
         }
     }
-    public sealed class UltraProfilePlate : MaskableGraphic
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class UltraProfilePlate : UltraMesh
     {
         public Color accent=Color.gray;
         protected override void OnPopulateMesh(VertexHelper vh)
@@ -54,23 +61,32 @@ namespace MDPro3.UI.ServantUI
             if (chrome != null) { chrome.color = chrome.rimColor = Color.clear; chrome.rim = 0; }
             var circle = R("Profile icon rim", transform, .025f, .08f, .0f, .84f);
             circle.gameObject.AddComponent<AspectRatioFitter>().aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
+            UltraUi.EnsureRenderer(circle.gameObject);
             ring = circle.gameObject.AddComponent<UltraCircleGraphic>();
             ring.raycastTarget = false;
             var clip = R("Icon mask", circle, .07f, .07f, .86f, .86f);
+            UltraUi.EnsureRenderer(clip.gameObject);
             clip.gameObject.AddComponent<UltraCircleGraphic>();
             clip.gameObject.AddComponent<Mask>().showMaskGraphic = false;
-            portrait = R("Card portrait", clip, 0, 0, 1, 1).gameObject.AddComponent<RawImage>();
+            var portraitObject = R("Card portrait", clip, 0, 0, 1, 1).gameObject;
+            UltraUi.EnsureRenderer(portraitObject);
+            portrait = portraitObject.AddComponent<RawImage>();
             portrait.raycastTarget = false;
             var label = R("Level", transform, .30f, .08f, .62f, .28f);
-            level = label.gameObject.AddComponent<TextMeshProUGUI>();
-            level.font = Program.instance.ui_.tmpFont;
-            level.fontSize = 18;
-            level.color = UltraTheme.Mute;
-            level.raycastTarget = false;
-            UltraTheme.StyleEmphasis(level, 8f);
+            level = UltraUi.Text(label.gameObject);
+            if (level != null)
+            {
+                level.font = Program.instance.ui_.tmpFont;
+                level.fontSize = 18;
+                level.color = UltraTheme.Mute;
+                level.raycastTarget = false;
+                UltraTheme.StyleEmphasis(level, 8f);
+            }
             var track = R("XP track", transform, .30f, .40f, .62f, .08f);
+            UltraUi.EnsureRenderer(track.gameObject);
             track.gameObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.1f);
             progress = R("XP fill", transform, .30f, .40f, 0f, .08f);
+            UltraUi.EnsureRenderer(progress.gameObject);
             var fill = progress.gameObject.AddComponent<Image>();
             fill.color = UltraTheme.Accent;
             fill.gameObject.AddComponent<UltraAccentFill>();
@@ -85,8 +101,8 @@ namespace MDPro3.UI.ServantUI
             int.TryParse(Config.Get("DuelFace0", "1010001"), out int id);
             if(id<1010000 || id>=1030000)id=1010001;
             if(id!=shown){shown=id;Load(id).Forget();}
-            level.text = "LV.  " + UltraAccount.Level + "     " + (UltraAccount.XP % 500) + " / 500 XP";
-            progress.anchorMax = new Vector2(.30f + .62f * (UltraAccount.XP % 500) / 500f, .48f);
+            if (level != null) level.text = "LV.  " + UltraAccount.Level + "     " + (UltraAccount.XP % 500) + " / 500 XP";
+            if (progress != null) progress.anchorMax = new Vector2(.30f + .62f * (UltraAccount.XP % 500) / 500f, .48f);
         }
         async UniTaskVoid Load(int id)
         {

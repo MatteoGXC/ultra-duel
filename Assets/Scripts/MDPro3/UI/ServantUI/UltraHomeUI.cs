@@ -13,7 +13,8 @@ using UnityEngine.UI;
 namespace MDPro3.UI.ServantUI
 {
     // A small mesh keeps the home navigation angular at every screen size.
-    public class UltraHomeShape : MaskableGraphic
+    [RequireComponent(typeof(CanvasRenderer))]
+    public class UltraHomeShape : UltraMesh
     {
         public bool slash;
         protected override void OnPopulateMesh(VertexHelper vh)
@@ -73,80 +74,114 @@ namespace MDPro3.UI.ServantUI
             }
             foreach (Transform child in Root) child.gameObject.SetActive(false);
             ultraHome = HomeRect("Ultra Duel Home", Root, 0, 0, 1, 1);
-            var scrim = HomeRect("Home scrim", ultraHome, 0, 0, 1, 1).gameObject.AddComponent<UltraScrim>();
-            scrim.strong = false; scrim.raycastTarget = false;
-            var profile = Px("Profile", ultraHome, 64, 36, 560, 132);
-            HomePanel(profile, UltraTheme.Panel);
-            profileAccent = Px("Profile frame", profile, 0, 28, 6, 56).gameObject.AddComponent<Image>();
-            profileAccent.raycastTarget = false;
-            profileAccent.gameObject.AddComponent<UltraAccentFill>();
-            var avatar = profile.gameObject.AddComponent<UltraProfileHeader>(); avatar.Initialize();
-            profileLabel = HomeText(profile, "", 40, UltraTheme.Fg, .30f, .46f, .66f, .40f);
-            UltraTheme.Style(profileLabel, true, 2f);
-            var profileClick = profile.gameObject.AddComponent<Button>(); profileClick.onClick.AddListener(OpenProfile);
-            profileClick.targetGraphic = profile.GetComponent<Image>();
-            profile.GetComponent<Image>().raycastTarget = true;
-            var wallet = Px("Gem wallet", ultraHome, 648, 58, 300, 80);
-            var walletFrame = wallet.gameObject.AddComponent<UltraChrome>();
-            walletFrame.color = UltraTheme.Panel; walletFrame.cut = UltraCut.Panel; walletFrame.rim = 1.5f; walletFrame.followThemeRim = true; walletFrame.raycastTarget = false;
-            var gem = Px("Gem", wallet, 18, 14, 52, 52); gem.gameObject.AddComponent<UltraGem>().raycastTarget = false;
-            gemLabel = HomeText(wallet, "", 36, UltraTheme.Fg, .26f, .12f, .52f, .76f);
-            UltraTheme.Style(gemLabel, true, 2f);
-            var plus = SmallButton(wallet, "+", OpenShop, .78f, .22f, .16f, .56f, 28, UltraTier.Primary);
-            TopButton("NOTICES", OpenNotifications, 394, 0);
-            BuildNotificationsHome();
-            TopButton("MISSIONS", OpenMissions, 284, 1);
-            TopButton("FRIENDS", OpenFriends, 174, 2);
-            TopButton("MENU", OpenMenu, 64, 3);
-            var menu = Px("Menu", ultraHome, 48, 184, 680, 560);
-            var layout = menu.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.childControlWidth = layout.childControlHeight = true;
-            layout.childForceExpandWidth = true; layout.childForceExpandHeight = false;
-            layout.spacing = 0f;
-            defaultSelectable = NavButton(menu, "DUEL", OpenDuel, true);
-            NavButton(menu, "DECK", OnDeck, false);
-            NavButton(menu, "SOLO", OnSolo, false);
-            NavButton(menu, "SHOP", OpenShop, false);
-            var missions = Px("Missions", ultraHome, 64, 772, 560, 146);
-            HomePanel(missions, UltraTheme.Panel);
-            var missionEdge = Px("Mission edge", missions, 0, 0, 6, 56); missionEdge.gameObject.AddComponent<Image>().raycastTarget = false; missionEdge.gameObject.AddComponent<UltraAccentFill>();
-            var missionKicker = HomeText(missions, "MISSIONS", 16, Lime, .06f, .68f, .55f, .22f);
-            UltraTheme.StyleEmphasis(missionKicker, 14f);
-            missionKicker.gameObject.AddComponent<UltraAccentText>();
-            homeStatus = HomeText(missions, "", 30, UltraTheme.Fg, .06f, .16f, .62f, .50f);
-            UltraTheme.Style(homeStatus, true, 2f);
-            SmallButton(missions, "VIEW", OpenMissions, .68f, .58f, .26f, .28f, 18, UltraTier.Secondary);
-            var pass = Px("Duel Pass", ultraHome, 64, 934, 560, 96);
-            HomePanel(pass, UltraTheme.Panel);
-            var passEdge = Px("Pass edge", pass, 0, 0, 6, 48); passEdge.gameObject.AddComponent<Image>().raycastTarget = false; passEdge.gameObject.AddComponent<UltraAccentFill>();
-            passLabel = HomeText(pass, "", 32, UltraTheme.Fg, .06f, .16f, .62f, .70f);
-            UltraTheme.Style(passLabel, true, 2f);
-            pass.GetComponent<Image>().raycastTarget = true;
-            var passButton = pass.gameObject.AddComponent<Button>(); passButton.targetGraphic = pass.GetComponent<Image>(); passButton.onClick.AddListener(OpenPass);
-            var claim = Px("Claim", pass, 430, 22, 100, 52);
-            var claimChrome = claim.gameObject.AddComponent<UltraChrome>(); claimChrome.cut = UltraCut.Small; claimChrome.raycastTarget = true;
-            var claimButton = claim.gameObject.AddComponent<Button>(); claimButton.targetGraphic = claimChrome; claimButton.onClick.AddListener(OpenPass);
-            var claimLabel = HomeText(claim, "▼", 28, Color.white, 0, 0, 1, 1); claimLabel.alignment = TextAlignmentOptions.Center;
-            var claimTheme = claim.gameObject.AddComponent<UltraThemedButton>(); claimTheme.Configure(UltraTier.Hero);
-            friendLabel = HomeText(ultraHome, "", 17, Muted, 0, 0, 0, 0);
-            updateLabel = HomeText(ultraHome, "", 16, Muted, 0, 0, 0, 0);
-            var version = Px("Version", ultraHome, 66, 0, 240, 28);
-            version.anchorMin = version.anchorMax = new Vector2(0f, 0f); version.pivot = new Vector2(0f, 0f); version.anchoredPosition = new Vector2(66f, 16f);
-            var versionLabel = HomeText(version, "v" + UltraServices.Version, 16, Muted, 0, 0, 1, 1);
-            UltraTheme.StyleEmphasis(versionLabel, 10f);
-            var admin = Px("Admin slot", ultraHome, 0, 0, 180, 56);
-            admin.anchorMin = admin.anchorMax = new Vector2(1f, 0f); admin.pivot = new Vector2(1f, 0f); admin.anchoredPosition = new Vector2(-64f, 28f);
-            ownerAdminButton = SmallButton(admin, "ADMIN", OpenAdmin, 0, 0, 1, 1, 20, UltraTier.Secondary);
-            ownerAdminButton.gameObject.SetActive(false);
-            friendLabel.gameObject.SetActive(false); updateLabel.gameObject.SetActive(false);
-            UltraServices.Initialize();
-            UltraServices.Changed += RefreshUltraHome;
-            UltraProgress.Changed += RefreshUltraHome;
-            UltraTheme.Changed += RefreshUltraHome;
-            RefreshUltraHome();
-            UltraServices.CheckUpdates();
-            var keys = ultraHome.gameObject.AddComponent<UltraHomeKeyboard>(); keys.open = OpenAdmin;
-            if(!Array.Exists(Environment.GetCommandLineArgs(), x => x == "--format-smoke")) ShowGameStart();
+            TryHome("scrim", () =>
+            {
+                var scrim = HomeRect("Home scrim", ultraHome, 0, 0, 1, 1).gameObject.AddComponent<UltraScrim>();
+                scrim.strong = false; scrim.raycastTarget = false;
+            });
+            TryHome("profile", () =>
+            {
+                var profile = Px("Profile", ultraHome, 64, 36, 560, 132);
+                HomePanel(profile, UltraTheme.Panel);
+                profileAccent = Px("Profile frame", profile, 0, 28, 6, 56).gameObject.AddComponent<Image>();
+                profileAccent.raycastTarget = false;
+                profileAccent.gameObject.AddComponent<UltraAccentFill>();
+                var avatar = profile.gameObject.AddComponent<UltraProfileHeader>(); avatar.Initialize();
+                profileLabel = HomeText(profile, "", 40, UltraTheme.Fg, .30f, .46f, .66f, .40f);
+                UltraTheme.Style(profileLabel, true, 2f);
+                var profileClick = profile.gameObject.AddComponent<Button>(); profileClick.onClick.AddListener(OpenProfile);
+                profileClick.targetGraphic = profile.GetComponent<Image>();
+                profile.GetComponent<Image>().raycastTarget = true;
+            });
+            TryHome("wallet", () =>
+            {
+                var wallet = Px("Gem wallet", ultraHome, 648, 58, 300, 80);
+                var walletFrame = wallet.gameObject.AddComponent<UltraChrome>();
+                walletFrame.color = UltraTheme.Panel; walletFrame.cut = UltraCut.Panel; walletFrame.rim = 1.5f; walletFrame.followThemeRim = true; walletFrame.raycastTarget = false;
+                var gem = Px("Gem", wallet, 18, 14, 52, 52); gem.gameObject.AddComponent<UltraGem>().raycastTarget = false;
+                gemLabel = HomeText(wallet, "", 36, UltraTheme.Fg, .26f, .12f, .52f, .76f);
+                UltraTheme.Style(gemLabel, true, 2f);
+                SmallButton(wallet, "+", OpenShop, .78f, .22f, .16f, .56f, 28, UltraTier.Primary);
+            });
+            TryHome("notices", () => { TopButton("NOTICES", OpenNotifications, 394, 0); BuildNotificationsHome(); });
+            TryHome("missions icon", () => TopButton("MISSIONS", OpenMissions, 284, 1));
+            TryHome("friends icon", () => TopButton("FRIENDS", OpenFriends, 174, 2));
+            TryHome("menu icon", () => TopButton("MENU", OpenMenu, 64, 3));
+            RectTransform menu = null;
+            TryHome("menu", () =>
+            {
+                menu = Px("Menu", ultraHome, 48, 184, 680, 560);
+                var layout = menu.gameObject.AddComponent<VerticalLayoutGroup>();
+                layout.childControlWidth = layout.childControlHeight = true;
+                layout.childForceExpandWidth = true; layout.childForceExpandHeight = false;
+                layout.spacing = 0f;
+            });
+            TryHome("DUEL", () => defaultSelectable = NavButton(menu, "DUEL", OpenDuel, true));
+            TryHome("DECK", () => NavButton(menu, "DECK", OnDeck, false));
+            TryHome("SOLO", () => NavButton(menu, "SOLO", OnSolo, false));
+            TryHome("SHOP", () => NavButton(menu, "SHOP", OpenShop, false));
+            TryHome("missions", () =>
+            {
+                var missions = Px("Missions", ultraHome, 64, 772, 560, 146);
+                HomePanel(missions, UltraTheme.Panel);
+                var missionEdge = Px("Mission edge", missions, 0, 0, 6, 56); missionEdge.gameObject.AddComponent<Image>().raycastTarget = false; missionEdge.gameObject.AddComponent<UltraAccentFill>();
+                var missionKicker = HomeText(missions, "MISSIONS", 16, Lime, .06f, .68f, .55f, .22f);
+                UltraTheme.StyleEmphasis(missionKicker, 14f);
+                if (missionKicker != null) missionKicker.gameObject.AddComponent<UltraAccentText>();
+                homeStatus = HomeText(missions, "", 30, UltraTheme.Fg, .06f, .16f, .62f, .50f);
+                UltraTheme.Style(homeStatus, true, 2f);
+                SmallButton(missions, "VIEW", OpenMissions, .68f, .58f, .26f, .28f, 18, UltraTier.Secondary);
+            });
+            TryHome("pass", () =>
+            {
+                var pass = Px("Duel Pass", ultraHome, 64, 934, 560, 96);
+                HomePanel(pass, UltraTheme.Panel);
+                var passEdge = Px("Pass edge", pass, 0, 0, 6, 48); passEdge.gameObject.AddComponent<Image>().raycastTarget = false; passEdge.gameObject.AddComponent<UltraAccentFill>();
+                passLabel = HomeText(pass, "", 32, UltraTheme.Fg, .06f, .16f, .62f, .70f);
+                UltraTheme.Style(passLabel, true, 2f);
+                pass.GetComponent<Image>().raycastTarget = true;
+                var passButton = pass.gameObject.AddComponent<Button>(); passButton.targetGraphic = pass.GetComponent<Image>(); passButton.onClick.AddListener(OpenPass);
+                var claim = Px("Claim", pass, 430, 22, 100, 52);
+                var claimChrome = claim.gameObject.AddComponent<UltraChrome>(); claimChrome.cut = UltraCut.Small; claimChrome.raycastTarget = true;
+                var claimButton = claim.gameObject.AddComponent<Button>(); claimButton.targetGraphic = claimChrome; claimButton.onClick.AddListener(OpenPass);
+                var claimLabel = HomeText(claim, "▼", 28, Color.white, 0, 0, 1, 1);
+                if (claimLabel != null) claimLabel.alignment = TextAlignmentOptions.Center;
+                claim.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Hero);
+            });
+            TryHome("version", () =>
+            {
+                friendLabel = HomeText(ultraHome, "", 17, Muted, 0, 0, 0, 0);
+                updateLabel = HomeText(ultraHome, "", 16, Muted, 0, 0, 0, 0);
+                var version = Px("Version", ultraHome, 66, 0, 240, 28);
+                version.anchorMin = version.anchorMax = new Vector2(0f, 0f); version.pivot = new Vector2(0f, 0f); version.anchoredPosition = new Vector2(66f, 16f);
+                var versionLabel = HomeText(version, "v" + UltraServices.Version, 16, Muted, 0, 0, 1, 1);
+                UltraTheme.StyleEmphasis(versionLabel, 10f);
+                if (friendLabel != null) friendLabel.gameObject.SetActive(false);
+                if (updateLabel != null) updateLabel.gameObject.SetActive(false);
+            });
+            TryHome("admin", () =>
+            {
+                var admin = Px("Admin slot", ultraHome, 0, 0, 180, 56);
+                admin.anchorMin = admin.anchorMax = new Vector2(1f, 0f); admin.pivot = new Vector2(1f, 0f); admin.anchoredPosition = new Vector2(-64f, 28f);
+                ownerAdminButton = SmallButton(admin, "ADMIN", OpenAdmin, 0, 0, 1, 1, 20, UltraTier.Secondary);
+                ownerAdminButton.gameObject.SetActive(false);
+            });
+            TryHome("services", () =>
+            {
+                UltraServices.Initialize();
+                UltraServices.Changed += RefreshUltraHome;
+                UltraProgress.Changed += RefreshUltraHome;
+                UltraTheme.Changed += RefreshUltraHome;
+                RefreshUltraHome();
+                UltraServices.CheckUpdates();
+                var keys = ultraHome.gameObject.AddComponent<UltraHomeKeyboard>(); keys.open = OpenAdmin;
+                if(!Array.Exists(Environment.GetCommandLineArgs(), x => x == "--format-smoke")) ShowGameStart();
+            });
+        }
+        void TryHome(string part, Action build)
+        {
+            try { build(); }
+            catch (Exception exception) { Debug.LogError("Ultra home " + part + " failed.\n" + exception); }
         }
         void TopButton(string title, UnityAction action, float right, int icon)
         {
@@ -160,11 +195,12 @@ namespace MDPro3.UI.ServantUI
             var chrome = plate.gameObject.AddComponent<UltraChrome>(); chrome.cut = UltraCut.Small; chrome.color = UltraTheme.Panel; chrome.raycastTarget = false;
             var glyph = Px("Icon", plate, 18, 18, 40, 40).gameObject.AddComponent<UltraNavIcon>(); glyph.kind = icon; glyph.raycastTarget = false; glyph.color = UltraTheme.Fg;
             var caption = HomeText(rect, title, 15, UltraTheme.Fg, 0f, 0f, 1f, .28f);
-            caption.alignment = TextAlignmentOptions.Center;
+            if (caption != null) caption.alignment = TextAlignmentOptions.Center;
             var iconButton = rect.gameObject.AddComponent<UltraIconButton>(); iconButton.Bind(chrome, caption);
         }
         Button NavButton(Transform menu, string title, UnityAction action, bool hero)
         {
+            if (menu == null) return null;
             var rect = new GameObject(title, typeof(RectTransform)).GetComponent<RectTransform>();
             rect.gameObject.layer = gameObject.layer;
             rect.SetParent(menu, false);
@@ -184,7 +220,7 @@ namespace MDPro3.UI.ServantUI
             var button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = image;
             var label = HomeText(rect, text, size, UltraTheme.Fg, .06f, .08f, .88f, .84f);
-            label.alignment = TextAlignmentOptions.Center;
+            if (label != null) label.alignment = TextAlignmentOptions.Center;
             if (tier == UltraTier.Secondary && UltraTheme.IsDanger(text)) tier = UltraTier.Danger;
             var themed = rect.gameObject.AddComponent<UltraThemedButton>();
             themed.Configure(tier);
@@ -193,20 +229,18 @@ namespace MDPro3.UI.ServantUI
         }
         void RefreshUltraHome()
         {
-            if (profileLabel==null) return;
-            var data=UltraProgress.Data;
             string name=string.IsNullOrEmpty(UltraServices.PlayerName)?Config.Get("DuelPlayerName0","Player"):UltraServices.PlayerName;
-            profileLabel.text=name;
             if (string.IsNullOrWhiteSpace(name)) name="Player";
-            profileLabel.text=name;
-            profileAccent.enabled=false;gemLabel.text=UltraAccount.Gems.ToString("N0");
-            passLabel.text="DUEL PASS   "+UltraAccount.Tier+" / 20\n<size=65%>"+(UltraAccount.Tier>UltraAccount.Claimed?"Rewards ready to claim":"WIN DUELS · EARN REWARDS")+"</size>";
-            homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
-            updateLabel.text="UPDATES  /  "+UltraServices.UpdateStatus+"\n<size=80%>New pass & shop · Friends & profiles · Solo fixes</size>";
+            if (profileLabel!=null) profileLabel.text=name;
+            if (profileAccent!=null) profileAccent.enabled=false;
+            if (gemLabel!=null) gemLabel.text=UltraAccount.Gems.ToString("N0");
+            if (passLabel!=null) passLabel.text="DUEL PASS   "+UltraAccount.Tier+" / 20\n<size=65%>"+(UltraAccount.Tier>UltraAccount.Claimed?"Rewards ready to claim":"WIN DUELS · EARN REWARDS")+"</size>";
+            if (homeStatus!=null) homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
+            if (updateLabel!=null) updateLabel.text="UPDATES  /  "+UltraServices.UpdateStatus+"\n<size=80%>New pass & shop · Friends & profiles · Solo fixes</size>";
             RefreshNotificationsHome();
             var state=UltraServices.State;
             if(ownerAdminButton!=null)ownerAdminButton.gameObject.SetActive(UltraAdminAccess.IsOwner && (overlay==null || modalPage=="friends" || modalPage=="friend"));
-            friendLabel.text=state==null?"FRIENDS  /  Sign in to connect and host duels":
+            if (friendLabel!=null) friendLabel.text=state==null?"FRIENDS  /  Sign in to connect and host duels":
                 "FRIENDS  /  "+(state["friends"] as JArray)?.Count+" added   ·   "+(state["requests"] as JArray)?.Count+" requests";
         }
         void CloseModal()

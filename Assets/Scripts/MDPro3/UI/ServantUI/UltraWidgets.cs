@@ -9,7 +9,64 @@ using YgomSystem.UI;
 
 namespace MDPro3.UI.ServantUI
 {
-    public sealed class UltraScrim : MaskableGraphic
+    public static class UltraUi
+    {
+        public static void EnsureRenderer(GameObject go)
+        {
+            if (go != null && go.GetComponent<CanvasRenderer>() == null)
+                go.AddComponent<CanvasRenderer>();
+        }
+
+        public static T AddGraphic<T>(GameObject go) where T : Graphic
+        {
+            if (go == null) return null;
+            EnsureRenderer(go);
+            var existing = go.GetComponent<T>();
+            return existing != null ? existing : go.AddComponent<T>();
+        }
+
+        // TMP is itself a Graphic. Never attach it beside another Graphic.
+        public static TextMeshProUGUI Text(GameObject host, string childName = "Caption")
+        {
+            if (host == null) return null;
+            var own = host.GetComponent<TextMeshProUGUI>();
+            if (own != null) return own;
+            if (host.GetComponent<Graphic>() != null)
+            {
+                for (int i = 0; i < host.transform.childCount; i++)
+                {
+                    var child = host.transform.GetChild(i);
+                    var existing = child.GetComponent<TextMeshProUGUI>();
+                    if (existing != null && child.GetComponent<Image>() == null) return existing;
+                }
+                var nested = new GameObject(childName);
+                nested.layer = host.layer;
+                nested.transform.SetParent(host.transform, false);
+                var nestedRect = nested.AddComponent<RectTransform>();
+                nestedRect.anchorMin = Vector2.zero;
+                nestedRect.anchorMax = Vector2.one;
+                nestedRect.offsetMin = nestedRect.offsetMax = Vector2.zero;
+                host = nested;
+            }
+            EnsureRenderer(host);
+            return host.AddComponent<TextMeshProUGUI>();
+        }
+    }
+
+    // Runtime-created meshes must own a CanvasRenderer before Graphic.OnEnable.
+    // RequireComponent on Graphic itself is not applied to these project scripts.
+    [RequireComponent(typeof(CanvasRenderer))]
+    public abstract class UltraMesh : MaskableGraphic
+    {
+        protected override void OnEnable()
+        {
+            UltraUi.EnsureRenderer(gameObject);
+            base.OnEnable();
+        }
+    }
+
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class UltraScrim : UltraMesh
     {
         public bool strong = true;
         protected override void OnPopulateMesh(VertexHelper vh)
@@ -34,7 +91,8 @@ namespace MDPro3.UI.ServantUI
         }
     }
 
-    public sealed class UltraChevron : MaskableGraphic
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class UltraChevron : UltraMesh
     {
         protected override void OnPopulateMesh(VertexHelper vh)
         {
@@ -43,17 +101,18 @@ namespace MDPro3.UI.ServantUI
             Vector2 a = r.center + new Vector2(r.width * 0.16f, r.height * 0.28f);
             Vector2 b = r.center + new Vector2(-r.width * 0.18f, 0f);
             Vector2 c = r.center + new Vector2(r.width * 0.16f, -r.height * 0.28f);
-            Stroke(vh, a, b, Mathf.Min(r.width, r.height) * 0.09f);
-            Stroke(vh, b, c, Mathf.Min(r.width, r.height) * 0.09f);
+            float width = Mathf.Min(r.width, r.height) * 0.09f;
+            Stroke(vh, a, b, width, color);
+            Stroke(vh, b, c, width, color);
         }
-        static void Stroke(VertexHelper vh, Vector2 a, Vector2 b, float width)
+        static void Stroke(VertexHelper vh, Vector2 a, Vector2 b, float width, Color tint)
         {
             var n = Vector2.Perpendicular((b - a).normalized) * width;
             int i = vh.currentVertCount;
-            vh.AddVert(a + n, color, Vector2.zero);
-            vh.AddVert(b + n, color, Vector2.zero);
-            vh.AddVert(b - n, color, Vector2.zero);
-            vh.AddVert(a - n, color, Vector2.zero);
+            vh.AddVert(a + n, tint, Vector2.zero);
+            vh.AddVert(b + n, tint, Vector2.zero);
+            vh.AddVert(b - n, tint, Vector2.zero);
+            vh.AddVert(a - n, tint, Vector2.zero);
             vh.AddTriangle(i, i + 1, i + 2);
             vh.AddTriangle(i, i + 2, i + 3);
         }
@@ -154,15 +213,16 @@ namespace MDPro3.UI.ServantUI
         void EnsureUnderline()
         {
             if (transform.Find("Hero underline") != null) return;
-            var bar = new GameObject("Hero underline", typeof(RectTransform), typeof(Image));
-            bar.transform.SetParent(transform, false);
+            var bar = new GameObject("Hero underline");
             bar.layer = gameObject.layer;
-            var rect = (RectTransform)bar.transform;
+            bar.transform.SetParent(transform, false);
+            var rect = bar.AddComponent<RectTransform>();
+            UltraUi.EnsureRenderer(bar);
             rect.anchorMin = new Vector2(0.12f, 0.16f);
             rect.anchorMax = new Vector2(0.12f, 0.16f);
             rect.pivot = new Vector2(0f, 0.5f);
             rect.sizeDelta = new Vector2(90f, 5f);
-            var image = bar.GetComponent<Image>();
+            var image = bar.AddComponent<Image>();
             image.raycastTarget = false;
             image.color = UltraTheme.Highlight;
         }
@@ -238,64 +298,96 @@ namespace MDPro3.UI.ServantUI
 
         public void Bind(Button target, string title, bool heroItem)
         {
+            if (target == null) return;
             hero = heroItem;
             button = target;
             button.transition = Selectable.Transition.None;
+            UltraUi.EnsureRenderer(gameObject);
             var hit = gameObject.GetComponent<Image>() ?? gameObject.AddComponent<Image>();
             hit.color = new Color(0, 0, 0, 0);
             hit.raycastTarget = true;
             button.targetGraphic = hit;
             wash = Child("Wash", 0f, 0f, 1f, 1f);
-            wash.GetComponent<Image>().color = new Color(0, 0, 0, 0);
-            wash.GetComponent<Image>().raycastTarget = false;
+            var washImage = wash != null ? wash.GetComponent<Image>() : null;
+            if (washImage != null) { washImage.color = new Color(0, 0, 0, 0); washImage.raycastTarget = false; }
             var bar = Child("Accent", 0f, 0f, 0f, 1f);
-            bar.sizeDelta = new Vector2(hero ? 10f : 0f, 0f);
-            bar.GetComponent<Image>().color = UltraTheme.Accent;
-            bar.GetComponent<Image>().raycastTarget = false;
+            if (bar != null)
+            {
+                bar.sizeDelta = new Vector2(hero ? 10f : 0f, 0f);
+                var barImage = bar.GetComponent<Image>();
+                if (barImage != null) { barImage.color = UltraTheme.Accent; barImage.raycastTarget = false; }
+            }
             tick = Child("Tick", 0f, 0.28f, 0f, 0.44f);
-            tick.sizeDelta = new Vector2(6f, 0f);
-            tick.GetComponent<Image>().color = UltraTheme.Mute;
-            tick.GetComponent<Image>().raycastTarget = false;
-            tick.gameObject.SetActive(!hero);
-            var text = Child("Label", 0f, 0f, 1f, 1f);
-            text.offsetMin = new Vector2(44f, hero ? 18f : 0f);
-            text.offsetMax = new Vector2(-8f, hero ? -8f : 0f);
-            text.GetComponent<Image>().color = Color.clear;
-            text.GetComponent<Image>().raycastTarget = false;
-            label = text.gameObject.AddComponent<TextMeshProUGUI>();
-            label.text = title;
-            label.alignment = TextAlignmentOptions.MidlineLeft;
-            label.fontSize = hero ? 168f : 86f;
-            label.enableAutoSizing = true;
-            label.fontSizeMin = hero ? 96f : 48f;
-            label.fontSizeMax = hero ? 168f : 86f;
-            label.color = UltraTheme.Fg;
-            label.raycastTarget = false;
-            UltraTheme.Style(label, true, 4f);
+            if (tick != null)
+            {
+                tick.sizeDelta = new Vector2(6f, 0f);
+                var tickImage = tick.GetComponent<Image>();
+                if (tickImage != null) { tickImage.color = UltraTheme.Mute; tickImage.raycastTarget = false; }
+                tick.gameObject.SetActive(!hero);
+            }
+            label = TextLabel(title);
+            if (label == null) return;
             rest = label.rectTransform.anchoredPosition;
             if (hero)
             {
                 rule = Child("Rule", 0f, 0f, 0f, 0f);
-                rule.anchorMin = new Vector2(0f, 0f);
-                rule.anchorMax = new Vector2(0f, 0f);
-                rule.pivot = new Vector2(0f, 0f);
-                rule.anchoredPosition = new Vector2(44f, 18f);
-                rule.sizeDelta = new Vector2(180f, 5f);
-                rule.GetComponent<Image>().color = UltraTheme.Highlight;
-                rule.GetComponent<Image>().raycastTarget = false;
+                if (rule != null)
+                {
+                    rule.anchorMin = new Vector2(0f, 0f);
+                    rule.anchorMax = new Vector2(0f, 0f);
+                    rule.pivot = new Vector2(0f, 0f);
+                    rule.anchoredPosition = new Vector2(44f, 18f);
+                    rule.sizeDelta = new Vector2(180f, 5f);
+                    var ruleImage = rule.GetComponent<Image>();
+                    if (ruleImage != null) { ruleImage.color = UltraTheme.Highlight; ruleImage.raycastTarget = false; }
+                }
             }
             UltraTheme.Changed += Paint;
             Paint();
         }
 
+        TextMeshProUGUI TextLabel(string title)
+        {
+            var existing = GetComponentInChildren<TextMeshProUGUI>(true);
+            TextMeshProUGUI text = existing != null && existing.gameObject != gameObject && existing.GetComponent<Image>() == null
+                ? existing
+                : null;
+            if (text == null)
+            {
+                var go = new GameObject("Label");
+                go.layer = gameObject.layer;
+                go.transform.SetParent(transform, false);
+                var rect = go.AddComponent<RectTransform>();
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = new Vector2(44f, hero ? 18f : 0f);
+                rect.offsetMax = new Vector2(-8f, hero ? -8f : 0f);
+                text = UltraUi.Text(go);
+            }
+            if (text == null) return null;
+            text.text = title ?? "";
+            text.alignment = TextAlignmentOptions.MidlineLeft;
+            text.fontSize = hero ? 168f : 86f;
+            text.enableAutoSizing = true;
+            text.fontSizeMin = hero ? 96f : 48f;
+            text.fontSizeMax = hero ? 168f : 86f;
+            text.color = UltraTheme.Fg;
+            text.raycastTarget = false;
+            UltraTheme.Style(text, true, 4f);
+            return text;
+        }
+
         RectTransform Child(string name, float x, float y, float w, float h)
         {
-            var rect = new GameObject(name, typeof(RectTransform), typeof(Image)).GetComponent<RectTransform>();
-            rect.SetParent(transform, false);
-            rect.gameObject.layer = gameObject.layer;
+            var go = new GameObject(name);
+            go.layer = gameObject.layer;
+            go.transform.SetParent(transform, false);
+            var rect = go.AddComponent<RectTransform>();
             rect.anchorMin = new Vector2(x, y);
             rect.anchorMax = new Vector2(x + w, y + h);
             rect.offsetMin = rect.offsetMax = Vector2.zero;
+            UltraUi.EnsureRenderer(go);
+            go.AddComponent<Image>();
             return rect;
         }
 
@@ -315,6 +407,7 @@ namespace MDPro3.UI.ServantUI
         }
         void Press(float scale)
         {
+            if (label == null) return;
             press?.Kill();
             press = label.rectTransform.DOScale(scale, 0.07f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
         }
@@ -327,16 +420,18 @@ namespace MDPro3.UI.ServantUI
             if (tick != null)
             {
                 var image = tick.GetComponent<Image>();
-                image.color = hover ? UltraTheme.Accent : UltraTheme.Mute;
+                if (image != null) image.color = hover ? UltraTheme.Accent : UltraTheme.Mute;
                 tick.anchorMin = new Vector2(0f, hover ? 0.2f : 0.28f);
                 tick.anchorMax = new Vector2(0f, hover ? 0.8f : 0.72f);
                 tick.offsetMin = tick.offsetMax = Vector2.zero;
                 tick.sizeDelta = new Vector2(6f, 0f);
             }
-            if (wash != null) wash.GetComponent<Image>().color = hero && hover ? new Color(UltraTheme.Panel.r, UltraTheme.Panel.g, UltraTheme.Panel.b, 0.55f) : new Color(0, 0, 0, 0);
-            if (rule != null)
+            var washImage = wash != null ? wash.GetComponent<Image>() : null;
+            if (washImage != null) washImage.color = hero && hover ? new Color(UltraTheme.Panel.r, UltraTheme.Panel.g, UltraTheme.Panel.b, 0.55f) : new Color(0, 0, 0, 0);
+            var ruleImage = rule != null ? rule.GetComponent<Image>() : null;
+            if (rule != null && ruleImage != null)
             {
-                rule.GetComponent<Image>().color = UltraTheme.Highlight;
+                ruleImage.color = UltraTheme.Highlight;
                 ruleTween?.Kill();
                 ruleTween = rule.DOSizeDelta(new Vector2(hover ? 300f : 180f, 5f), 0.18f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
             }
@@ -361,8 +456,9 @@ namespace MDPro3.UI.ServantUI
         {
             box = plate;
             caption = label;
+            if (box == null) return;
             rest = box.rectTransform.anchoredPosition;
-            UltraTheme.Style(caption, true, 12f);
+            if (caption != null) UltraTheme.Style(caption, true, 12f);
             UltraTheme.Changed += Paint;
             Paint();
         }
@@ -374,11 +470,13 @@ namespace MDPro3.UI.ServantUI
 
         void Move(float y, float time)
         {
+            if (box == null) return;
             lift?.Kill();
             lift = box.rectTransform.DOAnchorPos(rest + new Vector2(0f, y), time).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
         }
         void Press(float scale)
         {
+            if (box == null) return;
             press?.Kill();
             press = box.rectTransform.DOScale(scale, 0.07f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
         }
@@ -443,7 +541,7 @@ namespace MDPro3.UI.ServantUI
                     if (container.GetComponentInParent<SelectionButton>() != button) continue;
                     string role = container.gameObject.name;
                     bool caption = container.GetComponent<TMP_Text>() != null;
-                    if (!caption && role is not ("Out" or "Hover" or "SelectCursor" or "Button")) continue;
+                    if (!caption && role != "Out" && role != "Hover" && role != "SelectCursor" && role != "Button") continue;
                     UltraTheme.TintChrome(container, role, danger);
                     bool active = button.GetSelectable() == null || button.GetSelectable().interactable;
                     container.SetColor(ColorContainer.SelectMode.Unselected, ColorContainer.StatusMode.Normal, active);

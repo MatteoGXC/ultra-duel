@@ -110,7 +110,7 @@ namespace MDPro3.UI.ServantUI
         }
         static TextMeshProUGUI Text(Transform parent,string value,float size,float x,float y,float w,float h)
         {
-            var t=Rect("Label",parent,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();
+            var t=UltraUi.Text(Rect("Label",parent,x,y,w,h).gameObject);
             t.font=Program.instance.ui_.tmpFont;t.text=value;t.fontSize=size;t.color=UltraTheme.Fg;t.raycastTarget=false;
             t.enableAutoSizing=true;t.fontSizeMin=size*.7f;t.fontSizeMax=size;t.alignment=TextAlignmentOptions.MidlineLeft;
             UltraTheme.Style(t,size>=26f,size>=26f?4f:0f);return t;

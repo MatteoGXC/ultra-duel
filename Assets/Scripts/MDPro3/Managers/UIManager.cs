@@ -63,9 +63,10 @@ namespace MDPro3
             if(btnExit!=null)
             {
                 foreach(var graphic in btnExit.GetComponentsInChildren<Graphic>(true))graphic.enabled=false;
-                var backObject=new GameObject("Ultra circular back",typeof(RectTransform));
+                var backObject=new GameObject("Ultra circular back");
                 backObject.transform.SetParent(btnExit.transform,false);backObject.layer=btnExit.gameObject.layer;
-                var backRect=(RectTransform)backObject.transform;backRect.anchorMin=Vector2.zero;backRect.anchorMax=Vector2.one;backRect.offsetMin=backRect.offsetMax=Vector2.zero;
+                var backRect=backObject.AddComponent<RectTransform>();backRect.anchorMin=Vector2.zero;backRect.anchorMax=Vector2.one;backRect.offsetMin=backRect.offsetMax=Vector2.zero;
+                MDPro3.UI.ServantUI.UltraUi.EnsureRenderer(backObject);
                 var back=backObject.AddComponent<MDPro3.UI.ServantUI.UltraCircleBack>();back.raycastTarget=true;btnExit.targetGraphic=back;
                 var colors=btnExit.colors;colors.normalColor=Color.white;colors.highlightedColor=colors.selectedColor=new Color(.85f,.85f,.85f);colors.pressedColor=new Color(.65f,.65f,.65f);btnExit.colors=colors;
                 btnExit.gameObject.AddComponent<MDPro3.UI.ServantUI.UltraButtonMotion>();

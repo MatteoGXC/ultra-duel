@@ -2,7 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 namespace MDPro3.UI.ServantUI
 {
-    public sealed class UltraPassIcon : MaskableGraphic
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class UltraPassIcon : UltraMesh
     {
         static Texture2D supplied;
         static Material transparentArtwork;

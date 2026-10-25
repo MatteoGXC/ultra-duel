@@ -5,7 +5,8 @@ namespace MDPro3.UI.ServantUI
 {
     // A banner composition, rather than squeezing a portrait into a wide slot.
     // Its palette and constellation are specific to the equipped wallpaper.
-    public sealed class UltraWallpaperBanner : MaskableGraphic
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class UltraWallpaperBanner : UltraMesh
     {
         public Color accent=new Color(.4f,.65f,1);
         public int seed;
