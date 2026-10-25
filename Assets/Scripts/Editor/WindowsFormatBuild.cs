@@ -35,7 +35,7 @@ public static class WindowsFormatBuild
 
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64);
         PlayerSettings.productName = "Ultra Duel";
-        PlayerSettings.bundleVersion = "0.1.8";
+        PlayerSettings.bundleVersion = "0.1.9";
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
         PlayerSettings.defaultScreenWidth = 1600;
         PlayerSettings.defaultScreenHeight = 900;

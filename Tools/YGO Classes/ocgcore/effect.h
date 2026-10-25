@@ -450,6 +450,8 @@ const std::map<uint64_t, uint64_t> category_checklist{
 #define EFFECT_SYNCHRO_MATERIAL_CUSTOM		237
 #define EFFECT_CANNOT_BE_XYZ_MATERIAL		238
 #define EFFECT_CANNOT_BE_LINK_MATERIAL		239
+// A player-targeted field effect may transfer Special Summon zone selection.
+#define EFFECT_OPPO_CHOOSES_SPSUMMON_ZONE 267
 #define EFFECT_SYNCHRO_LEVEL				240
 #define EFFECT_RITUAL_LEVEL					241
 #define EFFECT_XYZ_LEVEL					242

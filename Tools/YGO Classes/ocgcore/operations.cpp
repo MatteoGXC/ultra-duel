@@ -4610,7 +4610,24 @@ int32_t field::move_to_field(uint16_t step, card* target, uint32_t enable, uint3
 				returns.bvalue[2] = target->previous.sequence;
 				return FALSE;
 			}
-			if(move_player == playerid) {
+			uint32_t place_player = move_player;
+			if(location == LOCATION_MZONE && target->current.location != LOCATION_MZONE && (target->current.reason & REASON_SPSUMMON)) {
+				effect_set placement_effects;
+				filter_player_effect(playerid, EFFECT_OPPO_CHOOSES_SPSUMMON_ZONE, &placement_effects);
+				for(int32_t placement_index = 0; placement_index < placement_effects.size(); ++placement_index) {
+					effect* placement = placement_effects[placement_index];
+					bool applies = true;
+					if(placement->operation) {
+						pduel->lua->add_param(placement, PARAM_TYPE_EFFECT);
+						pduel->lua->add_param(target, PARAM_TYPE_CARD);
+						pduel->lua->add_param(target->summon_player, PARAM_TYPE_INT);
+						pduel->lua->add_param(0x11, PARAM_TYPE_INT); // LOCATION_REASON_SPSUMMON
+						applies = pduel->lua->check_condition(placement->operation, 4);
+					}
+					if(applies) { place_player = 1 - playerid; break; }
+				}
+			}
+			if(place_player == playerid) {
 				if(location == LOCATION_SZONE)
 					flag = ((flag & 0xff) << 8) | 0xffff00ff;
 				else
@@ -4624,9 +4641,9 @@ int32_t field::move_to_field(uint16_t step, card* target, uint32_t enable, uint3
 			flag |= 0xe080e080;
 			pduel->write_buffer8(MSG_HINT);
 			pduel->write_buffer8(HINT_SELECTMSG);
-			pduel->write_buffer8(move_player);
+			pduel->write_buffer8(place_player);
 			pduel->write_buffer32(target->data.code);
-			add_process(PROCESSOR_SELECT_PLACE, 0, 0, 0, move_player, flag, 1);
+			add_process(PROCESSOR_SELECT_PLACE, 0, 0, 0, place_player, flag, 1);
 		}
 		return FALSE;
 	}

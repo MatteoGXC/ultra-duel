@@ -14,17 +14,10 @@ jobs:
         run: |
           cmake -S Server -B build/server -DCMAKE_BUILD_TYPE=Release -DULTRA_BUILD_EFFECT_TESTS=ON
           cmake --build build/server -j 3
-      - name: Fetch verified released card database
-        run: |
-          python3 - <<'PY'
-          import urllib.request,hashlib,zipfile
-          from pathlib import Path
-          p=Path('build/server/released-update.zip')
-          urllib.request.urlretrieve('https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.6/Ultra-Duel-Update.zip',p)
-          assert hashlib.sha256(p.read_bytes()).hexdigest()=='e90c46c5df7d7afbaf41627f2c6367cc036e6e17a22225a976420d88383291cd'
-          with zipfile.ZipFile(p) as z:
-              target=Path('Data/locales/en-US/cards.cdb');target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(z.read(str(target)))
-          PY
+      - name: Verify Beyond the Brave native effects and summon-zone routing
+        env:
+          ULTRA_NATIVE_DIR: build/server
+        run: python3 Tests/NativeBeyondTheBraveTests.py
       - name: Verify Aluber and Branded in White through production script reader
         run: build/server/server_archive_effects "$GITHUB_WORKSPACE"
       - name: Play three-player and four-player tag turns through TCP

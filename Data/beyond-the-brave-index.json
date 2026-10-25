@@ -1,0 +1,702 @@
+[
+  {
+    "id": 24925387,
+    "name": "Adamancipator Conductor",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 51420096,
+    "name": "Adamancipator Crystal - Tiamite",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 41458361,
+    "name": "Adamancipator Luminous",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 30068809,
+    "name": "Adamancipator Mates",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 89913287,
+    "name": "Adamancipator Risen - Tiamite",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 1280391,
+    "name": "Advent of Atlantis",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 38331244,
+    "name": "Akasuna the Battle Ashtra",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 4881365,
+    "name": "Alligator's Dragon Knight",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 59062857,
+    "name": "Angelechy Brilliant Move",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 50284408,
+    "name": "Angelechy Castellan",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 12845564,
+    "name": "Angelechy Endgame Problem",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 86457955,
+    "name": "Angelechy Opposition",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 86673403,
+    "name": "Angelechy Seneschal",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 13068112,
+    "name": "Angelechy Strategy Score",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 48340269,
+    "name": "Angelechy Verdict",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 24902348,
+    "name": "Archidux, the Squid Sorcerer",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 37279096,
+    "name": "Ars Magna \"Citrinitas\"",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 90728287,
+    "name": "Ars Magna \"Philosophorum\"",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 62368221,
+    "name": "Ars Magna the Corruption and the Purification",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 99753860,
+    "name": "Ars Magna the Division and the Union",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 36270527,
+    "name": "Ars Magna the Finite and the Infinite",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 37839434,
+    "name": "Ashtra's Domain",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 91444835,
+    "name": "Ashtra's Howl",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 64455720,
+    "name": "Ashtra's Web",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 17020474,
+    "name": "Ashtraja Susanoo",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 2906939,
+    "name": "Ashtrashen - Gate to the Worlds Beyond",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 43419178,
+    "name": "Ashtraya Mikumari-no-Mikoto",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 38391684,
+    "name": "Atlantis, City of the Sea Dragon",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 52245126,
+    "name": "Audhumla, Progenitor of the Frozen Expanse",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 41570943,
+    "name": "Azure Ocean Dragon Lord - Neo-Daedalus Rage",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 75518330,
+    "name": "Barian's Hope",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 38001022,
+    "name": "Barian's Seal",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 39513225,
+    "name": "Barian's Seventh Untopia",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 99505609,
+    "name": "Bingo!",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 97818130,
+    "name": "Black Skull Dragon, the Archfiend of Unity",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 30945251,
+    "name": "Blitzclique Overvolt",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 65785782,
+    "name": "Call of Atlantis",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 55363218,
+    "name": "Cartoon Shade",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 24780790,
+    "name": "Chaospawn Bishop",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 19491080,
+    "name": "Clown Crew Cappello",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 82692552,
+    "name": "Coralianectes, the Luminous Cradle Dragon",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 63111591,
+    "name": "Crow, the Carrion Cutpurse",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 15185344,
+    "name": "Crowned Siclavee",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 79791695,
+    "name": "CXyz Hope Chaos Barian Dragon",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 64233143,
+    "name": "Daedalus Maelstrom",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 4663194,
+    "name": "Dark City at Midnight",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 40235813,
+    "name": "Dark Time Wizard",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 25158975,
+    "name": "Destiny HERO - Destro-Dogma",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 62542673,
+    "name": "Destiny HERO - Doom Overlord",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 54641720,
+    "name": "Destiny HERO - Dreadnought Master",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 98931282,
+    "name": "Destiny HERO - Dreadnought Servant",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 50208444,
+    "name": "Elemental Saga Doriado",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 82970905,
+    "name": "Father Grizzly",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 76660178,
+    "name": "Fisherman of Legend",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 65118318,
+    "name": "Foolish Graverobber",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 28968609,
+    "name": "Garbage Golem",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 76548531,
+    "name": "Gorgonic Umbral Horror",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 76630812,
+    "name": "Graceful & Skull Dice",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 87395095,
+    "name": "Half Slice of Nickeline",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 77856460,
+    "name": "Helping Robo for Underwater Combat",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 2729965,
+    "name": "Hey, Space Trunade!",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 29081251,
+    "name": "Hubrow, Founder of the Ominous Observers",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 76334960,
+    "name": "Invocation - \"Grail\"",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 80635735,
+    "name": "Invoked De Anima",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 40275470,
+    "name": "Jinzo - Energy Shocker",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 25024929,
+    "name": "Just Flip a Coin",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 98518633,
+    "name": "Kerolia the Frolicsome",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 52123534,
+    "name": "Kumenyo, the Nine-Hued Deer",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 65325949,
+    "name": "Kuzuha the Hex Ashtra",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 64603351,
+    "name": "Levia-Dragon of Atlantis - Daedalus",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 78579058,
+    "name": "Levia-Dragoon - Daedalus",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 92447211,
+    "name": "Long-Tailed Black Horse",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 4063756,
+    "name": "Mediclius the Extraordinary Power Patron",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 38114652,
+    "name": "Mikumari the Banisher Ashtra",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 37092104,
+    "name": "Monster Arms of Atlantis",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 55585856,
+    "name": "Ms. Tick Call",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 81758313,
+    "name": "Myriaday Dragon",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 16908882,
+    "name": "Number 104: Masquerade V",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 42396591,
+    "name": "Number C104: Umbral Horror Masquerade Victory",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 82370493,
+    "name": "Predaplant Daredevil",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 17242022,
+    "name": "Red-Eyes Black Dragon Exceed",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 26116996,
+    "name": "Revenge of the Paper Dolls",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 2606417,
+    "name": "Reversal Box",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 3441553,
+    "name": "Sacred Beasts Skyfall",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 3064783,
+    "name": "Shining Umbral Horror",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 63481713,
+    "name": "Siren Vortex of Atlantis",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 51307986,
+    "name": "Skyborne Blue Cularsaw",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 3129527,
+    "name": "Sleepy Scapegoats",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 39123673,
+    "name": "Spell Power Attainment",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 77456448,
+    "name": "Spell Shattering Sword",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 3841104,
+    "name": "Stratiae the Stratasmasher Dino",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 77482666,
+    "name": "Swiftwind Panther Warrior",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 24203749,
+    "name": "The Great Gallant Bandit",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 90875418,
+    "name": "Theorealized Medius",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 2932235,
+    "name": "Thousand Umbral Horror",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 99630221,
+    "name": "Tigress in Silent Repose",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 39053882,
+    "name": "V Umbral Horror",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 22623509,
+    "name": "Verre, the Maid of Endymion",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 90098000,
+    "name": "Warchief of Atlantis",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  },
+  {
+    "id": 1710647,
+    "name": "Yoa the Plague Ashtra",
+    "pack": "BEYOND THE BRAVE",
+    "packId": "BETB-EN",
+    "date": "2026-10-08"
+  }
+]

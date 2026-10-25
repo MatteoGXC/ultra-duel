@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.8'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.9'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -29,13 +29,12 @@ def main():
     manifest = json.loads((OUTPUT/'windows-manifest.json').read_text())
     version = manifest['version']
     tag = 'v'+version
-    body = ('## Ultra Duel 0.1.8 for Windows\n\n'
-            'New players: download **Ultra-Duel-Setup.exe**. Existing players: download **Ultra-Duel-Updater.zip**, extract it beside the game executable, then run the updater. Decks, settings and account data are preserved.\n\n'
-            '- Adds a visible ADMIN button for the authenticated server owner only.\n'
-            '- The owner can explicitly unlock cosmetics and pass rewards for an account, change duel LP, add a card to their hand, send the opponent hand to the Graveyard, or win their current supported duel. No actions happen automatically.\n'
-            '- Fixes friend-server Lua effect loading, including Branded spells and Aluber search. The corrected server is deployed.\n'
-            '- Includes the friend-room layout, duel mode menu, corrected icons, normal card presentation and native 2v1/2v2 support from 0.1.7.\n\n'
-            'Hand and LP controls require the owner’s Main Phase after effects resolve. Three- and four-player free-for-all are not implemented. Mac installers are verified and published separately.\n\n'
+    body = ('## Ultra Duel '+version+' — Beyond the Brave\n\n'
+            'New players: download **Ultra-Duel-Setup.exe**. Existing players: use **Ultra-Duel-Updater.zip** beside the game executable. Decks, settings and accounts are preserved.\n\n'
+            '- Adds all 100 unique Beyond the Brave cards, normal artwork and the English pack search index.\n'
+            '- Ports 17 new effect scripts to the native engine, including separate shared once-per-turn limits and Angelechy summon-zone selection.\n'
+            '- Aligns archetype IDs with the engine and preserves existing translated card text.\n\n'
+            'This is the card-set update. Further admin, friend-room and interface fixes are still in progress. Mac work is paused.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:
