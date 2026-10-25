@@ -52,6 +52,8 @@ namespace MDPro3
             // Capture the real composited frame. Changing an Overlay camera to
             // Base removes it from the URP camera stack on Metal and corrupts
             // subsequent diagnostic renders, even after restoring renderType.
+            File.WriteAllLines(Path.Combine(output,name+"-materials.txt"), Resources.FindObjectsOfTypeAll<Material>()
+                .Where(m=>m!=null && m.shader!=null).Select(m=>m.name+" | "+m.shader.name+" | "+string.Join(",",m.GetTexturePropertyNames().Select(p=>p+"="+(m.GetTexture(p)==null?"null":m.GetTexture(p).name)))));
             ScreenCapture.CaptureScreenshot(path);
             yield return new WaitForEndOfFrame();
             float captureDeadline=Time.realtimeSinceStartup+10;
