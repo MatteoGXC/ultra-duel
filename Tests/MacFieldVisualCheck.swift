@@ -21,5 +21,22 @@ for argument in CommandLine.arguments.dropFirst() {
     }
     print("MAC_FIELD_WHITE_FRACTIONS",argument,ratios)
     if ratios.contains(where:{$0>0.45}) {fputs("Solid-white field overlay detected.\n",stderr);exit(1)}
+    // The fixed grass-field fixture also exposes broken Intel mate and grave
+    // materials: white silhouettes and large, completely black grave meshes.
+    for (x0,y0,x1,y1,checkWhite) in [(0.852,0.194,0.961,0.389,true),(0.020,0.444,0.129,0.639,true),(0.188,0.153,0.273,0.389,false),(0.758,0.528,0.844,0.764,false)] {
+        var failed=0,total=0
+        for y in stride(from:Int(Double(bitmap.pixelsHigh)*y0),to:Int(Double(bitmap.pixelsHigh)*y1),by:2) {
+            for x in stride(from:Int(Double(bitmap.pixelsWide)*x0),to:Int(Double(bitmap.pixelsWide)*x1),by:2) {
+                if let color=bitmap.colorAt(x:x,y:y)?.usingColorSpace(.deviceRGB) {
+                    total+=1
+                    let rgb=[color.redComponent,color.greenComponent,color.blueComponent]
+                    if checkWhite ? rgb.allSatisfy({$0>0.96}) : rgb.allSatisfy({$0<0.04}) {failed+=1}
+                }
+            }
+        }
+        let ratio=Double(failed)/Double(max(1,total))
+        print("MAC_MODEL_INVALID_FRACTION",checkWhite ? "mate" : "grave",ratio)
+        if ratio > (checkWhite ? 0.15 : 0.35) {fputs("Untextured mate or grave model detected.\n",stderr);exit(1)}
+    }
 }
 print("MAC_FIELD_VISUAL_CHECK_PASSED")

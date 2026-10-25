@@ -70,6 +70,21 @@ namespace MDPro3
                 "Shader Graphs/Timer_c001_03" => "MacTimerFace",
                 _ => null
             };
+            if(replacement==null && RuntimeInformation.ProcessArchitecture==Architecture.X64)
+            {
+                // These exported model shaders also contain unusable Intel Metal
+                // variants. Keep their original UVs/textures and animated meshes.
+                replacement=material.shader.name switch
+                {
+                    "Shader Graphs/GraveCommon01" => "MacField",
+                    "Shader Graphs/Unlit_simpleAlpha" => "MacFieldAlpha",
+                    "Shader Graphs/AvatarShader1" => "MacField",
+                    _ => null
+                };
+                if(material.shader.name=="Shader Graphs/AvatarShader1"
+                    && material.GetTexture("_Texture2D") is Texture artwork
+                    && artwork.name.ToLowerInvariant().Contains("glass"))replacement="MacFieldAlpha";
+            }
             if(replacement==null)return;
             var shader=Resources.Load<Shader>("Ultra/"+replacement);
             if(shader==null || !shader.isSupported){Debug.LogError("MAC_MATERIAL_SHADER_MISSING "+replacement);return;}
