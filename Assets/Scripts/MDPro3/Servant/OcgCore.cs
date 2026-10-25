@@ -261,7 +261,7 @@ namespace MDPro3.Servant
         {
             if(RoomServant.FromUltraHost)
             {
-                MainMenuUI.ReturnToFriendRooms=true;
+                MainMenuUI.ReturnToFriendRooms=!RoomServant.FromUltraMatch;MainMenuUI.ReturnToDuelModes=RoomServant.FromUltraMatch;
                 returnServant=Program.instance.menu;
             }
             base.OnExit();
@@ -275,7 +275,7 @@ namespace MDPro3.Servant
             var target=returnServant;
             if(RoomServant.FromUltraHost || target==null || target==Program.instance.online)
             {
-                MainMenuUI.ReturnToFriendRooms=true;
+                MainMenuUI.ReturnToFriendRooms=!RoomServant.FromUltraMatch;MainMenuUI.ReturnToDuelModes=RoomServant.FromUltraMatch;
                 target=Program.instance.menu;
             }
             Program.instance.ShiftToServant(target);

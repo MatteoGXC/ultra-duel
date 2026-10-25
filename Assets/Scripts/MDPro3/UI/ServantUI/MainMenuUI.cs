@@ -35,6 +35,7 @@ namespace MDPro3.UI.ServantUI
 
         private TextMeshProUGUI homeStatus;
         public static bool ReturnToFriendRooms;
+        public static bool ReturnToDuelModes;
 
         public override void ShowEvent()
         {
@@ -42,6 +43,7 @@ namespace MDPro3.UI.ServantUI
             RefreshHomeStatus();
             RefreshUltraHome();
             if(ReturnToFriendRooms){ReturnToFriendRooms=false;OpenFriendDuels();}
+            else if(ReturnToDuelModes){ReturnToDuelModes=false;RoomServant.FromUltraMatch=false;OpenDuel();}
         }
 
         private void RefreshHomeStatus()

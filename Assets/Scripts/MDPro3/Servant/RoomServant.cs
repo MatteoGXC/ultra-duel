@@ -41,6 +41,7 @@ namespace MDPro3.Servant
         public static bool FromSolo;
         public static bool FromLocalHost;
         public static bool FromUltraHost;
+        public static bool FromUltraMatch;
         public static bool WantSpectate;
         public static bool FromHandTest;
 
@@ -86,7 +87,7 @@ namespace MDPro3.Servant
         {
             if (FromUltraHost)
             {
-                MainMenuUI.ReturnToFriendRooms=true;
+                MainMenuUI.ReturnToFriendRooms=!FromUltraMatch;MainMenuUI.ReturnToDuelModes=FromUltraMatch;
                 returnServant=Program.instance.menu;
             }
             else if (FromSolo)

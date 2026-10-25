@@ -16,7 +16,7 @@ public static class MacFormatBuild
         if(architecture!="arm64" && architecture!="x86_64")throw new Exception("Unsupported Mac architecture: "+architecture);
         string target=Environment.GetEnvironmentVariable("ULTRA_MAC_OUTPUT")??Path.Combine(Directory.GetCurrentDirectory(),"release","Mac-"+architecture,"Ultra-Duel-Player.app");
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone,BuildTarget.StandaloneOSX);
-        PlayerSettings.productName="Ultra Duel";PlayerSettings.bundleVersion="0.1.10";
+        PlayerSettings.productName="Ultra Duel";PlayerSettings.bundleVersion="0.1.11";
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone,ScriptingImplementation.Mono2x);
         PlayerSettings.SetArchitecture(NamedBuildTarget.Standalone,architecture=="arm64"?1:0);
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneOSX,false);

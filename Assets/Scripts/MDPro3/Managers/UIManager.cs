@@ -59,6 +59,7 @@ namespace MDPro3
         public override void Initialize()
         {
             base.Initialize();
+            gameObject.AddComponent<MDPro3.UI.ServantUI.UltraGuiScale>();
             if(btnExit!=null)
             {
                 foreach(var graphic in btnExit.GetComponentsInChildren<Graphic>(true))graphic.enabled=false;

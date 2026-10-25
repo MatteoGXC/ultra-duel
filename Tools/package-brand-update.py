@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT.parent / 'release-work/windows-v0.1.0'
-VERSION = '0.1.10'
+VERSION = '0.1.11'
 OUT = ROOT.parent / ('release-work/windows-v'+VERSION)
 PLAYER = ROOT / 'release/Solo-mode-update'
 

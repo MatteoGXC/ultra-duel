@@ -41,6 +41,7 @@ namespace MDPro3.UI.ServantUI
 
         void OnDestroy()
         {
+            if(matchmakingActive)CancelMatchmaking().Forget();
             UltraServices.Changed -= RefreshUltraHome;
             UltraProgress.Changed -= RefreshUltraHome;
         }
@@ -100,7 +101,7 @@ namespace MDPro3.UI.ServantUI
             friendLabel=HomeText(ultraHome,"",17,Muted,0,0,0,0);
             updateLabel=HomeText(ultraHome,"",16,Muted,0,0,0,0);
             HomeText(ultraHome,"v"+UltraServices.Version,15,Muted,.045f,.015f,.10f,.025f);
-            ownerAdminButton=SmallButton(ultraHome,"ADMIN",OpenAdmin,.16f,.012f,.11f,.038f,16);
+            ownerAdminButton=SmallButton(ultraHome,"ADMIN",OpenAdmin,.84f,.012f,.11f,.038f,16);
             ownerAdminButton.gameObject.SetActive(false);
             friendLabel.gameObject.SetActive(false);updateLabel.gameObject.SetActive(false);
             UltraServices.Initialize();
@@ -152,12 +153,13 @@ namespace MDPro3.UI.ServantUI
             homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
             updateLabel.text="UPDATES  /  "+UltraServices.UpdateStatus+"\n<size=80%>New pass & shop · Friends & profiles · Solo fixes</size>";
             var state=UltraServices.State;
-            if(ownerAdminButton!=null)ownerAdminButton.gameObject.SetActive(UltraAdminAccess.IsOwner);
+            if(ownerAdminButton!=null)ownerAdminButton.gameObject.SetActive(UltraAdminAccess.IsOwner && (overlay==null || modalPage=="friends" || modalPage=="friend"));
             friendLabel.text=state==null?"FRIENDS  /  Sign in to connect and host duels":
                 "FRIENDS  /  "+(state["friends"] as JArray)?.Count+" added   ·   "+(state["requests"] as JArray)?.Count+" requests";
         }
         void CloseModal()
         {
+            if(matchmakingActive)CancelMatchmaking().Forget();
             if(overlay!=null){overlay.gameObject.SetActive(false);Destroy(overlay.gameObject);}
             foreach(var child in hiddenHome)if(child!=null)child.SetActive(true);hiddenHome.Clear();
             if(Program.instance.currentServant==Program.instance.menu){Program.instance.ui_.wallpaper.gameObject.SetActive(true);Program.instance.ui_.wallpaper.alpha=1;}
@@ -246,11 +248,12 @@ namespace MDPro3.UI.ServantUI
         void ShowFriends()
         {
             OpenModal("FRIENDS",UltraServices.PlayerName+" / Follow & duel","friends");
-            HomeText(modal,"FOLLOW  /  "+((UltraServices.State?["friends"] as JArray)?.Count??0),20,Color.white,.045f,.785f,.90f,.045f);
-            var add=Input(modal,"Enter friend's name",.69f);
-            add.GetComponent<RectTransform>().anchorMax=new Vector2(.73f,.78f);
-            SmallButton(modal,"+",()=>Run(async()=>{await UltraServices.Request("/friends/request","POST",new{name=add.text});await UltraServices.Refresh();ShowFriends();}),.76f,.69f,.19f,.09f);
+            HomeText(modal,"FOLLOW  /  "+((UltraServices.State?["friends"] as JArray)?.Count??0),20,Color.white,.045f,.735f,.90f,.04f);
+            var add=Input(modal,"Enter friend's name",.62f);
+            add.GetComponent<RectTransform>().anchorMax=new Vector2(.73f,.71f);
+            SmallButton(modal,"+",()=>Run(async()=>{await UltraServices.Request("/friends/request","POST",new{name=add.text});await UltraServices.Refresh();ShowFriends();}),.76f,.62f,.19f,.09f);
             var content=ScrollArea();int index=0;
+            var listViewport=(RectTransform)content.parent;listViewport.anchorMax=new Vector2(.955f,.58f);
             var state=UltraServices.State;
             foreach(var invite in state?["invites"] as JArray ?? new JArray())
             {
@@ -287,9 +290,10 @@ namespace MDPro3.UI.ServantUI
         void OpenDuel()
         {
             OpenModal("DUEL","Choose how you want to play","duel-modes");WideModal();
-            SmallButton(modal,"FRIEND DUELS  >",()=>OpenFriendDuels("1v1"),.12f,.58f,.76f,.12f,30);
-            SmallButton(modal,"DUOS 2v2  >",()=>OpenFriendDuels("2v2"),.12f,.42f,.76f,.12f,30);
-            SmallButton(modal,"SOLO  >",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.12f,.26f,.76f,.10f,26);
+            SmallButton(modal,"ONLINE DUEL  >",OpenOnlineDuel,.12f,.63f,.76f,.10f,30);
+            SmallButton(modal,"FRIEND DUELS  >",()=>OpenFriendDuels("1v1"),.12f,.47f,.76f,.10f,30);
+            SmallButton(modal,"DUOS 2v2  >",()=>OpenFriendDuels("2v2"),.12f,.31f,.76f,.10f,30);
+            SmallButton(modal,"SOLO  >",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.12f,.15f,.76f,.10f,26);
         }
         public void OpenFriendDuels(string mode="1v1")
         {
@@ -361,6 +365,7 @@ namespace MDPro3.UI.ServantUI
             SmallButton(modal,"CHECK UPDATES",()=>UltraServices.CheckUpdates(true),.525f,.31f,.42f,.10f);
             SmallButton(modal,"GITHUB",()=>Application.OpenURL(UltraServices.Repository),.055f,.16f,.42f,.10f);
             SmallButton(modal,"EXIT",()=>{CloseModal();OnExit();},.525f,.16f,.42f,.10f);
+            SmallButton(modal,"GUI SCALE  "+UltraGuiScale.Percent+"%",OpenGuiScale,.055f,.025f,.42f,.08f);
         }
     }
 }

@@ -251,6 +251,35 @@ namespace MDPro3
                 typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
                 Debug.Log("FRIEND_TABLES_LAYOUT_PASSED three entry and watch rows");
             }
+            if(commandLine.Contains("--ultra-layout"))
+            {
+                var home=Program.instance.menu.GetUI<MainMenuUI>();
+                var wallpaper=Program.instance.ui_.wallpaper.transform;var wallpaperScale=wallpaper.localScale;
+                int originalScale=UltraGuiScale.Percent;
+                foreach(int scale in new[]{70,100,125})
+                {
+                    UltraGuiScale.Set(scale);yield return new WaitForSecondsRealtime(.5f);
+                    var button=home.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="DUEL");
+                    if(Mathf.Abs(button.transform.localScale.x-scale/100f)>.06f)throw new Exception("GUI scale did not resize home navigation.");
+                    if(wallpaper.localScale!=wallpaperScale)throw new Exception("GUI scale changed the wallpaper.");
+                    yield return Capture("gui-scale-"+scale);
+                }
+                UltraGuiScale.Set(originalScale);
+                foreach(string page in new[]{"OpenGuiScale","OpenProfile","OpenStats","ShowFriends","OpenUpdates","OpenDuel"})
+                {
+                    typeof(MainMenuUI).GetMethod(page,System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                    if(page=="OpenUpdates")yield return new WaitForSecondsRealtime(11);
+                    yield return Capture("layout-"+page);
+                    if(page=="OpenProfile" && home.GetComponentsInChildren<UltraWallpaperBanner>().Length!=1)throw new Exception("The equipped wallpaper has no profile banner.");
+                    if(page=="OpenProfile")
+                    {
+                        Color.RGBToHSV(home.GetComponentInChildren<UltraWallpaperBanner>().accent,out _,out _,out float brightness);
+                        if(brightness<.8f)throw new Exception("Wallpaper banner lost its accent color.");
+                    }
+                    typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                }
+                Debug.Log("ULTRA_LAYOUT_PASSED GUI scale 70/100/125; wallpaper unchanged; profile banners and pages rendered");
+            }
             if(commandLine.Contains("--owner-admin-check"))
             {
                 var refresh=MDPro3.Net.UltraServices.Refresh().AsTask();
@@ -323,6 +352,14 @@ namespace MDPro3
                 var joining = MDPro3.Net.UltraServices.JoinRoom(room).AsTask();
                 while (!joining.IsCompleted) yield return null;
                 if (joining.IsFaulted) throw new Exception("Remote room join failed.", joining.Exception);
+                if((bool?)room["randomMatch"]==true)
+                {
+                    while(Program.instance.ui_.popup.GetComponentInChildren<MDPro3.UI.Popup.PopupRockPaperScissors>()==null)yield return null;
+                    yield return Capture("random-online-rps");
+                    Debug.Log("ULTRA_RANDOM_AUTOSTART_PASSED matched players automatically readied and reached rock-paper-scissors");
+                    File.WriteAllText(Path.Combine(output,"passed.txt"),"Random match reached RPS using automatic ready/start.");
+                    yield return new WaitForSecondsRealtime(5);Application.Quit(0);yield break;
+                }
                 while (Program.instance.currentServant != Program.instance.room || Program.instance.room.servantUI == null
                     || RoomServant.players.Count(p => p != null) < 2) yield return null;
                 Program.instance.room.GetUI<RoomServantUI>().OnReady();

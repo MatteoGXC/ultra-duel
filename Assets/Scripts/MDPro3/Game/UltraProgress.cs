@@ -61,7 +61,7 @@ namespace MDPro3
         {
             activeDuel = Guid.NewGuid().ToString("N");
             match=new Match{id=activeDuel,opponent=OcgCore.name_1,deck=Config.GetConfigDeckName(),
-                mode=RoomServant.FromSolo?"Solo":RoomServant.FromUltraHost?"Friend duel":"Duel",date=DateTime.UtcNow.ToString("o"),xpBefore=UltraAccount.XP,account=string.IsNullOrEmpty(UltraServices.Token)?"":UltraServices.PlayerName};
+                mode=RoomServant.FromSolo?"Solo":RoomServant.FromUltraMatch?"Online duel":RoomServant.FromUltraHost?"Friend duel":"Duel",date=DateTime.UtcNow.ToString("o"),xpBefore=UltraAccount.XP,account=string.IsNullOrEmpty(UltraServices.Token)?"":UltraServices.PlayerName};
             accountToken=UltraServices.Token;
             startRequest=StartAccountGame().Preserve();
         }

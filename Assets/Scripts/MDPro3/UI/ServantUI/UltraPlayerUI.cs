@@ -73,7 +73,8 @@ namespace MDPro3.UI.ServantUI
         void OpenUpdates()
         {
             OpenModal("UPDATES","Ultra Duel v"+UltraServices.Version+" / What's new","updates");
-            HomeText(modal,"PLAYER EXPERIENCE\nNew Duel Pass reward grid, accessory shop, Game Start screen and player profiles.\n\nPLAY WITH FRIENDS\nSide panel, duel invitations, room tables, account gems and online / in-duel status.\n\nSOLO & CARDS\nChain-prompt compatibility fixes and published-deck AI support.\nIncludes the previous 300 card entries, artwork fixes and Burst Protocol index.",23,Color.white,.055f,.23f,.89f,.52f);
+            HomeText(modal,"Loading published release notes…",23,Muted,.055f,.23f,.89f,.52f).name="Release notes loading";
+            LoadReleaseNotes().Forget();
             SmallButton(modal,"CHECK FOR UPDATES",()=>UltraServices.CheckUpdates(true),.055f,.12f,.89f,.08f);
         }
         void ShowGameStart()
@@ -110,7 +111,7 @@ namespace MDPro3.UI.ServantUI
             var banner=HomeRect("Banner art",bannerClip,0,0,1,1).gameObject.AddComponent<Image>();
             LoadBanner(banner).Forget();
             HomePanel(HomeRect("Name band",card,.015f,.49f,.97f,.225f),new Color(.25f,.26f,.28f,.70f));
-            var avatar=HomeRect("Profile mate icon",card,.035f,.56f,.23f,.19f).gameObject.AddComponent<Image>();avatar.preserveAspect=true;LoadMatePortrait(avatar).Forget();
+            var avatar=HomeRect("Profile icon",card,.035f,.56f,.23f,.19f).gameObject.AddComponent<Image>();avatar.preserveAspect=true;LoadProfileIcon(avatar,ProfileIconId()).Forget();
             HomeText(card,name,28,Color.white,.30f,.60f,.65f,.105f);
             int uid=(int?)UltraServices.State?["id"]??0;
             string identity=uid==0?"OFFLINE":uid.ToString("D9");
@@ -131,8 +132,17 @@ namespace MDPro3.UI.ServantUI
         }
         async UniTask LoadBanner(Image image)
         {
-            try {var sprite=await Program.items.TryLoadItemIconAsync(Config.Get("Wallpaper",UIManager.DefaultWallpaper),Items.ItemType.Wallpaper);if(image!=null && sprite!=null){image.sprite=sprite;var fit=image.gameObject.AddComponent<AspectRatioFitter>();fit.aspectMode=AspectRatioFitter.AspectMode.EnvelopeParent;fit.aspectRatio=(float)sprite.texture.width/sprite.texture.height;}}
-            catch(Exception e){Debug.LogWarning("Profile banner: "+e.Message);}
+            string selected=Config.Get("Wallpaper",UIManager.DefaultWallpaper);
+            int.TryParse(selected,out int id);
+            var item=Program.items.wallpapers.FirstOrDefault(p=>p.id==id);
+            image.enabled=false;var canvas=HomeRect("Wallpaper banner design",image.transform,0,0,1,1);
+            var design=canvas.gameObject.AddComponent<UltraWallpaperBanner>();design.raycastTarget=false;design.seed=id;
+            var theme=UnityEngine.Object.FindFirstObjectByType<UltraWallpaperTheme>();
+            float hue=theme!=null?theme.TargetHue:Mathf.Repeat(id*137.5f,360);
+            design.accent=Color.HSVToRGB(Mathf.Repeat(hue/360f,1),.60f,.95f);
+            HomeText(canvas,"ULTRA DUEL",13,new Color(.78f,.85f,.96f),.05f,.65f,.65f,.20f);
+            var title=HomeText(canvas,string.IsNullOrWhiteSpace(item.name)?"DUELIST":item.name.ToUpperInvariant(),19,Color.white,.05f,.22f,.65f,.40f);title.enableAutoSizing=true;title.fontSizeMin=11;title.fontSizeMax=19;
+            await UniTask.CompletedTask;
         }
         void OpenProfileEdit()
         {
@@ -162,7 +172,7 @@ namespace MDPro3.UI.ServantUI
             var p=UltraAccount.Profile;
             string name=string.IsNullOrEmpty(UltraServices.PlayerName)?Config.Get("DuelPlayerName0","Player"):UltraServices.PlayerName;
             OpenModal("PLAYER PROFILE",name+" / "+UltraAccount.Rank,"profile");
-            var avatar=HomeRect("Mate",modal,.055f,.49f,.20f,.26f).gameObject.AddComponent<Image>();avatar.preserveAspect=true;LoadMatePortrait(avatar).Forget();
+            var avatar=HomeRect("Profile icon",modal,.055f,.49f,.20f,.26f).gameObject.AddComponent<Image>();avatar.preserveAspect=true;LoadProfileIcon(avatar,ProfileIconId()).Forget();
             StatPanel(modal,"LEVEL",UltraAccount.Level.ToString(),.29f,.59f,.29f,.15f);
             StatPanel(modal,"PASS GRADE",UltraAccount.Tier+" / 20",.62f,.59f,.32f,.15f);
             int wins=p==null?UltraProgress.Data.wins:(int)p["wins"];
@@ -173,6 +183,7 @@ namespace MDPro3.UI.ServantUI
             HomeText(modal,"MOST PLAYED DECK\n"+(favorite??"No games yet"),23,Color.white,.055f,.22f,.89f,.12f);
             SmallButton(modal,"MATCH HISTORY",OpenHistory,.055f,.12f,.42f,.08f);
             SmallButton(modal,"DUEL PASS",OpenPass,.525f,.12f,.42f,.08f);
+            modalStatus.rectTransform.anchorMin=new Vector2(.055f,.035f);modalStatus.rectTransform.anchorMax=new Vector2(.945f,.075f);
             modalStatus.text=p==null?"Offline profile / This PC":"Account profile / Personal play statistics";
         }
         void ShowShop(string category,int page)

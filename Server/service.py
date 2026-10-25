@@ -31,6 +31,8 @@ ROOM_COUNT = 12
 ROOMS = {}
 LOCK = threading.RLock()
 RATES = {}
+QUEUE = {}
+MATCHES = {}
 
 class Problem(Exception):
     def __init__(self, message, status=400): self.message=message; self.status=status
@@ -83,8 +85,8 @@ def stop_table(table):
     if table['process'].stdin:table['process'].stdin.close()
 
 
-def clean_rooms():
-    now = time.time()
+def clean_rooms(now=None):
+    now = time.time() if now is None else now
     for rid,room in list(ROOMS.items()):
         if room['expires']<now:
             for table in room_tables(room).values():stop_table(table)
@@ -113,12 +115,59 @@ def start_table(room, number):
 
 def public_room(room):
     result={key:room[key] for key in ('id','host','hostId','format','cap','port','expires','mode','capacity')}
+    if room.get('randomMatch'):result['randomMatch']=True
     tables=room_tables(room)
     result['tables']=[{'number':n,'open':n in tables and tables[n]['process'].poll() is None} for n in range(1,4)] if 'tables' in room else [{'number':1,'open':True}]
     return result
 
+
+def matchmaking(user, body, method, now):
+    """Private two-player grants; no public room secrets or friend bypass."""
+    uid=user['id']
+    with LOCK:
+        clean_rooms(now)
+        for other, entry in list(QUEUE.items()):
+            if entry['seen'] < now-20:QUEUE.pop(other,None)
+        for other, match in list(MATCHES.items()):
+            if match['expires']<now:MATCHES.pop(other,None)
+        match=MATCHES.get(uid)
+        if method=='DELETE':
+            QUEUE.pop(uid,None)
+            if match and match.get('room') is None:
+                match['cancelled']=True
+            MATCHES.pop(uid,None)
+            return {'ok':True}
+        if method!='POST':raise Problem('Not found.',404)
+        mode=str(body.get('format','TCG'));cap=int(body.get('cap',100)) if mode=='Genesys' else 100
+        if mode not in ('TCG','Genesys') or not 0<=cap<=10000:raise Problem('Invalid duel format or point cap.')
+        if match:
+            if match.get('cancelled'):
+                MATCHES.pop(uid,None);raise Problem('Your opponent left the search. Please search again.',409)
+            if (mode,cap)!=(match['format'],match['cap']):raise Problem('Cancel your current search before changing formats.',409)
+            if body.get('accept') is True:match['accepted'].add(uid)
+            if len(match['accepted'])==2 and match.get('room') is None:
+                rid=secrets.token_hex(8)
+                room=dict(id=rid,host=match['host'],hostId=match['hostId'],format=mode,cap=cap,port=0,expires=now+3600,mode='1v1',capacity=2,members=set(match['players']),tables={},randomMatch=True)
+                table=start_table(room,1);table['members']=set(match['players'])
+                room.update(table);room['members']=set(match['players']);room['tables'][1]=table
+                ROOMS[rid]=room;match['room']=room
+            if match.get('room') is not None:
+                room=match['room']
+                if room['id'] not in ROOMS:raise Problem('This match has closed. Search again.',409)
+                table=room['tables'][1]
+                return {'status':'ready','room':dict(public_room(room),address=HOST,secret=table['secret'],table=1)}
+            return {'status':'confirming'}
+        candidates=[other for other,entry in QUEUE.items() if other!=uid and (entry['format'],entry['cap'])==(mode,cap)]
+        if candidates:
+            other=secrets.choice(candidates);entry=QUEUE.pop(other);QUEUE.pop(uid,None)
+            match=dict(players={uid,other},accepted=set(),host=entry['name'],hostId=other,format=mode,cap=cap,expires=now+45,room=None)
+            MATCHES[uid]=MATCHES[other]=match
+            return {'status':'confirming'}
+        QUEUE[uid]=dict(name=user['name'],format=mode,cap=cap,seen=now)
+        return {'status':'waiting'}
+
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'UltraDuel/0.1.10'
+    server_version = 'UltraDuel/0.1.11'
     def log_message(self, *_): pass # Passwords, tokens and private room secrets never enter access logs.
     def reply(self, data, status=200):
         body=json.dumps(data,separators=(',',':')).encode()
@@ -154,7 +203,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.10','ownerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.11','ownerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300,'matchmaking':True,'dailyResetUtc':'00:00'}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')
@@ -177,6 +226,7 @@ class Handler(BaseHTTPRequestHandler):
             (hashlib.sha256(token.encode()).hexdigest(),now)).fetchone()
         if not user: raise Problem('Please sign in again.',401)
         uid=user['id']; db.execute('update users set seen=? where id=?',(now,uid))
+        if path=='/matchmaking':return matchmaking(user,body,method,now)
         feature = player_features.route(self,db,method,path,body,now,user,(STATE,Problem,are_friends,ROOMS,LOCK))
         if feature is not None: return feature
         if path=='/admin/duel' and method=='POST':
@@ -199,6 +249,7 @@ class Handler(BaseHTTPRequestHandler):
             db.execute('insert into admin_actions(actor,room,action,details,created) values(?,?,?,?,?)',(uid,rid,action,json.dumps(dict(target=target,value=value)),now))
             return {'ok':True}
         if path=='/logout' and method=='POST':
+            matchmaking(user,{},'DELETE',now)
             db.execute('delete from sessions where token=?',(hashlib.sha256(token.encode()).hexdigest(),))
             return {'ok':True}
         if path=='/state' and method=='GET':
@@ -211,7 +262,7 @@ class Handler(BaseHTTPRequestHandler):
                 (friends if row['accepted'] else sent if row['sender']==uid else requests).append(record)
             with LOCK:
                 clean_rooms()
-                rooms=[public_room(r) for r in ROOMS.values() if r['hostId']==uid or are_friends(db,uid,r['hostId'])]
+                rooms=[public_room(r) for r in ROOMS.values() if not r.get('randomMatch') and (r['hostId']==uid or are_friends(db,uid,r['hostId']))]
             return {'id':uid,'name':user['name'],'friends':friends,'requests':requests,'sent':sent,'rooms':rooms,'admin':player_features.is_admin(STATE,user['name']),'owner':player_features.is_owner(STATE,user['name']),'profile':player_features.profile(db,uid),'invites':[dict(r) for r in db.execute('select i.room,u.name,i.sender from invites i join users u on u.id=i.sender where i.recipient=? and i.expires>?',(uid,now))]}
         if path=='/friends/request' and method=='POST':
             target=db.execute('select id from users where name=?',(str(body.get('name','')).strip(),)).fetchone()
@@ -233,7 +284,7 @@ class Handler(BaseHTTPRequestHandler):
             if room_mode not in ('1v1','2v2'):raise Problem('Unsupported room mode.')
             with LOCK:
                 clean_rooms()
-                if any(r['hostId']==uid for r in ROOMS.values()): raise Problem('Close your existing room before creating another.')
+                if any(r['hostId']==uid and not r.get('randomMatch') for r in ROOMS.values()): raise Problem('Close your existing room before creating another.')
                 rid=secrets.token_hex(8)
                 room=dict(id=rid,host=user['name'],hostId=uid,format=mode,cap=cap,port=0,expires=now+3600,mode=room_mode,capacity=4 if room_mode=='2v2' else 2,members={uid},tables={})
                 table=start_table(room,1);table['members'].add(uid)
@@ -247,7 +298,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not room:
                     if method=='DELETE': return {'ok':True}
                     raise Problem('This room has closed.',404)
-                authorized=room['hostId']==uid or are_friends(db,uid,room['hostId'])
+                authorized=uid in room['members'] if room.get('randomMatch') else room['hostId']==uid or are_friends(db,uid,room['hostId'])
                 if not authorized:raise Problem('Only the host’s friends can enter this room.',403)
                 if method=='GET':return public_room(room)
                 if method=='DELETE' and room['hostId']==uid:

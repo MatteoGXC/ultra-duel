@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.10'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.11'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -29,16 +29,17 @@ def main():
     manifest = json.loads((OUTPUT/'windows-manifest.json').read_text())
     version = manifest['version']
     tag = 'v'+version
-    body = ('## Ultra Duel '+version+' — Friend Rooms & Duel Fixes\n\n'
+    body = ('## Ultra Duel '+version+' — Online Duels & UI Options\n\n'
             'New players: download **Ultra-Duel-Setup.exe**. Existing players: use **Ultra-Duel-Updater.zip** beside the game executable. Decks, settings and accounts are preserved.\n\n'
-            '- Three independent tables per friend room, with ENTRY and WATCH options.\n'
-            '- Friend duels use a five-minute timer; timeout losses are enforced by the server.\n'
-            '- Fixes admin card-add freezes and blue-screen animations, refreshes action choices after LP/hand changes, and moves ADMIN to the top left. Owner access remains required.\n'
-            '- Bundles rock-paper-scissors images inside the game and updater so downloaded clients can see every choice.\n'
-            '- Removes the legacy online-duel menu routes and returns friend duels to Ultra Duel friend rooms.\n'
-            '- Profile headers use player icons with matching accent frames, plus larger home navigation buttons.\n'
-            '- Includes the 100-card Beyond the Brave update from v0.1.9.\n\n'
-            'Windows release. Mac work remains paused.\n\n'
+            '- GUI Scale: choose 70% through 125% in 5% steps from Menu, without resizing the wallpaper.\n'
+            '- Online Duel: find a random player using the same format and Genesys point cap, then automatically ready the selected decks and start.\n'
+            '- Updates now loads actual published release notes in a scrollable view.\n'
+            '- Profile and statistics pages show the selected player icon; the animated mate stays on the profile page.\n'
+            '- Wallpaper-specific profile banners use matching colors and constellation designs.\n'
+            '- Separates Friends labels and profile-statistics controls, including the large GUI setting.\n'
+            '- Daily mission reset verified at 00:00 UTC; lifetime missions do not reset.\n'
+            '- Retains friend tables, spectating, five-minute duel timers, owner controls and all 100 Beyond the Brave cards.\n\n'
+            'Windows download. Mac installers are listed in separate macOS releases.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:

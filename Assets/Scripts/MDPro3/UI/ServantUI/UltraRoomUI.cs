@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using MDPro3.Net;
 using MDPro3.Servant;
@@ -11,6 +12,8 @@ namespace MDPro3.UI.ServantUI
     public partial class RoomServantUI
     {
         RectTransform friendRoom;
+        RectTransform matchRoom;
+        TextMeshProUGUI matchStatus;
         TextMeshProUGUI tableLabel, membersLabel, deckLabel;
         RectTransform roomPopup;
         Image[] tableAvatars;
@@ -35,6 +38,22 @@ namespace MDPro3.UI.ServantUI
         }
         void RefreshFriendRoom()
         {
+            if(RoomServant.FromUltraMatch)
+            {
+                if(matchRoom==null)
+                {
+                    matchRoom=R("Ultra Online Duel",Root,0,0,1,1);P(matchRoom,Color.clear);
+                    T(matchRoom,"ONLINE DUEL",34,.08f,.86f,.84f,.08f);
+                    var heading=T(matchRoom,"OPPONENT FOUND",40,.10f,.53f,.80f,.12f);heading.alignment=TextAlignmentOptions.Center;
+                    matchStatus=T(matchRoom,"Connecting players…",24,.10f,.38f,.80f,.10f);matchStatus.alignment=TextAlignmentOptions.Center;
+                    B(matchRoom,"LEAVE MATCH",()=>Program.instance.room.OnExit(),.35f,.17f,.30f,.08f);
+                }
+                foreach(Transform child in Root)child.gameObject.SetActive(child==matchRoom);
+                matchRoom.SetAsLastSibling();
+                matchStatus.text=string.Join("  VS  ",RoomServant.players.Take(2).Select(p=>p==null?"Connecting…":p.name));
+                return;
+            }
+            if(matchRoom!=null)matchRoom.gameObject.SetActive(false);
             if(!RoomServant.FromUltraHost){if(friendRoom!=null)friendRoom.gameObject.SetActive(false);return;}
             int required=RoomServant.Mode==2?4:2;
             if(friendRoom!=null && tableAvatars.Length!=required){Destroy(friendRoom.gameObject);friendRoom=null;}

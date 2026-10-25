@@ -66,6 +66,24 @@ def main():
             bad,packets=connect(tables[1],tables[0]['secret']);assert not any(p[0]==0x12 for p in packets),'Cross-table secret was accepted'
             view=api('/rooms/'+rid,token=friend['token']);assert len(view['tables'])==3 and all(t['open'] for t in view['tables'])
             print('PASS three independent native tables, distinct ports/secrets, five-minute handshake, friend-only spectating, observer seat and cross-table secret rejection',flush=True)
+            # Random opponents need no friendship, and friends outside the pair
+            # still cannot discover or enter the allocated match.
+            api('/matchmaking',token=owner['token'],expected=404)
+            assert api('/matchmaking',{'format':'TCG','accept':True},owner['token'])['status']=='waiting'
+            assert api('/matchmaking',{'format':'TCG','accept':True},stranger['token'])['status']=='confirming'
+            assert api('/matchmaking',{'format':'TCG','accept':True},owner['token'])['status']=='confirming'
+            pair=api('/matchmaking',{'format':'TCG','accept':True},stranger['token'])['room']
+            assert api('/matchmaking',{'format':'TCG','accept':True},owner['token'])['room']==pair
+            assert pair['randomMatch'] and pair['id']!=rid
+            api('/rooms/'+pair['id']+'/join',{},friend['token'],expected=403)
+            assert not any(r['id']==pair['id'] for r in api('/state',token=friend['token'])['rooms'])
+            for _ in range(2):
+                matched,packets=connect(pair)
+                assert any(p[0]==0x12 for p in packets),'Matched opponent could not join the native duel'
+            api('/matchmaking',token=owner['token'],method='DELETE')
+            api('/matchmaking',token=stranger['token'],method='DELETE')
+            api('/rooms/'+pair['id'],token=owner['token'],method='DELETE')
+            print('PASS authenticated random matchmaking, native joins, private grants, format pairing and outsider rejection',flush=True)
         finally:
             for client in clients:client.close()
             if rid and owner:

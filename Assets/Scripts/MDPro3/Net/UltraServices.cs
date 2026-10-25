@@ -16,7 +16,7 @@ namespace MDPro3.Net
 {
     public static class UltraServices
     {
-        public const string Version = "0.1.10";
+        public const string Version = "0.1.11";
         public const string Repository = "https://github.com/MatteoGXC/ultra-duel";
         const string SessionPath = "Data/friends-session.json";
         public static string Token { get; private set; } = "";
@@ -149,8 +149,32 @@ namespace MDPro3.Net
             Program.instance.online.KF_OnlineGame(PlayerName, (string)room["address"],
                 ((int)room["port"]).ToString(), (string)room["secret"]);
             RoomServant.FromUltraHost = true;
+            RoomServant.FromUltraMatch=(bool?)room["randomMatch"]==true;
+            if(RoomServant.FromUltraMatch)AutoStartMatch().Forget();
         }
 
+        static async UniTaskVoid AutoStartMatch()
+        {
+            bool readied=false;float deadline=Time.realtimeSinceStartup+60;
+            while(RoomServant.FromUltraMatch && Time.realtimeSinceStartup<deadline)
+            {
+                await UniTask.Delay(100,ignoreTimeScale:true);
+                if(Program.instance.currentServant==Program.instance.ocgcore)return;
+                if(Program.instance.currentServant!=Program.instance.room || Program.instance.room.servantUI==null)continue;
+                int seat=RoomServant.SelfType;
+                if(!readied && seat>=0 && seat<2 && RoomServant.players[seat]!=null)
+                {
+                    Program.instance.room.GetUI<MDPro3.UI.ServantUI.RoomServantUI>().OnReady();readied=true;
+                }
+                if(readied && RoomServant.IsHost && RoomServant.players.Take(2).Count(p=>p!=null && p.ready)==2)
+                {
+                    Program.instance.room.GetUI<MDPro3.UI.ServantUI.RoomServantUI>().OnStart();return;
+                }
+            }
+            if(RoomServant.FromUltraMatch && Program.instance.currentServant==Program.instance.room)MessageManager.Cast("The opponent did not connect. Return to Online Duel to search again.");
+        }
+
+        public static UniTask<JObject> PublishedRelease()=>GitHub("releases/latest");
         static async UniTask<JObject> GitHub(string path)
         {
             using var request = UnityWebRequest.Get("https://api.github.com/repos/MatteoGXC/ultra-duel/" + path);
