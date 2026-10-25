@@ -88,7 +88,7 @@ jobs:
           APP="$RUNNER_TEMP/Applications/Ultra Duel.app"
           "$APP/Contents/MacOS/Ultra Duel" --prepare-only --runtime "$RUNNER_TEMP/ultra-runtime" --offline-archive "$RUNNER_TEMP/mac-runtime.tar.zst"
           rm "$RUNNER_TEMP/mac-runtime.tar.zst"
-      - name: Run installed Apple Silicon Unity player
+      - name: Run installed native Unity player
         run: |
           python3 - <<'PY'
           import os,subprocess,pathlib
@@ -148,11 +148,6 @@ jobs:
           assert 'Failed to decompress' not in (root/'mac-duel-ui.log').read_text(), 'Unsupported compressed textures in installed duel'
           PY
       - uses: actions/upload-artifact@v4
-        with:
-          name: verified-ultra-duel-${{ inputs.arch }}-dmg
-          path: build/Ultra-Duel-${{ inputs.arch == 'x86_64' && 'Intel' || 'Apple-Silicon' }}.dmg
-          retention-days: 7
-      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: mac-installation-evidence
@@ -163,4 +158,9 @@ jobs:
             ${{ runner.temp }}/mac-ui*
             ${{ runner.temp }}/mac-duel-ui*
             ${{ runner.temp }}/ultra-runtime/installation.log
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-ultra-duel-${{ inputs.arch }}-dmg
+          path: build/Ultra-Duel-${{ inputs.arch == 'x86_64' && 'Intel' || 'Apple-Silicon' }}.dmg
           retention-days: 7

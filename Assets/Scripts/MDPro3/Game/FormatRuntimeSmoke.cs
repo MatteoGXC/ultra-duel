@@ -206,6 +206,14 @@ namespace MDPro3
         {
             while (Program.instance == null || Program.instance.menu.servantUI == null || !TextureManager.loaded)
                 yield return null;
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+            var localArtwork=MDPro3.Utility.CardImageLoader.LoadArtAsync(89631139).AsTask();
+            while(!localArtwork.IsCompleted)yield return null;
+            if(localArtwork.IsFaulted || localArtwork.Result==null || localArtwork.Result.width<32)
+                throw new Exception("Installed Mac card artwork failed to load from local storage.",localArtwork.Exception);
+            MDPro3.Utility.CardImageLoader.ReleaseArt(89631139);
+            Debug.Log("FORMAT_SMOKE_MAC_LOCAL_ARTWORK_PASSED");
+#endif
             Debug.Log("FORMAT_SMOKE_MENU_READY");
             yield return Capture("menu");
             var commandLine = Environment.GetCommandLineArgs();

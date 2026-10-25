@@ -1,4 +1,4 @@
-using MDPro3.Utility;
+﻿using MDPro3.Utility;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -360,7 +360,10 @@ namespace MDPro3
 
         public static string GetPlatformFilePath(string path)
         {
-#if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX
+#if !UNITY_EDITOR && (UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX)
+            // A bare Unix path is treated as an HTTPS localhost URL by UnityWebRequest.
+            return new Uri(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path))).AbsoluteUri;
+#elif UNITY_EDITOR || UNITY_STANDALONE_WIN
             return Path.Combine(Environment.CurrentDirectory, path);
 #elif UNITY_ANDROID || UNITY_IOS
             return Path.Combine("file://" + Application.persistentDataPath, path);
