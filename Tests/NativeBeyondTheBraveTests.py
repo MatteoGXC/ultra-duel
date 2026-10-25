@@ -7,7 +7,7 @@ p=argparse.ArgumentParser();p.add_argument('--database',type=Path,default=ROOT/'
 db=sqlite3.connect(args.database);cards={r[0]:r for r in db.execute('select id,alias,setcode,type,atk,def,level,race,attribute from datas')}
 with zipfile.ZipFile(args.scripts) as z:scripts={Path(n).name:z.read(n) for n in z.namelist() if n.endswith('.lua')}
 buffers={};errors=[]
-directory=Path(os.environ.get('ULTRA_NATIVE_DIR',ROOT/'Assets/Plugins/Windows'));dll_path=os.add_dll_directory(str(directory)) if os.name=='nt' else None;core=C.CDLL(str(directory/('ocgcore.dll' if os.name=='nt' else 'libocgcore.so')))
+directory=Path(os.environ.get('ULTRA_NATIVE_DIR',ROOT/'Assets/Plugins/Windows'));dll_path=os.add_dll_directory(str(directory)) if os.name=='nt' else None;core=C.CDLL(str(directory/('ocgcore.dll' if os.name=='nt' else 'libocgcore.dylib' if sys.platform=='darwin' else 'libocgcore.so')))
 ScriptReader=C.CFUNCTYPE(C.c_void_p,C.c_char_p,C.POINTER(C.c_int32));CardReader=C.CFUNCTYPE(C.c_uint32,C.c_uint32,C.POINTER(CardData));Logger=C.CFUNCTYPE(C.c_uint32,C.c_void_p,C.c_uint32)
 @ScriptReader
 def script(name,length):

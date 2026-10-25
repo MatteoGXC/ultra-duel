@@ -36,8 +36,8 @@ jobs:
           import urllib.request,hashlib,zipfile
           from pathlib import Path
           p=Path('build/mac/released-update.zip')
-          urllib.request.urlretrieve('https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.6/Ultra-Duel-Update.zip',p)
-          assert hashlib.sha256(p.read_bytes()).hexdigest()=='e90c46c5df7d7afbaf41627f2c6367cc036e6e17a22225a976420d88383291cd'
+          urllib.request.urlretrieve('https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.10/Ultra-Duel-Update.zip',p)
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='9071ceec6fb04fde914266d04154e612ad780c1ee19805bdea896bf4e434cd6f'
           with zipfile.ZipFile(p) as z:
               target=Path('Data/locales/en-US/cards.cdb');target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(z.read(str(target)))
           PY
@@ -49,6 +49,12 @@ jobs:
         run: python3 Tests/NativeAdminDuelTests.py build/mac
       - name: Verify Branded spells and Aluber search
         run: python3 Tests/NativeFriendEffectsTests.py build/mac
+      - name: Verify Beyond the Brave native effects
+        run: ULTRA_NATIVE_DIR=build/mac python3 Tests/NativeBeyondTheBraveTests.py --database Data/locales/en-US/cards.cdb --scripts Data/script.zip
+      - name: Verify timer expiry and spectator packets
+        run: |
+          ULTRA_TIMER_TEST=1 python3 Tests/NativeAdminDuelTests.py build/mac
+          ULTRA_SPECTATOR_TEST=1 python3 Tests/NativeAdminDuelTests.py build/mac
       - name: Initialize every non-token card on Apple Silicon
         run: ULTRA_NATIVE_DIR=build/mac python3 Tests/NativeCardScriptTests.py --all --output build/mac/card-effects.json
       - uses: actions/upload-artifact@v4
