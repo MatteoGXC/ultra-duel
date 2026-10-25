@@ -605,6 +605,19 @@ namespace MDPro3
         {
             var core = Program.instance.ocgcore;
             OcgCore.pause = true;
+            // The real AI can spend its opening hand before the frame is captured.
+            // Seed this paused client-only movement fixture so it also retains a hand card during destruction.
+            int missing=2-core.GetLocationCardCount(CardLocation.Hand,1);
+            if(missing>0)
+            {
+                if(core.GetLocationCardCount(CardLocation.Deck,1)<missing)
+                    throw new Exception("Opponent deck cannot supply the movement fixture.");
+                var draw=new Package{Function=(int)GameMessage.Draw};
+                draw.Data.writer.Write((byte)OcgCore.LocalPlayer(1));
+                draw.Data.writer.Write((byte)missing);
+                for(int i=0;i<missing;i++)draw.Data.writer.Write(0);
+                yield return core.messageDispatcher.duel.Process(draw).ToCoroutine();
+            }
             var hand = OcgCore.cards.First(c => c.p.controller == 1 && c.p.InLocation(CardLocation.Hand));
             var original = hand.p.Copy();
             int before = core.GetLocationCardCount(CardLocation.Hand, 1);
