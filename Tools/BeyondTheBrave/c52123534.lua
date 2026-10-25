@@ -52,7 +52,7 @@ end
 function s.attachtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local c=e:GetHandler()
-		return c:IsXyzMonster() and Duel.IsExistingMatchingCard(Card.IsCanBeXyzMaterial,tp,LOCATION_HAND|LOCATION_GRAVE|LOCATION_REMOVED,0,1,nil,c,tp,REASON_EFFECT)
+		return c:IsXyzMonster() and Duel.IsExistingMatchingCard(s.attachfilter,tp,LOCATION_HAND|LOCATION_GRAVE|LOCATION_REMOVED,0,1,nil,c,tp,REASON_EFFECT)
 	end
 	Duel.SetPossibleOperationInfo(0,CATEGORY_LEAVE_GRAVE,nil,1,tp,0)
 end
@@ -62,7 +62,7 @@ function s.attachop(e,tp,eg,ep,ev,re,r,rp)
 	local detached_material=e:GetChainData().cost_detached_materials:GetFirst()
 	local except=detached_material:IsRelateToEffect(e) and detached_material or nil
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)
-	local sc=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(Card.IsCanBeXyzMaterial),tp,LOCATION_HAND|LOCATION_GRAVE|LOCATION_REMOVED,0,1,1,except,c,tp,REASON_EFFECT):GetFirst()
+	local sc=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.attachfilter),tp,LOCATION_HAND|LOCATION_GRAVE|LOCATION_REMOVED,0,1,1,except,c,tp,REASON_EFFECT):GetFirst()
 	if sc then
 		if sc:IsLocation(LOCATION_HAND) then
 			Duel.ConfirmCards(1-tp,sc)
@@ -71,4 +71,10 @@ function s.attachop(e,tp,eg,ep,ev,re,r,rp)
 		end
 		Duel.Overlay(c,sc)
 	end
+end
+-- Attaching by effect accepts Spell/Trap Cards as well as monsters. The
+-- classic IsCanBeXyzMaterial only describes materials for an Xyz Summon.
+function s.attachfilter(c,xc,tp,reason)
+ return c~=xc and not c:IsType(TYPE_TOKEN) and not c:IsForbidden()
+  and (c:IsControler(tp) or c:IsControlerCanBeChanged())
 end

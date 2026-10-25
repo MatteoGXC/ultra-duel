@@ -83,6 +83,17 @@ local e=verdict:GetActivateEffect()
 assert(c48340269.efftg(e,0,nil,0,0,nil,0,0,0),"Verdict should activate against face-up effect monster")
 assert(Card.IsNegatable(target))
 """,
+ 'kumenyo-attach-card-types':r"""
+local xyz=Debug.AddCard(52123534,0,0,LOCATION_MZONE,0,POS_FACEUP_ATTACK)
+local spell=Debug.AddCard(59062857,0,0,LOCATION_HAND,0,POS_FACEDOWN)
+local trap=Debug.AddCard(25024929,0,0,LOCATION_GRAVE,0,POS_FACEUP)
+local monster=Debug.AddCard(89631139,0,0,LOCATION_REMOVED,0,POS_FACEUP)
+Debug.ReloadFieldEnd()
+assert(c52123534.attachfilter(spell,xyz,0,REASON_EFFECT),"Kumenyo must accept a Spell Card")
+assert(c52123534.attachfilter(trap,xyz,0,REASON_EFFECT),"Kumenyo must accept a Trap Card")
+assert(c52123534.attachfilter(monster,xyz,0,REASON_EFFECT),"Kumenyo must accept a monster")
+assert(not c52123534.attachfilter(xyz,xyz,0,REASON_EFFECT),"Kumenyo cannot attach itself")
+""",
  'opposition-and-score-filters':r"""
 local score=Debug.AddCard(13068112,0,0,LOCATION_HAND,0,POS_FACEDOWN)
 local opposition=Debug.AddCard(86457955,0,0,LOCATION_DECK,0,POS_FACEDOWN)
