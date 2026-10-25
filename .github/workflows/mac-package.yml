@@ -59,6 +59,7 @@ jobs:
         run: |
           brew list zstd >/dev/null || brew install zstd
           python3 Tools/package-mac.py --input mac-input.zip --output build/dmg
+          rm mac-input.zip
           file "build/dmg/Ultra Duel.app/Contents/MacOS/Ultra Duel" "build/dmg/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel"
       - name: Create, verify, mount and install DMG
         run: |
