@@ -53,38 +53,27 @@ namespace MDPro3
         public void Change(int id)
         {
             if(GetComponent<UltraWallpaperTheme>()==null)gameObject.AddComponent<UltraWallpaperTheme>();
-            Destroy(back);
-
-            if (id == 0)
+            if(id==0)
             {
-                var random = Random.Range(0, backgrounds.Count);
-                id = Tools.GetNthDictionaryElement(backgrounds, random).Key;
+                var available=new List<int>();
+                foreach(int candidate in backgrounds.Keys)
+                    if(BackgroundInstalled(BackgroundAssetID(candidate)))available.Add(candidate);
+                id=available.Count>0?available[Random.Range(0,available.Count)]:2;
             }
-
-            cid = id;
-            if (id == 50)
-                id = 1;
-            if (id == 51)
-                id = 2;
-            if (id == 52)
-                id = 11;
-            if (id == 53)
-                id = 5;
-            if (id == 54)
-                id = 4;
-            if (id == 55)
-                id = 6;
-            if (id == 56)
-                id = 7;
-            if (id == 57)
-                id = 8;
-            if (id == 58)
-                id = 9;
-            if (id == 59)
-                id = 10;
-
-            var endString = id.ToString("D4");
-            back = ABLoader.LoadFromFolder<SpriteRenderer>("MasterDuel/Background/Back" + endString, true, true);
+            cid=id;
+            id=BackgroundAssetID(id);
+            if(!BackgroundInstalled(id))
+            {
+                id=2;cid=2;
+                if(!BackgroundInstalled(id))
+                {
+                    Debug.LogWarning("No installed menu background is available.");
+                    return;
+                }
+            }
+            var loaded=ABLoader.LoadFromFolder<SpriteRenderer>("MasterDuel/Background/Back"+id.ToString("D4"),true,true);
+            if(loaded==null){Debug.LogWarning("The selected background has no sprite prefab.");return;}
+            Destroy(back);back=loaded;
             if (back.TryGetComponent<SpriteScaler>(out var spriteScaler))
             {
                 spriteScaler.isApplyOnUpdate = true;
@@ -97,6 +86,19 @@ namespace MDPro3
             {
                 _ = SetDIYBGAsync(back.GetComponent<SpriteRenderer>(), id);
             }
+        }
+
+        static int BackgroundAssetID(int id)=>id switch
+        {
+            50=>1,51=>2,52=>11,53=>5,54=>4,55=>6,56=>7,57=>8,58=>9,59=>10,_=>id
+        };
+        static bool BackgroundInstalled(int id)
+        {
+            string folder=Path.Combine(Program.root,"MasterDuel","Background","Back"+id.ToString("D4"));
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
+            folder=Path.Combine(Application.dataPath,folder);
+#endif
+            return Directory.Exists(folder);
         }
 
         private async UniTask SetDIYBGAsync(SpriteRenderer renderer, int id)
