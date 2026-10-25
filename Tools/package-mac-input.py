@@ -1,5 +1,6 @@
 """Prepare the private Mac verification input from a built player and clean defaults."""
 import argparse
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -56,11 +57,17 @@ def main():
             copied=set()
             for entry in baseline.infolist():
                 name=entry.filename
-                if not name.startswith('Defaults/') or '/ExtendedArt/' in name or name.endswith('extended-art-audit.json') or name in files or name in copied:
+                if not name.startswith('Defaults/') or '/ExtendedArt/' in name or name.endswith('extended-art-audit.json') or name in files or name in copied or name in ('Defaults/build-info.json','Defaults/Data/installed-version.json'):
                     continue
                 target.writestr(name,baseline.read(entry));copied.add(name)
         for name,file in sorted(files.items()):target.write(file,name)
-        target.writestr('runtime.json',json.dumps(json.loads(args.runtime.read_text(encoding='utf-8')),indent=2))
+        runtime=json.loads(args.runtime.read_text(encoding='utf-8'))
+        commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+        assembly=player/'Contents/Resources/Data/Managed/Assembly-CSharp.dll'
+        info=dict(version=runtime['version'],commit=commit,platform='macOS',assemblySha256=hashlib.sha256(assembly.read_bytes()).hexdigest())
+        target.writestr('Defaults/build-info.json',json.dumps(info,indent=2))
+        target.writestr('Defaults/Data/installed-version.json',json.dumps(dict(version=runtime['version'],sourceCommit=commit)))
+        target.writestr('runtime.json',json.dumps(runtime,indent=2))
     print('MAC_INPUT_READY', args.output, args.output.stat().st_size)
 
 if __name__ == '__main__':
