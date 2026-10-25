@@ -249,9 +249,9 @@ namespace MDPro3.UI.ServantUI
                 MessageManager.Cast("Duel invitation sent. Your friend can join from Friends.");
             }));
         }
-        void JoinFriendRoom(string id)
+        void JoinFriendRoom(string id,bool spectate=false,int table=1)
         {
-            Run(async()=>{var room=await UltraServices.Request("/rooms/"+id+"/join","POST",new{});CloseModal();await UltraServices.JoinRoom(room);});
+            Run(async()=>{var room=await UltraServices.Request("/rooms/"+id+(spectate?"/watch":"/join"),"POST",new{table});CloseModal();await UltraServices.JoinRoom(room);});
         }
         void OpenHistory()
         {

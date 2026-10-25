@@ -217,6 +217,40 @@ namespace MDPro3
             Debug.Log("FORMAT_SMOKE_MENU_READY");
             yield return Capture("menu");
             var commandLine = Environment.GetCommandLineArgs();
+            if(commandLine.Contains("--rps-art-check"))
+            {
+                var request=UnityEngine.AddressableAssets.Addressables.InstantiateAsync("Popup/PopupRockPaperScissors.prefab");
+                yield return request;
+                var popup=request.Result.GetComponent<MDPro3.UI.Popup.PopupRockPaperScissors>();
+                popup.transform.SetParent(Program.instance.ui_.popup,false);
+                popup.args=new System.Collections.Generic.List<string>{"Rock-Paper-Scissors"};
+                popup.Show();
+                yield return new WaitForSecondsRealtime(1);
+                var manager=popup.GetComponent<YgomSystem.ElementSystem.ElementObjectManager>();
+                foreach(var choice in new[]{"Rock","Paper","Scissors"})
+                {
+                    var image=manager.GetElement<UnityEngine.UI.RawImage>(choice+"Button");
+                    var label=image.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                    if(image.texture==null || image.texture.width<32 || label==null || label.font==null)
+                        throw new Exception("RPS choice missing visible built-in art or font: "+choice);
+                }
+                yield return Capture("rock-paper-scissors");
+                popup.Hide();
+                yield return new WaitForSecondsRealtime(.5f);
+                Debug.Log("RPS_BUILTIN_ART_PASSED all three choices render with captions");
+                if(commandLine.Contains("--rps-only")){Application.Quit(0);yield break;}
+            }
+            if(commandLine.Contains("--friend-tables-layout"))
+            {
+                var home=Program.instance.menu.GetUI<MainMenuUI>();
+                var fixture=Newtonsoft.Json.Linq.JObject.Parse("{\"id\":\"layout\",\"host\":\"Friend\",\"hostId\":-1,\"format\":\"TCG\",\"mode\":\"1v1\"}");
+                typeof(MainMenuUI).GetMethod("ShowFriendTables",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,new object[]{fixture});
+                yield return Capture("friend-tables");
+                if(home.GetComponentsInChildren<UnityEngine.UI.Button>().Count(b=>b.name=="WATCH")!=3)
+                    throw new Exception("Friend room did not render three spectator entries.");
+                typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
+                Debug.Log("FRIEND_TABLES_LAYOUT_PASSED three entry and watch rows");
+            }
             if(commandLine.Contains("--owner-admin-check"))
             {
                 var refresh=MDPro3.Net.UltraServices.Refresh().AsTask();
@@ -457,6 +491,13 @@ namespace MDPro3
                 controls.SendMessage("Close");
                 Debug.Log("OWNER_ADMIN_UI_PASSED authenticated owner account and duel controls rendered; no account grants made");
             }
+            if(commandLine.Contains("--owner-admin-actions"))
+            {
+                yield return CheckOwnerAdminActions();
+                File.WriteAllText(Path.Combine(output,"passed.txt"),"Owner duel controls rendered and applied successfully.");
+                Application.Quit(0);
+                yield break;
+            }
             yield return CheckHandMovement();
             yield return CheckDamageDisplay();
             if(Environment.GetCommandLineArgs().Contains("--ultra-result-check"))
@@ -478,6 +519,59 @@ namespace MDPro3
 
             File.WriteAllText(Path.Combine(output, "passed.txt"), mode + " menu, selection, deck, local AI duel rendered.");
             Application.Quit(0);
+        }
+
+        private IEnumerator CheckOwnerAdminActions()
+        {
+            var core=Program.instance.ocgcore;
+            float readyDeadline=Time.realtimeSinceStartup+60;
+            while(!(OcgCore.myTurn && OcgCore.currentMessage==GameMessage.SelectIdleCmd)
+                && Time.realtimeSinceStartup<readyDeadline)yield return null;
+            if(!OcgCore.myTurn || OcgCore.currentMessage!=GameMessage.SelectIdleCmd)
+                throw new Exception("Owner action test did not reach the owner's Main Phase.");
+            var controls=core.GetUI<OcgCoreUI>().GetComponent<UltraAdminDuelUI>();
+            controls.Open();
+            yield return null;
+            int mine=core.GetLocationCardCount(CardLocation.Hand,0);
+            var field=controls.GetComponentsInChildren<TMPro.TMP_InputField>().First(i=>i.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text=="Exact card name or ID");
+            field.text="13068112";
+            var add=controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.GetComponentsInChildren<TMPro.TextMeshProUGUI>().Any(t=>t.text=="ADD TO MY HAND"));
+            add.onClick.Invoke();
+            float changedDeadline=Time.realtimeSinceStartup+20;
+            while((core.GetLocationCardCount(CardLocation.Hand,0)!=mine+1
+                || OcgCore.currentMessage!=GameMessage.SelectIdleCmd)
+                && Time.realtimeSinceStartup<changedDeadline)yield return null;
+            controls.SendMessage("Close");
+            yield return new WaitForSecondsRealtime(1);
+            var added=OcgCore.cards.FirstOrDefault(c=>c.p.controller==0 && c.p.InLocation(CardLocation.Hand) && c.GetData().Id==13068112);
+            if(added==null || added.model==null || !added.model.activeInHierarchy || added.buttons.Count==0)
+            {
+                yield return Capture("owner-add-card-failed");
+                throw new Exception("Owner hand addition did not render a usable card and refresh idle choices.");
+            }
+            if(FindObjectsByType<UnityEngine.Playables.PlayableDirector>(FindObjectsSortMode.None).Any(d=>d.name.Contains("CardCheat")))
+                throw new Exception("Owner addition left the legacy card-cheat cinematic active.");
+            yield return Capture("owner-added-card");
+            controls.Open();
+            yield return null;
+            var lpInput=controls.GetComponentsInChildren<TMPro.TMP_InputField>().First(i=>i.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text=="Life points");
+            lpInput.text="12345";
+            controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="SET MY LP").onClick.Invoke();
+            changedDeadline=Time.realtimeSinceStartup+15;
+            while((OcgCore.life0!=12345 || OcgCore.currentMessage!=GameMessage.SelectIdleCmd) && Time.realtimeSinceStartup<changedDeadline)yield return null;
+            if(OcgCore.life0!=12345)throw new Exception("Owner LP change stalled behind the previous idle prompt.");
+            yield return new WaitForSecondsRealtime(.5f);
+            controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="CLEAR OPPONENT HAND → GY").onClick.Invoke();
+            changedDeadline=Time.realtimeSinceStartup+15;
+            while((core.GetLocationCardCount(CardLocation.Hand,1)>0 || OcgCore.currentMessage!=GameMessage.SelectIdleCmd) && Time.realtimeSinceStartup<changedDeadline)yield return null;
+            if(core.GetLocationCardCount(CardLocation.Hand,1)>0)throw new Exception("Owner clear-hand change stalled.");
+            controls.SendMessage("Close");
+            yield return new WaitForSecondsRealtime(1);
+            var launcher=controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="ADMIN");
+            if(launcher.gameObject.layer!=launcher.GetComponentInChildren<TMPro.TextMeshProUGUI>().gameObject.layer)
+                throw new Exception("Admin launcher text is on a different render layer.");
+            yield return Capture("owner-lp-clear-hand");
+            Debug.Log("OWNER_ADMIN_ACTIONS_PASSED real GUI card addition, LP change, clear-hand and refreshed Main Phase choices");
         }
 
         private void CheckDeckProfiles()

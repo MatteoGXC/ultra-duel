@@ -41,6 +41,7 @@ namespace MDPro3.Servant
         public static bool FromSolo;
         public static bool FromLocalHost;
         public static bool FromUltraHost;
+        public static bool WantSpectate;
         public static bool FromHandTest;
 
         public class Player
@@ -60,7 +61,7 @@ namespace MDPro3.Servant
 
         public override void Initialize()
         {
-            returnServant = Program.instance.online;
+            returnServant = Program.instance.menu;
             base.Initialize();
         }
 
@@ -90,12 +91,16 @@ namespace MDPro3.Servant
             }
             else if (FromSolo)
                 returnServant = Program.instance.solo;
+            else if(FromHandTest)
+                returnServant = Program.instance.deckEditor;
             else
             {
-                returnServant = Program.instance.online;
+                MainMenuUI.ReturnToFriendRooms=true;
+                returnServant = Program.instance.menu;
                 if (FromLocalHost)
                     YgoServer.StopServer();
             }
+            WantSpectate=false;
             onlineAppearances.Clear();
             base.OnExit();
             Program.instance.ocgcore.CloseConnection();
@@ -278,7 +283,7 @@ namespace MDPro3.Servant
             else if(FromHandTest)
                 Program.instance.ocgcore.returnServant = Program.instance.deckEditor;
             else
-                Program.instance.ocgcore.returnServant = FromUltraHost ? Program.instance.menu : Program.instance.online;
+                Program.instance.ocgcore.returnServant = Program.instance.menu;
             if (SelfType == 7)
                 OcgCore.condition = OcgCore.Condition.Watch;
             else
@@ -506,6 +511,11 @@ namespace MDPro3.Servant
             int type = r.ReadByte();
             SelfType = type & 0xF;
             IsHost = ((type >> 4) & 0xF) != 0;
+            if(FromUltraHost && WantSpectate)
+            {
+                if(SelfType!=7){TcpHelper.CtosMessage_HsToObserver();return;}
+                WantSpectate=false;
+            }
             if (SelfType < 4 && players[SelfType] != null)
                 players[SelfType].ready = false;
             if (SelfType < 4)

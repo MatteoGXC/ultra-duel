@@ -59,13 +59,16 @@ namespace MDPro3.UI
             if (!duelStart || duelEnd)
                 return;
 
-            if (timeLimit == 0)
+            if (timeLimit <= 0)
+            {
                 DuelEnd();
+                return;
+            }
             pastTime += Time.unscaledDeltaTime;
-            int remainTime = Mathf.CeilToInt(time - pastTime);
+            int remainTime = Mathf.Max(0, Mathf.CeilToInt(time - pastTime));
             text.text = remainTime.ToString();
 
-            material.SetFloat("_MaxTime", time - pastTime < 0 ? 0 : (time - pastTime) / timeLimit);
+            material.SetFloat("_MaxTime", time - pastTime < 0 ? 0 : Mathf.Clamp01((time - pastTime) / timeLimit));
         }
 
         public void DuelStart()

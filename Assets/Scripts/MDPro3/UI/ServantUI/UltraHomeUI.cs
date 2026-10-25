@@ -81,10 +81,10 @@ namespace MDPro3.UI.ServantUI
             TopButton("MISSIONS",OpenMissions,.65f,1);
             TopButton("FRIENDS",OpenFriends,.76f,2);
             TopButton("MENU",OpenMenu,.87f,3);
-            defaultSelectable=NavButton("DUEL",OpenDuel,.735f,65);
-            NavButton("DECK",OnDeck,.635f,44);
-            NavButton("SOLO",OnSolo,.540f,44);
-            NavButton("SHOP",OpenShop,.445f,44);
+            defaultSelectable=NavButton("DUEL",OpenDuel,.735f,78);
+            NavButton("DECK",OnDeck,.615f,58);
+            NavButton("SOLO",OnSolo,.495f,58);
+            NavButton("SHOP",OpenShop,.375f,58);
             var deckPanel=HomeRect("Selected deck",ultraHome,.045f,.19f,.27f,.15f);
             HomePanel(deckPanel,new Color(.055f,.075f,.12f));
             HomeText(deckPanel,"MISSIONS",17,Lime,.055f,.69f,.90f,.22f);
@@ -122,7 +122,7 @@ namespace MDPro3.UI.ServantUI
         }
         Button NavButton(string title,UnityAction action,float y,float size)
         {
-            var rect=HomeRect(title,ultraHome,.065f,y,.29f,.075f);
+            var rect=HomeRect(title,ultraHome,.065f,y,.34f,.10f);
             var image=rect.gameObject.AddComponent<Image>();image.color=Color.white;
             var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=image;
             var colors=button.colors;colors.normalColor=new Color(0,0,0,0);colors.highlightedColor=colors.selectedColor=new Color(.16f,.24f,.22f,.8f);colors.pressedColor=new Color(.24f,.35f,.24f);button.colors=colors;
@@ -289,8 +289,7 @@ namespace MDPro3.UI.ServantUI
             OpenModal("DUEL","Choose how you want to play","duel-modes");WideModal();
             SmallButton(modal,"FRIEND DUELS  >",()=>OpenFriendDuels("1v1"),.12f,.58f,.76f,.12f,30);
             SmallButton(modal,"DUOS 2v2  >",()=>OpenFriendDuels("2v2"),.12f,.42f,.76f,.12f,30);
-            SmallButton(modal,"SOLO  >",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.12f,.26f,.36f,.10f,26);
-            SmallButton(modal,"OTHER SERVERS  >",()=>{CloseModal();OnOnline();},.52f,.26f,.36f,.10f,26);
+            SmallButton(modal,"SOLO  >",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.12f,.26f,.76f,.10f,26);
         }
         public void OpenFriendDuels(string mode="1v1")
         {

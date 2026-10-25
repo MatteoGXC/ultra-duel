@@ -57,25 +57,26 @@ namespace MDPro3.UI.ServantUI
             ring=circle.gameObject.AddComponent<UltraCircleGraphic>();ring.raycastTarget=false;
             var clip=R("Icon mask",circle,.065f,.065f,.87f,.87f);clip.gameObject.AddComponent<UltraCircleGraphic>();clip.gameObject.AddComponent<Mask>().showMaskGraphic=false;
             portrait=R("Card portrait",clip,0,0,1,1).gameObject.AddComponent<RawImage>();portrait.raycastTarget=false;
-            var label=R("Level",transform,.30f,.12f,.20f,.25f);level=label.gameObject.AddComponent<TextMeshProUGUI>();level.font=TMP_Settings.defaultFontAsset;level.fontSize=17;level.color=Color.white;level.raycastTarget=false;
+            var label=R("Level",transform,.30f,.12f,.20f,.25f);level=label.gameObject.AddComponent<TextMeshProUGUI>();level.font=Program.instance.ui_.tmpFont;level.fontSize=17;level.color=Color.white;level.raycastTarget=false;
             R("XP track",transform,.48f,.18f,.29f,.13f).gameObject.AddComponent<Image>().color=new Color(.20f,.20f,.20f);
             progress=R("XP fill",transform,.48f,.18f,0,.13f);progress.gameObject.AddComponent<Image>().color=new Color(.82f,.82f,.82f);
         }
         void Update()
         {
             if(portrait==null)return;
-            int id=(int?)UltraAccount.Profile?["avatar"]??UltraProgress.Data.avatarCard;
+            int.TryParse(Config.Get("DuelFace0", "1010001"), out int id);
+            if(id<1010000 || id>=1030000)id=1010001;
             if(id!=shown){shown=id;Load(id).Forget();}
             level.text="Lv. "+UltraAccount.Level;progress.anchorMax=new Vector2(.48f+.29f*(UltraAccount.XP%500)/500f,.31f);
         }
         async UniTaskVoid Load(int id)
         {
             if(loaded!=0){CardImageLoader.ReleaseArt(loaded);loaded=0;}
-            if(id==0){var s=await Program.items.TryLoadItemIconAsync(UltraAccount.ProfileMate.ToString(),Items.ItemType.Mate);if(this!=null && s!=null && shown==0){portrait.texture=s.texture;portrait.uvRect=new Rect(s.textureRect.x/s.texture.width,s.textureRect.y/s.texture.height,s.textureRect.width/s.texture.width,s.textureRect.height/s.texture.height);SampleAccent(s.texture,portrait.uvRect);}return;}
-            var texture=await CardImageLoader.LoadArtAsync(id);
-            if(this==null || id!=shown){CardImageLoader.ReleaseArt(id);return;}
-            if(texture==null){CardImageLoader.ReleaseArt(id);return;}
-            loaded=id;portrait.texture=texture;portrait.uvRect=new Rect(.15f,.08f,.70f,.84f);SampleAccent(texture,portrait.uvRect);
+            var sprite=await Program.items.TryLoadItemIconAsync(id.ToString(),Items.ItemType.Face);
+            if(this==null || shown!=id || sprite==null)return;
+            portrait.texture=sprite.texture;
+            portrait.uvRect=new Rect(sprite.textureRect.x/sprite.texture.width,sprite.textureRect.y/sprite.texture.height,sprite.textureRect.width/sprite.texture.width,sprite.textureRect.height/sprite.texture.height);
+            SampleAccent(sprite.texture,portrait.uvRect);
         }
         void SampleAccent(Texture texture,Rect uv)
         {

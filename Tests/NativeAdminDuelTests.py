@@ -18,7 +18,7 @@ def child(native,runtime,port):
             Path(row['reply']).write_text(str(result))
     threading.Thread(target=commands,daemon=True).start()
     server.start_server.argtypes=[ctypes.c_char_p]
-    server.start_server(f'{port} 0 1 0 7 T T 8000 5 1 0 0'.encode())
+    server.start_server(f"{port} 0 1 0 7 T T 8000 5 1 {3 if os.environ.get('ULTRA_TIMER_TEST') else 0} 0".encode())
 
 def run(native):
     with tempfile.TemporaryDirectory(prefix='ultra-admin-') as directory:
@@ -40,7 +40,7 @@ def run(native):
                 time.sleep(.01)
             raise AssertionError('Admin command timed out')
         try:
-            for i in range(2):
+            for i in range(3 if os.environ.get('ULTRA_SPECTATOR_TEST') else 2):
                 for _ in range(600):
                     client=socket.socket()
                     try:client.connect(('127.0.0.1',port));break
@@ -49,7 +49,7 @@ def run(native):
                 clients.append(client);buffers.append(bytearray())
                 send(i,0x10,('Player '+str(i)).encode('utf-16-le').ljust(40,b'\0'))
                 send(i,0x12,struct.pack('<HBBI',0x1362,204,204,0)+bytes(40))
-            ready=set();confirmed=set();started=False;stage=0;lp=[];moves=[]
+            ready=set();confirmed=set();started=False;stage=0;lp=[];moves=[];timer_seen=False;observer_seen=False
             deadline=time.monotonic()+35
             while time.monotonic()<deadline:
                 for client in select.select(clients,[],[],.2)[0]:
@@ -61,20 +61,33 @@ def run(native):
                         if len(buffer)<size+2:break
                         f=bytes(buffer[2:2+size]);del buffer[:2+size];op=f[0]
                         if op==2:raise AssertionError(('Native room error',f.hex()))
-                        if op==0x13 and i not in ready:
+                        if op==0x13 and i==2:
+                            assert (f[1]&15)==7,('Third client was not an observer',f.hex())
+                            observer_seen=True
+                        if op==0x13 and i<2 and i not in ready:
                             send(i,2,struct.pack('<II',40,0)+struct.pack('<40I',*([89631139]*40)));send(i,0x22);ready.add(i)
                         if op==0x21 and i==0 and (f[1]&15)==9:
                             confirmed.add(f[1]>>4)
                             if len(confirmed)==2 and not started:send(0,0x25);started=True
                         if op==3:send(i,3,bytes([1 if i==0 else 3]))
                         if op==4:send(i,4,b'\x01')
+                        if op==0x18:
+                            timer_seen=True
+                            assert struct.unpack_from('<H',f,3)[0]>0,('Invalid countdown',f.hex())
+                            send(i,0x15)
                         if op!=1:continue
+                        if os.environ.get('ULTRA_TIMER_TEST'):
+                            if f[1]==5:
+                                assert timer_seen and f[3]==3,('Missing timer or timeout result',f.hex())
+                                print('PASS native countdown packets, confirmation and automatic timeout loss')
+                                return
+                            continue
                         message=f[1]
                         if message==1:raise AssertionError(('Engine rejected a response',f.hex()))
                         if message==94 and i==0:lp.append((f[2],struct.unpack_from('<i',f,3)[0]))
                         if message==50:
                             moves.append((i,f))
-                            if i==1 and f[10]==0 and f[11]==2:
+                            if i in (1,2) and f[10]==0 and f[11]==2:
                                 assert struct.unpack_from('<I',f,2)[0]==0,'Added card leaked to opponent'
                         if message==11 and i==0:
                             if stage==0:
@@ -102,6 +115,7 @@ def run(native):
                             stage+=1
                         if message==5:
                             assert stage==4 and f[2:]==b'\x00\x00',(stage,f.hex())
+                            if os.environ.get('ULTRA_SPECTATOR_TEST'):assert observer_seen,'Spectator role not received'
                             print('PASS explicit owner commands: no automatic changes, seat/turn checks, LP update, usable added card, clear hand, and win')
                             return
             raise AssertionError(('Admin duel stalled',stage,lp))

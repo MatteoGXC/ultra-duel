@@ -72,6 +72,37 @@ class PlayerFeatures(unittest.TestCase):
             self.assertTrue(call(1,body)['ok'])
             command.assert_called_once_with(room,'owner',2,0,12345)
             self.assertEqual(self.db.execute('select actor,action from admin_actions').fetchone()[:],(1,'set-lp'))
+            other={'members':{2}}
+            room['tables']={1:room,2:other}
+            body['table']=2
+            with self.assertRaises(service.Problem):call(1,body)
+            other['members'].add(1)
+            self.assertTrue(call(1,body)['ok'])
+            command.assert_called_with(other,'owner',2,0,12345)
+    def test_spectating_uses_friend_authorization_and_marks_observer_role(self):
+        self.db.executescript('create table sessions(token text,user integer,expires integer);create table friends(sender integer,recipient integer,accepted integer);insert into friends values(1,2,1);')
+        for uid in (1,2,3):self.db.execute('insert into sessions values(?,?,?)',(hashlib.sha256(str(uid).encode()).hexdigest(),uid,int(time.time())+1000))
+        room=dict(id='r',host='owner',hostId=1,format='TCG',cap=100,port=7911,expires=int(time.time())+1000,mode='1v1',capacity=2,secret='private',members={1},process=SimpleNamespace(poll=lambda:None))
+        def call(uid,path,body=None):
+            request=SimpleNamespace(headers={'Authorization':'Bearer '+str(uid)})
+            return service.Handler.route(request,self.db,'POST',path,body or {},int(time.time()))
+        with patch.object(service,'ROOMS',{'r':room}),patch.object(service,'clean_rooms'):
+            with self.assertRaises(service.Problem) as denied:call(3,'/rooms/r/watch')
+            self.assertEqual(denied.exception.status,403)
+            watch=call(2,'/rooms/r/watch')
+            self.assertTrue(watch['spectate'])
+            self.assertEqual(watch['secret'],'private')
+            self.assertFalse(call(2,'/rooms/r/join')['spectate'])
+            table2=dict(port=7912,secret='second',members=set(),process=SimpleNamespace(poll=lambda:None))
+            with patch.object(service,'start_table',return_value=table2) as start:
+                joined=call(2,'/rooms/r/join',{'table':2})
+                self.assertEqual((joined['port'],joined['table'],joined['secret']),(7912,2,'second'))
+                self.assertNotEqual(room['secret'],table2['secret'])
+                start.assert_called_once_with(room,2)
+                self.assertTrue(call(2,'/rooms/r/watch',{'table':2})['spectate'])
+                start.assert_called_once()
+            with self.assertRaises(service.Problem):call(2,'/rooms/r/join',{'table':4})
+
     def test_profile_avatar_is_account_scoped(self):
         p=self.call('/profile/avatar',{'card':16509007})
         self.assertEqual(p['avatar'],16509007)

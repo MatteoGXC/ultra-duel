@@ -272,17 +272,13 @@ namespace MDPro3.Servant
 
         public void ReturnTo()
         {
-
-            if (returnServant != null)
+            var target=returnServant;
+            if(RoomServant.FromUltraHost || target==null || target==Program.instance.online)
             {
-                Debug.Log($"ReturnTo: {returnServant}");
-                Program.instance.ShiftToServant(returnServant);
+                MainMenuUI.ReturnToFriendRooms=true;
+                target=Program.instance.menu;
             }
-            else
-            {
-                Debug.Log($"ReturnTo: - Program.instance.online");
-                Program.instance.ShiftToServant(Program.instance.online);
-            }
+            Program.instance.ShiftToServant(target);
         }
 
         public override void PerFrameFunction()
@@ -705,6 +701,16 @@ namespace MDPro3.Servant
         {
             if(p.Function == (int)GameMessage.Win)
             {
+                messageDispatcher.playerResponed = true;
+            }
+            else if(p.Function == (int)GameMessage.SelectIdleCmd
+                && currentMessage == GameMessage.SelectIdleCmd && packages.Count > 1
+                && packages[0].Function == (int)GameMessage.SelectIdleCmd)
+            {
+                // An explicit owner command can invalidate an idle menu while
+                // the client still awaits input. Release that superseded prompt
+                // without sending any of its stale choices back to the server.
+                DuelBGManager?.ClearResponse();
                 messageDispatcher.playerResponed = true;
             }
         }

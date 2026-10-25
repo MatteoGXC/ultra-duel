@@ -3,13 +3,14 @@ import hashlib
 from datetime import datetime, timezone
 import json
 import subprocess
+import shutil
 import zipfile
 import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT.parent / 'release-work/windows-v0.1.0'
-VERSION = '0.1.9'
+VERSION = '0.1.10'
 OUT = ROOT.parent / ('release-work/windows-v'+VERSION)
 PLAYER = ROOT / 'release/Solo-mode-update'
 
@@ -55,6 +56,13 @@ def main():
     names += ['Picture/Art/'+str(row['id'])+'.jpg' for row in audit['art']
               if (PLAYER/'Picture/Art'/f"{row['id']}.jpg").is_file()]
     if (PLAYER/'Expansions/ultra-card-art.zip').exists(): names += ['Expansions/ultra-card-art.zip']
+    for name in ('Rock.png','Paper.png','Scissors.png'):
+        source=ROOT/'Picture/DIY'/name;target=PLAYER/'Picture/DIY'/name
+        if source.is_file():
+            target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,target)
+        if not target.is_file():raise RuntimeError('Missing RPS artwork: '+name)
+        names.append('Picture/DIY/'+name)
+    names=list(dict.fromkeys(names))
     changed = []
     for name in names:
         path = PLAYER / name

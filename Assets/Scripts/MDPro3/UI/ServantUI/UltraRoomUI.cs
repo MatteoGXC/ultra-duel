@@ -23,7 +23,7 @@ namespace MDPro3.UI.ServantUI
         Image P(RectTransform r,Color c){var i=r.gameObject.AddComponent<Image>();i.color=c;i.raycastTarget=false;return i;}
         TextMeshProUGUI T(Transform p,string s,float size,float x,float y,float w,float h)
         {
-            var t=R("Label",p,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();t.text=s;t.font=TMP_Settings.defaultFontAsset;
+            var t=R("Label",p,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();t.text=s;t.font=Program.instance.ui_.tmpFont;
             t.fontSize=size;t.color=Color.white;t.raycastTarget=false;t.enableAutoSizing=true;t.fontSizeMin=size*.7f;t.fontSizeMax=size;return t;
         }
         Button B(Transform p,string s,UnityEngine.Events.UnityAction action,float x,float y,float w,float h)
@@ -50,7 +50,7 @@ namespace MDPro3.UI.ServantUI
                 membersLabel=T(friendRoom,"",19,.48f,.905f,.49f,.06f);
                 var table=R("Table 1",friendRoom,.11f,.56f,.50f,.29f);P(table,new Color(.28f,.28f,.32f,.75f));
                 P(R("Table header",table,0,.84f,1,.16f),new Color(.72f,.72f,.75f));
-                T(table,"Table 1",21,.025f,.84f,.8f,.16f).color=Color.black;
+                T(table,"Table "+UltraServices.CurrentTable,21,.025f,.84f,.8f,.16f).color=Color.black;
                 tableAvatars=new Image[required];
                 for(int i=0;i<required;i++)
                 {

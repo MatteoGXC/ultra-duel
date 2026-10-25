@@ -16,7 +16,7 @@ namespace MDPro3.Net
 {
     public static class UltraServices
     {
-        public const string Version = "0.1.9";
+        public const string Version = "0.1.10";
         public const string Repository = "https://github.com/MatteoGXC/ultra-duel";
         const string SessionPath = "Data/friends-session.json";
         public static string Token { get; private set; } = "";
@@ -112,6 +112,7 @@ namespace MDPro3.Net
         }
 
         public static string CurrentRoomId { get; private set; }
+        public static int CurrentTable { get; private set; }=1;
         public static void SetProfile(JObject profile)
         {
             if(State!=null)State["profile"]=profile;
@@ -135,10 +136,16 @@ namespace MDPro3.Net
 
         public static async UniTask JoinRoom(JObject room)
         {
-            CurrentRoomId=(string)room["id"];
+            bool spectate=(bool?)room["spectate"]==true;
             DuelFormat.Set((string)room["format"] == "Genesys", (int)room["cap"]);
-            var deck = new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK + Config.GetConfigDeckName() + Program.EXPANSION_YDK);
-            if (!DuelFormat.Validate(deck, "Your Deck")) return;
+            if(!spectate)
+            {
+                var deck = new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK + Config.GetConfigDeckName() + Program.EXPANSION_YDK);
+                if (!DuelFormat.Validate(deck, "Your Deck")) return;
+            }
+            CurrentRoomId=(string)room["id"];
+            CurrentTable=(int?)room["table"]??1;
+            RoomServant.WantSpectate=spectate;
             Program.instance.online.KF_OnlineGame(PlayerName, (string)room["address"],
                 ((int)room["port"]).ToString(), (string)room["secret"]);
             RoomServant.FromUltraHost = true;

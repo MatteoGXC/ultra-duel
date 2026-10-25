@@ -125,7 +125,7 @@ namespace MDPro3.UI.ServantUI
             if (Program.exitOnReturn)
                 return;
 
-            Program.instance.ShiftToServant(Program.instance.online);
+            OpenDuel();
         }
 
         public void OnPuzzle()

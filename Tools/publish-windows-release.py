@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.9'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.10'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -29,12 +29,16 @@ def main():
     manifest = json.loads((OUTPUT/'windows-manifest.json').read_text())
     version = manifest['version']
     tag = 'v'+version
-    body = ('## Ultra Duel '+version+' — Beyond the Brave\n\n'
+    body = ('## Ultra Duel '+version+' — Friend Rooms & Duel Fixes\n\n'
             'New players: download **Ultra-Duel-Setup.exe**. Existing players: use **Ultra-Duel-Updater.zip** beside the game executable. Decks, settings and accounts are preserved.\n\n'
-            '- Adds all 100 unique Beyond the Brave cards, normal artwork and the English pack search index.\n'
-            '- Ports 17 new effect scripts to the native engine, including separate shared once-per-turn limits and Angelechy summon-zone selection.\n'
-            '- Aligns archetype IDs with the engine and preserves existing translated card text.\n\n'
-            'This is the card-set update. Further admin, friend-room and interface fixes are still in progress. Mac work is paused.\n\n'
+            '- Three independent tables per friend room, with ENTRY and WATCH options.\n'
+            '- Friend duels use a five-minute timer; timeout losses are enforced by the server.\n'
+            '- Fixes admin card-add freezes and blue-screen animations, refreshes action choices after LP/hand changes, and moves ADMIN to the top left. Owner access remains required.\n'
+            '- Bundles rock-paper-scissors images inside the game and updater so downloaded clients can see every choice.\n'
+            '- Removes the legacy online-duel menu routes and returns friend duels to Ultra Duel friend rooms.\n'
+            '- Profile headers use player icons with matching accent frames, plus larger home navigation buttons.\n'
+            '- Includes the 100-card Beyond the Brave update from v0.1.9.\n\n'
+            'Windows release. Mac work remains paused.\n\n'
             'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:

@@ -73,20 +73,52 @@ def session(db, uid):
 def are_friends(db, a, b):
     return db.execute('select 1 from friends where accepted=1 and ((sender=? and recipient=?) or (sender=? and recipient=?))', (a,b,b,a)).fetchone() is not None
 
+def room_tables(room):
+    return room.get('tables', {1:room})
+
+
+def stop_table(table):
+    if table['process'].poll() is None:table['process'].terminate()
+    table['log'].close()
+    if table['process'].stdin:table['process'].stdin.close()
+
+
 def clean_rooms():
     now = time.time()
     for rid,room in list(ROOMS.items()):
-        if room['process'].poll() is not None or room['expires']<now:
-            if room['process'].poll() is None: room['process'].terminate()
-            room['log'].close()
-            if room['process'].stdin:room['process'].stdin.close()
+        if room['expires']<now:
+            for table in room_tables(room).values():stop_table(table)
             del ROOMS[rid]
 
+
+def start_table(room, number):
+    used={t['port'] for r in ROOMS.values() for t in room_tables(r).values() if t['process'].poll() is None}
+    port=next((p for p in range(ROOM_FIRST,ROOM_FIRST+ROOM_COUNT) if p not in used),None)
+    if port is None:raise Problem('All duel tables are busy. Please try again later.',503)
+    secret=secrets.token_hex(8)
+    control=STATE/('control-'+room['id']+'-'+str(number)+'-'+secrets.token_hex(4));control.mkdir(mode=0o700)
+    env=dict(os.environ,ULTRA_ROOM_SECRET=secret,ULTRA_ADMIN_RESULTS=str(control))
+    log=(STATE/f"room-{room['id']}-table-{number}.log").open('ab')
+    proc=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--room',str(port),room['format'],str(room['cap']),room['mode']],env=env,stdin=subprocess.PIPE,text=True,stdout=log,stderr=log)
+    ready=False
+    for _ in range(40):
+        if proc.poll() is not None:break
+        try:
+            with socket.create_connection(('127.0.0.1',port),timeout=.1):ready=True;break
+        except OSError:time.sleep(.1)
+    if not ready:
+        proc.terminate();log.close();raise Problem('The duel table could not start.',503)
+    return dict(port=port,secret=secret,process=proc,log=log,members=set(),controlDir=control)
+
+
 def public_room(room):
-    return {key:room[key] for key in ('id','host','hostId','format','cap','port','expires','mode','capacity')}
+    result={key:room[key] for key in ('id','host','hostId','format','cap','port','expires','mode','capacity')}
+    tables=room_tables(room)
+    result['tables']=[{'number':n,'open':n in tables and tables[n]['process'].poll() is None} for n in range(1,4)] if 'tables' in room else [{'number':1,'open':True}]
+    return result
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'UltraDuel/0.1.8'
+    server_version = 'UltraDuel/0.1.10'
     def log_message(self, *_): pass # Passwords, tokens and private room secrets never enter access logs.
     def reply(self, data, status=200):
         body=json.dumps(data,separators=(',',':')).encode()
@@ -122,7 +154,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.8','ownerDuelControls':True}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.10','ownerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')
@@ -159,7 +191,9 @@ class Handler(BaseHTTPRequestHandler):
             with LOCK:
                 room=ROOMS.get(rid)
                 if not room or uid not in room.get('members',set()):raise Problem('Join your current duel before using admin controls.',403)
-                result=send_duel_command(room,user['name'],actions[action],1 if action=='clear-hand' else target,value)
+                table=room_tables(room).get(int(body.get('table',1)))
+                if not table or uid not in table.get('members',set()):raise Problem('Join this table before using admin controls.',403)
+                result=send_duel_command(table,user['name'],actions[action],1 if action=='clear-hand' else target,value)
             messages={1:'No active duel.',2:'Use this action during your own Main Phase, after effects finish resolving.',3:'Invalid value or card, or your hand is full.',4:'Your player is not seated in this duel.',5:'The duel did not answer. Check its state before retrying.'}
             if result:raise Problem(messages.get(result,'Duel action failed.'),409)
             db.execute('insert into admin_actions(actor,room,action,details,created) values(?,?,?,?,?)',(uid,rid,action,json.dumps(dict(target=target,value=value)),now))
@@ -200,24 +234,12 @@ class Handler(BaseHTTPRequestHandler):
             with LOCK:
                 clean_rooms()
                 if any(r['hostId']==uid for r in ROOMS.values()): raise Problem('Close your existing room before creating another.')
-                used={r['port'] for r in ROOMS.values()}
-                port=next((p for p in range(ROOM_FIRST,ROOM_FIRST+ROOM_COUNT) if p not in used),None)
-                if port is None: raise Problem('All duel rooms are busy. Please try again later.',503)
-                rid=secrets.token_hex(8); secret=secrets.token_hex(8)
-                control=STATE/('control-'+rid);control.mkdir(mode=0o700)
-                env=dict(os.environ,ULTRA_ROOM_SECRET=secret,ULTRA_ADMIN_RESULTS=str(control))
-                log=(STATE/f'room-{rid}.log').open('ab')
-                proc=subprocess.Popen([sys.executable,str(Path(__file__).resolve()),'--room',str(port),mode,str(cap),room_mode],env=env,stdin=subprocess.PIPE,text=True,stdout=log,stderr=log)
-                ready=False
-                for _ in range(40):
-                    if proc.poll() is not None: break
-                    try:
-                        with socket.create_connection(('127.0.0.1',port),timeout=.1): ready=True; break
-                    except OSError: time.sleep(.1)
-                if not ready:
-                    proc.terminate(); log.close(); raise Problem('The duel room could not start.',503)
-                ROOMS[rid]=dict(id=rid,host=user['name'],hostId=uid,format=mode,cap=cap,port=port,secret=secret,process=proc,log=log,expires=now+3600,mode=room_mode,capacity=4 if room_mode=='2v2' else 2,members={uid},controlDir=control)
-                return dict(public_room(ROOMS[rid]),address=HOST,secret=secret)
+                rid=secrets.token_hex(8)
+                room=dict(id=rid,host=user['name'],hostId=uid,format=mode,cap=cap,port=0,expires=now+3600,mode=room_mode,capacity=4 if room_mode=='2v2' else 2,members={uid},tables={})
+                table=start_table(room,1);table['members'].add(uid)
+                room.update(table);room['members']={uid};room['tables'][1]=table
+                ROOMS[rid]=room
+                return dict(public_room(room),address=HOST,secret=table['secret'],table=1)
         if path.startswith('/rooms/'):
             rid=path.split('/')[2]
             with LOCK:
@@ -225,12 +247,23 @@ class Handler(BaseHTTPRequestHandler):
                 if not room:
                     if method=='DELETE': return {'ok':True}
                     raise Problem('This room has closed.',404)
+                authorized=room['hostId']==uid or are_friends(db,uid,room['hostId'])
+                if not authorized:raise Problem('Only the host’s friends can enter this room.',403)
+                if method=='GET':return public_room(room)
                 if method=='DELETE' and room['hostId']==uid:
-                    room['process'].terminate(); room['log'].close(); del ROOMS[rid]; return {'ok':True}
-                if method=='POST' and path.endswith('/join'):
-                    if room['hostId']!=uid and not are_friends(db,uid,room['hostId']): raise Problem('Only the host’s friends can join this room.',403)
-                    room.setdefault('members',set()).add(uid)
-                    return dict(public_room(room),address=HOST,secret=room['secret'])
+                    for table in room_tables(room).values():stop_table(table)
+                    del ROOMS[rid];return {'ok':True}
+                if method=='POST' and (path.endswith('/join') or path.endswith('/watch')):
+                    number=int(body.get('table',1))
+                    if not 1<=number<=3:raise Problem('Choose table 1, 2 or 3.')
+                    tables=room_tables(room)
+                    if number not in tables or tables[number]['process'].poll() is not None:
+                        if number in tables:stop_table(tables[number])
+                        tables[number]=start_table(room,number)
+                        room['tables']=tables
+                    table=tables[number]
+                    table.setdefault('members',set()).add(uid);room.setdefault('members',set()).add(uid)
+                    return dict(public_room(room),address=HOST,port=table['port'],secret=table['secret'],spectate=path.endswith('/watch'),table=number)
         raise Problem('Not found.',404)
 
 def send_duel_command(room,name,operation,target,value):
@@ -270,7 +303,7 @@ def room_worker():
             except (ValueError,KeyError,TypeError,OSError):print('ADMIN_COMMAND_ERROR',flush=True)
     threading.Thread(target=commands,daemon=True).start()
     tag=len(sys.argv)>5 and sys.argv[5]=='2v2'
-    args=f"{port} {'-1' if genesys else '0'} 1 {2 if tag else 0} {'8' if genesys else '7'} F F 8000 5 1 0 0"
+    args=f"{port} {'-1' if genesys else '0'} 1 {2 if tag else 0} {'8' if genesys else '7'} F F 8000 5 1 300 0"
     # The native entry point blocks until the last player leaves. Its return
     # value is main()'s exit status, not the bound port.
     server.start_server(args.encode())
@@ -285,6 +318,7 @@ def main():
     print('ULTRA_FRIENDS_READY',PORT,flush=True)
     try: server.serve_forever()
     finally:
-        for room in ROOMS.values(): room['process'].terminate()
+        for room in ROOMS.values():
+            for table in room_tables(room).values():stop_table(table)
 
 if __name__=='__main__': main()

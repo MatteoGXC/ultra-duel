@@ -1327,8 +1327,15 @@ namespace MDPro3
                 var director = fx.GetComponent<PlayableDirector>();
                 _ = director.AutoDestroy();
             }
+            // Owner hand additions use normal hand movement. The legacy
+            // CardCheatAppear cinematic assumes a scripted cutscene and can
+            // leave a full-screen effect covering an ordinary network duel.
+            bool ownerHandAddition = cacheP.location == 0
+                && p.InLocation(CardLocation.Hand) && p.IsReason(CardReason.RULE);
+            if(ownerHandAddition)
+                ModelAt(p);
             //from unknown
-            if (cacheP.location == 0)
+            if (cacheP.location == 0 && !ownerHandAddition)
             {
                 //Token In
                 if (data.HasType(CardType.Token))

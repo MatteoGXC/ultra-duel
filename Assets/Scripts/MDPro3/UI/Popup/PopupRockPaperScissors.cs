@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using TMPro;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,9 +13,45 @@ namespace MDPro3.UI.Popup
         {
             base.Initialize();
             cancelCallHide = false;
-            Manager.GetElement<Button>("RockButton").onClick.AddListener(() => { TcpHelper.CtosMessage_HandResult(2); Hide(); });
-            Manager.GetElement<Button>("PaperButton").onClick.AddListener(() => { TcpHelper.CtosMessage_HandResult(3); Hide(); });
-            Manager.GetElement<Button>("ScissorsButton").onClick.AddListener(() => { TcpHelper.CtosMessage_HandResult(1); Hide(); });
+            AddChoice("RockButton", "ROCK", 2);
+            AddChoice("PaperButton", "PAPER", 3);
+            AddChoice("ScissorsButton", "SCISSORS", 1);
+        }
+
+        private void AddChoice(string key, string title, byte response)
+        {
+            var button = Manager.GetElement<Button>(key);
+            button.onClick.AddListener(() => { TcpHelper.CtosMessage_HandResult(response); Hide(); });
+            var image = Manager.GetElement<RawImage>(key);
+            var builtIn = Resources.Load<Texture2D>("Ultra/RPS" + key.Replace("Button", ""));
+            image.texture = builtIn != null ? builtIn : Texture2D.whiteTexture;
+            image.color = builtIn != null ? Color.white : new Color(.10f, .14f, .18f, .98f);
+            var bar = new GameObject("Choice caption", typeof(RectTransform), typeof(Image));
+            bar.transform.SetParent(button.transform, false);
+            bar.layer = button.gameObject.layer;
+            var rect = (RectTransform)bar.transform;
+            rect.anchorMin = new Vector2(.02f, .02f);
+            rect.anchorMax = new Vector2(.98f, .23f);
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            var background = bar.GetComponent<Image>();
+            background.color = new Color(0, 0, 0, .8f);
+            background.raycastTarget = false;
+            var label = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            label.transform.SetParent(bar.transform, false);
+            label.layer = bar.layer;
+            var text = label.GetComponent<TextMeshProUGUI>();
+            text.rectTransform.anchorMin = Vector2.zero;
+            text.rectTransform.anchorMax = Vector2.one;
+            text.rectTransform.offsetMin = text.rectTransform.offsetMax = Vector2.zero;
+            text.font = Program.instance.ui_.tmpFont;
+            text.text = title;
+            text.fontSize = 28;
+            text.enableAutoSizing = true;
+            text.fontSizeMin = 16;
+            text.fontSizeMax = 28;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = Color.white;
+            text.raycastTarget = false;
         }
 
         private void Start()

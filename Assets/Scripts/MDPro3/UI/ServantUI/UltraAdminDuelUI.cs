@@ -27,7 +27,7 @@ namespace MDPro3.UI.ServantUI
 
         void Start()
         {
-            launcher=Button(transform,"ADMIN",()=>Open(),.82f,.88f,.13f,.055f);
+            launcher=Button(transform,"ADMIN",()=>Open(),.012f,.93f,.11f,.05f);
             launcher.gameObject.SetActive(false);
         }
 
@@ -88,7 +88,7 @@ namespace MDPro3.UI.ServantUI
             try
             {
                 if(RoomServant.FromUltraHost && !string.IsNullOrEmpty(UltraServices.CurrentRoomId))
-                    await UltraServices.Request("/admin/duel","POST",new{room=UltraServices.CurrentRoomId,action,target,value});
+                    await UltraServices.Request("/admin/duel","POST",new{room=UltraServices.CurrentRoomId,table=UltraServices.CurrentTable,action,target,value});
                 else if(YgoServer.ServerRunning())
                 {
                     string actor=Config.Get("DuelPlayerName0",Config.EMPTY_STRING);
@@ -105,13 +105,13 @@ namespace MDPro3.UI.ServantUI
 
         static RectTransform Rect(string name,Transform parent,float x,float y,float w,float h)
         {
-            var r=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();r.SetParent(parent,false);
+            var r=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();r.SetParent(parent,false);r.gameObject.layer=parent.gameObject.layer;
             r.anchorMin=new Vector2(x,y);r.anchorMax=new Vector2(x+w,y+h);r.offsetMin=r.offsetMax=Vector2.zero;return r;
         }
         static TextMeshProUGUI Text(Transform parent,string value,float size,float x,float y,float w,float h)
         {
             var t=Rect("Label",parent,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();
-            t.font=TMP_Settings.defaultFontAsset;t.text=value;t.fontSize=size;t.color=Color.white;t.raycastTarget=false;
+            t.font=Program.instance.ui_.tmpFont;t.text=value;t.fontSize=size;t.color=Color.white;t.raycastTarget=false;
             t.enableAutoSizing=true;t.fontSizeMin=size*.7f;t.fontSizeMax=size;t.alignment=TextAlignmentOptions.MidlineLeft;return t;
         }
         static Button Button(Transform parent,string label,UnityAction action,float x,float y,float w,float h)
