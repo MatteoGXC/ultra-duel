@@ -36,6 +36,7 @@ jobs:
             /Tests/NativeCardScriptTests.py
             /Tests/NativeBeyondTheBraveTests.py
             /Tests/NativeAdminDuelTests.py
+            /Tests/MacFieldVisualCheck.swift
       - name: Download private build input
         env:
           GH_TOKEN: ${{ github.token }}
@@ -121,7 +122,7 @@ jobs:
           import os,subprocess,pathlib,threading,time
           root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
           env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
-          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--rps-art-check','--friend-tables-layout','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
+          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--rps-art-check','--friend-tables-layout','--ultra-features','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
           process=subprocess.Popen(command,env=env)
           def desktop_capture():
               for _ in range(1200):
@@ -159,6 +160,8 @@ jobs:
           assert (root/'mac-duel-ui/passed.txt').exists(),(root/'mac-duel-ui.log').read_text()[-6000:]
           assert 'Failed to decompress' not in (root/'mac-duel-ui.log').read_text(), 'Unsupported compressed textures in installed duel'
           PY
+      - name: Reject opaque white field overlays
+        run: swift Tests/MacFieldVisualCheck.swift "$RUNNER_TEMP/mac-duel-ui/duel.png" "$RUNNER_TEMP/mac-duel-ui/damage-verified.png"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

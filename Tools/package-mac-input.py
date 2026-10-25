@@ -53,7 +53,7 @@ def main():
         for file in (args.intel_textures/'StandaloneOSX').rglob('*'):
             add(file,'Defaults/'+file.relative_to(args.intel_textures).as_posix())
         add(args.intel_textures/'intel-texture-conversion.json','Defaults/Data/intel-texture-conversion.json')
-    with zipfile.ZipFile(args.output, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as target:
+    with zipfile.ZipFile(args.output, 'w', zipfile.ZIP_DEFLATED, compresslevel=1) as target:
         with zipfile.ZipFile(args.baseline) as baseline:
             copied=set()
             for entry in baseline.infolist():
