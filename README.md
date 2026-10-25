@@ -1,46 +1,256 @@
 # Ultra Duel
 
-A Yu-Gi-Oh! practice and multiplayer client based on [MDPro3](https://github.com/daominah/mdpro3fork), with TCG Advanced and Genesys rules, AI opponents, a deck editor, and the original duel presentation.
+**A free, open-source Yu-Gi-Oh! practice and multiplayer client for Windows and macOS.**
 
-## Choose your download
+Ultra Duel is an independent community-driven project built upon [MDPro3](https://github.com/daominah/mdpro3fork). It expands the original client with TCG Advanced and Genesys formats, AI opponents, online multiplayer, deck management, progression systems, and an updated interface.
 
-[**Windows**](https://github.com/MatteoGXC/ultra-duel/releases/tag/v0.1.12) | [**macOS - Intel**](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.12) | [**macOS - Apple Silicon**](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.10)
+Whether you're testing a competitive deck, learning new strategies, or dueling friends, Ultra Duel provides a flexible environment for practicing Yu-Gi-Oh!
 
-See [all downloads sorted by version and platform](DOWNLOADS.md). Mac users should choose the DMG matching their processor.
+**Free to play • Open source • TCG & Genesys • Solo & Multiplayer**
 
-## Download for Windows
+---
 
-[Download Ultra Duel Setup](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Setup.exe), run it, and choose an installation folder. Setup downloads the complete game, verifies the archives, and creates a desktop shortcut. No Unity installation is needed. Keep the game's runtime and asset folders together; the game EXE alone is insufficient.
+## Download Ultra Duel
 
-Already installed Matteo Duel? Download [the small updater](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Updater.zip), extract it into your game folder, close the game, and run `Update-Ultra-Duel.cmd`. It downloads only changed files and preserves your decks and settings. Launch `Ultra-Duel.exe`; existing `Matteo-Duel.exe` shortcuts continue to work. GitHub's automatic **Source code** ZIP is for development.
+Choose the version compatible with your operating system.
 
-The internal `Matteo-Duel_Data` folder remains for compatibility with existing installations. Keep all runtime and asset folders together.
+| Platform | Download |
+|---|---|
+| **Windows** | [Download for Windows](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Setup.exe) |
+| **macOS — Intel** | [View Intel Mac releases](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.12) |
+| **macOS — Apple Silicon** | [View Apple Silicon releases](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.10) |
 
-Solo works offline after installation. For online play, open **FRIENDS**, create an account, and add your friend by username. Accept the request, then open **DUEL** to create or join a private hosted room. Choose TCG Advanced or Genesys (100, 0, or a custom point cap). Both players connect to the Ultra Duel VPS; no router port forwarding is required. Both players need v0.1.2. Server setup and maintenance are documented in [Server/README.md](Server/README.md).
+For all available versions, visit the [Downloads Guide](DOWNLOADS.md) or browse [GitHub Releases](https://github.com/MatteoGXC/ultra-duel/releases).
 
-## Playing
+### Windows installation
 
-- **DECK** opens your deck library directly. Corner badges show each deck's saved format: TCG, Genesys (100 points), Genesys 0, or its custom point cap. Each deck has its own **Format** button in the editor; the format and cap are saved inside the YDK file.
-- **SOLO** starts with the selected deck's saved format and has its own format/point-cap switch and player-deck selector. TCG and Genesys use separate AI deck libraries. Opponents incompatible with the current format or point cap are excluded, including from Random selection.
-- Solo offers 14 TCG and 15 Genesys published lists, with a mix of Casual, Standard, and Hard practice opponents. Difficulty labels are estimates, not tournament rankings. Sources and exact card arrays are recorded in `Data/solo-published-decks.json`. Cards are imported unchanged; there is no automatic rebuilding, substitution, trimming, or staple filling. Custom AI decks are validated before play.
-- The angular home screen includes DUEL, DECK, SOLO, SHOP, friends, missions, a profile and a free Duel Pass. Each win awards 100 XP; every 200 XP unlocks a tier (20 tiers, no expiry). Claim cosmetic gems, titles and profile frames. Gems buy home-profile frames; no paid purchases are included. Progress is stored locally in `Progress/profile.json`, and installers/updaters preserve it.
-- v0.1.2 adds 300 missing card IDs, corrects 204 availability flags, updates maintained card scripts, supplies 466 missing artwork sources and indexes the English Burst Protocol set (101 official database entries). New cards are not automatically made TCG legal when they are still OCG only. [Data/card-update-audit.json](Data/card-update-audit.json) records the snapshot and sources.
-- The app checks this repository for new releases and main-branch pushes. Release notices point to the small updater; source pushes are identified as development changes until a Windows release exists.
-- LP notifications distinguish damage from activation costs. Optional card-preview visuals cannot interrupt a monster's movement from hand to field.
+1. Download `Ultra-Duel-Setup.exe`.
+2. Run the installer and select an installation directory.
+3. Allow the installer to download and verify the required game files.
+4. Launch **Ultra Duel** using the desktop shortcut.
 
-## Build and verification
+Unity does not need to be installed to play.
 
-See [FORMAT-BUILD.md](FORMAT-BUILD.md) for Unity, native engine, runtime asset, data snapshot, and Windows build instructions. Developers building from source must restore runtime art/font bundles as described there; players can use the packaged release above.
+**Already have Ultra Duel or Matteo Duel installed?**
+
+Download the [Ultra Duel Updater](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Updater.zip), extract it into your installation directory, close the game, and run `Update-Ultra-Duel.cmd`.
+
+The updater downloads changed files while preserving your decks, settings, and local progress.
+
+> **Important:** Keep the executable and accompanying data, runtime, and asset folders together. The executable alone is not sufficient to run the game. The internal `Matteo-Duel_Data` directory is retained for compatibility with existing installations.
+
+---
+
+## Features
+
+### TCG Advanced & Genesys
+
+Ultra Duel supports multiple Yu-Gi-Oh! formats, allowing players to practice under different deck-building rules.
+
+- **TCG Advanced:** Traditional competitive Yu-Gi-Oh! deck construction and gameplay.
+- **Genesys:** Point-based deck building with support for 100-point, 0-point, and custom limits.
+- **Per-deck format settings:** Each deck independently remembers its selected format and point cap.
+- **Format-aware validation:** Decks and AI opponents are checked against the selected format.
+
+Format settings are stored within each deck's YDK file.
+
+### Deck editor
+
+Build, customize, and manage your decks directly from the client.
+
+- Browse your deck library without selecting a format first.
+- Assign individual formats to your decks.
+- View each deck's selected format from its library badge.
+- Edit your Main, Extra, and Side Deck configurations.
+- Save decks for use in Solo or Multiplayer.
+
+### Solo practice
+
+Practice against AI opponents without needing an internet connection after installation.
+
+Ultra Duel includes:
+
+- 14 published TCG AI deck lists.
+- 15 published Genesys AI deck lists.
+- Casual, Standard, and Hard difficulty labels.
+- Random opponent selection.
+- Custom AI deck support.
+- Format and point-cap filtering.
+
+Published deck lists are preserved without automatic substitutions or rebuilding. Difficulty labels are estimates rather than formal rankings.
+
+Deck sources and card lists are documented in `Data/solo-published-decks.json`.
+
+### Online multiplayer
+
+Challenge friends using Ultra Duel's hosted multiplayer services.
+
+1. Open **FRIENDS** and create an account.
+2. Add another player using their username.
+3. Accept the friend request.
+4. Open **DUEL** and create or join a private room.
+5. Select your format and begin dueling.
+
+Multiplayer connections use Ultra Duel's hosted server infrastructure, eliminating the need for players to configure router port forwarding.
+
+Both players should use compatible client versions.
+
+Server deployment and maintenance documentation is available in [Server/README.md](Server/README.md).
+
+### Home screen and progression
+
+Ultra Duel includes a redesigned angular home interface with access to:
+
+- **DUEL** — Online multiplayer.
+- **DECK** — Deck editing and management.
+- **SOLO** — AI practice.
+- **SHOP** — Cosmetic customization.
+- **FRIENDS** — Friend management.
+- **MISSIONS** — In-game objectives.
+- **PROFILE** — Player information and customization.
+- **DUEL PASS** — Free progression rewards.
+
+The free Duel Pass contains 20 tiers without an expiration date.
+
+Each win awards 100 XP, with a new tier available every 200 XP. Rewards include cosmetic gems, titles, and profile frames.
+
+Gems are used for home-profile customization. No paid gameplay purchases are included.
+
+Local progression is saved in `Progress/profile.json` and preserved during supported updates.
+
+### Card database and gameplay improvements
+
+Ultra Duel builds upon MDPro3's duel client and includes additional card database and gameplay updates.
+
+The v0.1.2 content update introduced:
+
+- 300 additional card IDs.
+- 204 corrected availability flags.
+- Updated maintained card scripts.
+- 466 additional artwork sources.
+- English Burst Protocol indexing with 101 official database entries.
+
+Card availability is maintained separately from TCG legality. Cards available in the OCG are not automatically treated as TCG legal.
+
+Update sources and snapshot details are recorded in [Data/card-update-audit.json](Data/card-update-audit.json).
+
+Additional gameplay improvements include corrected Life Point display handling, damage and activation-cost notifications, and card-movement fixes.
+
+### Updates
+
+Ultra Duel checks GitHub for available releases and development updates.
+
+Players are notified when a new packaged version is available. Development commits are distinguished from public releases, and Windows release notifications direct players to the updater.
+
+---
+
+## Development and building from source
+
+Ultra Duel is developed primarily using **Unity and C#**, with native C++ duel-engine components, Lua card-effect scripts, and additional development tools.
+
+The repository includes source code, project configuration, development scripts, and automated verification tools.
+
+### Requirements
+
+- Unity Editor compatible with the project (Unity `6000.0.28f1` is documented in its build history).
+- Appropriate C# and C++ development tooling.
+- Python for supporting development scripts.
+- Required runtime resources and dependencies described in the build documentation.
+
+See [FORMAT-BUILD.md](FORMAT-BUILD.md) for complete instructions covering Unity builds, the native engine, runtime dependencies, assets, data snapshots, and Windows packaging.
+
+Developers building from source must supply the required runtime art and font resources as described in the build documentation.
+
+### Running verification
+
+From the project directory:
 
 ```powershell
 python Tools/prepare-solo-decks.py
 python Tests/NativeServerProtocolTests.py --all-solo
 ```
 
-The Solo audit validates every published list against the installed TCG/Genesys snapshots and records file hashes. Native TCP checks cover every catalog entry and below-cap rejection for every Genesys list. Packaged runtime checks cover the opponent catalog, AI admission, deck profiles, damage mapping, hand movement, and destruction.
+Existing tests cover areas including:
 
-Only sourced, compatible opponents are offered, including by Random. An archetype without a compatible published list is unavailable; Pendulum/Link strategies cannot be converted to Genesys unchanged. Lower custom caps may leave no built-in opponents; the Custom AI option still accepts legal user decks. These checks establish deck legality and tested paths, not exhaustive combo execution or playing strength. To update rules, revalidate the published snapshots; never alter a source list to force it to fit.
+- TCG and Genesys deck compatibility.
+- Published AI deck validation.
+- Genesys point-cap restrictions.
+- Native multiplayer protocol behavior.
+- Life Point mapping.
+- Hand-to-field card movement.
+- Card destruction and game-state consistency.
 
-## Credits and license
+These tests verify documented behavior and selected gameplay paths. They do not guarantee complete rule coverage or flawless execution of every possible card interaction.
 
-Based on the MDPro3 source mirror at commit 025d2b8. Upstream history, source attribution, and third-party notices are retained. See [LICENSE](LICENSE). Konami/Shueisha artwork and audio remain the property of their respective owners. This fan modification is not affiliated with or endorsed by Konami.
+---
+
+## Contributing
+
+Contributions to Ultra Duel are welcome.
+
+Developers interested in improving gameplay, fixing bugs, refining the interface, improving platform compatibility, or expanding testing are encouraged to participate.
+
+To contribute:
+
+1. Fork the repository.
+2. Create a dedicated development branch.
+3. Make and test your changes.
+4. Open a pull request describing the changes and their purpose.
+
+Before contributing, review the project's existing code structure and build documentation.
+
+Please preserve applicable licensing and copyright notices. Do not submit proprietary game assets or third-party materials without appropriate redistribution rights.
+
+Bug reports should include the client version, operating system, steps to reproduce, and relevant logs when available.
+
+---
+
+## Supporting Ultra Duel
+
+Ultra Duel is a free, community-driven project.
+
+Although the game is free, operating its online services requires ongoing infrastructure, including VPS hosting, bandwidth, storage, and server maintenance.
+
+Voluntary donations can help cover these operational expenses and support continued development.
+
+**Donations are optional and do not provide gameplay advantages, exclusive cards, or special competitive privileges.**
+
+*Donation links may be added when community funding becomes available.*
+
+---
+
+## Credits and acknowledgments
+
+Ultra Duel is derived from **MDPro3** and builds upon the work of its original developers and contributors.
+
+The project acknowledges the people and open-source communities responsible for developing the underlying client, duel engine, and related technologies.
+
+**Upstream project:** [MDPro3 source mirror](https://github.com/daominah/mdpro3fork)
+
+**Original source baseline:** Commit `025d2b8`
+
+The repository retains upstream development history, attribution, and applicable third-party notices.
+
+We appreciate the work of the original MDPro3 contributors and the broader open-source Yu-Gi-Oh! simulator community.
+
+---
+
+## License
+
+Ultra Duel is distributed under the **GNU General Public License v3.0 (GPL-3.0)**, subject to the terms and notices applicable to its incorporated components.
+
+See [LICENSE](LICENSE) for details.
+
+The GPL license applicable to the project's code does not independently grant redistribution rights to third-party artwork, music, audio, trademarks, or other proprietary materials.
+
+### Disclaimer
+
+Ultra Duel is an independent, unofficial fan project.
+
+Yu-Gi-Oh! and related names, characters, card illustrations, artwork, and other intellectual property belong to their respective rights holders, including Konami and Shueisha where applicable.
+
+Ultra Duel is not affiliated with, authorized by, sponsored by, or endorsed by Konami or its affiliates.
+
+---
+
+**[Download Ultra Duel](https://github.com/MatteoGXC/ultra-duel/releases) | [Browse Source Code](https://github.com/MatteoGXC/ultra-duel) | [Report an Issue](https://github.com/MatteoGXC/ultra-duel/issues)**
