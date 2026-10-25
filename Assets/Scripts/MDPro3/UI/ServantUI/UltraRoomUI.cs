@@ -66,7 +66,7 @@ namespace MDPro3.UI.ServantUI
                 B(friendRoom,"Room Members  >",()=>ShowRoomInfo(true),.65f,.69f,.25f,.065f);
                 B(friendRoom,"Replays  >",()=>{Program.instance.room.OnExit();Program.instance.ShiftToServant(Program.instance.replay);},.65f,.605f,.25f,.065f);
                 B(friendRoom,"Invite Friends  >",InviteFromRoom,.65f,.52f,.25f,.065f);
-                var leave=B(friendRoom,RoomServant.IsHost?"Disband  >":"Leave Room  >",()=>Program.instance.room.OnExit(),.65f,.435f,.25f,.065f);
+                var leave=B(friendRoom,"Leave Table  >",()=>Program.instance.room.OnExit(),.65f,.435f,.25f,.065f);
                 leave.GetComponentInChildren<TextMeshProUGUI>().color=new Color(.95f,.22f,.20f);
                 var deckPanel=R("Deck preview",friendRoom,.65f,.145f,.25f,.23f);P(deckPanel,new Color(.23f,.22f,.28f,.78f));
                 var deckHit=deckPanel.gameObject.AddComponent<Button>();deckPanel.GetComponent<Image>().raycastTarget=true;deckHit.targetGraphic=deckPanel.GetComponent<Image>();deckHit.onClick.AddListener(OnSelectDeck);deckPanel.gameObject.AddComponent<UltraButtonMotion>();
