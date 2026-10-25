@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.13'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.14'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():

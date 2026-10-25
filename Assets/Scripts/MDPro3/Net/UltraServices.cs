@@ -16,7 +16,7 @@ namespace MDPro3.Net
 {
     public static class UltraServices
     {
-        public const string Version = "0.1.13";
+        public const string Version = "0.1.14";
         public const string Repository = "https://github.com/MatteoGXC/ultra-duel";
         const string SessionPath = "Data/friends-session.json";
         public static string Token { get; private set; } = "";
