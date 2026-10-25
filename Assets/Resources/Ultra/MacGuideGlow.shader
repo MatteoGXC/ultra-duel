@@ -23,7 +23,7 @@ Shader "Ultra/MacGuideGlow" {
  half4 _ColorP1,_ColorP2;
  float _Strength,_Swich,Vector1_7e240758ebcf4a538357aeb063fe9d8a;
  half4 frag(Varyings i) : SV_Target {
-   half3 tint=lerp(_ColorP2.rgb,_ColorP1.rgb,saturate(_Swich));
+   half3 tint=saturate(lerp(_ColorP2.rgb,_ColorP1.rgb,saturate(_Swich)));
    return half4(tint,saturate(_Strength*Vector1_7e240758ebcf4a538357aeb063fe9d8a)*i.color.a*.12);
  }
  ENDHLSL

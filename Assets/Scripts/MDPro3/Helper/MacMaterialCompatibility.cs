@@ -36,6 +36,9 @@ namespace MDPro3
                 "Shader Graphs/fxs_BG_leafShadow_01" => "MacLeafShadow",
                 "Shader Graphs/fxs_BG_leafShadow_02" => "MacLeafShadow",
                 "fxs_BG_leafShadow_01" => "MacLeafShadow",
+                "Shader Graphs/Timer_c001_01" => "MacTimerFace",
+                "Shader Graphs/Timer_c001_02" => "MacTimerRing",
+                "Shader Graphs/Timer_c001_03" => "MacTimerFace",
                 _ => null
             };
             if(replacement==null)return;
@@ -48,10 +51,16 @@ namespace MDPro3
                 const string transitionTexture="_SampleTexture2D_72db3480b1bdea8583e6b7743c79a377_Texture_1_Texture2D";
                 if(guideTexture==null && material.HasProperty(transitionTexture))guideTexture=material.GetTexture(transitionTexture);
             }
+            Texture loadingTexture=null;
+            if(replacement=="MacCard" && material.GetTexture("_MainTex")==null && material.HasProperty("_LoadingTex"))
+                loadingTexture=material.GetTexture("_LoadingTex");
             material.shader=shader;
+            if(loadingTexture!=null)material.SetTexture("_MainTex",loadingTexture);
             if(guideTexture!=null)material.SetTexture("_Texture2D",guideTexture);
             if(replacement=="MacGuide" || replacement=="MacGuideGlow")material.renderQueue=3000;
             if(replacement=="MacLeafShadow")material.renderQueue=2995;
+            if(replacement=="MacTimerFace")material.renderQueue=3000;
+            if(replacement=="MacTimerRing")material.renderQueue=3001;
         }
 #endif
     }
