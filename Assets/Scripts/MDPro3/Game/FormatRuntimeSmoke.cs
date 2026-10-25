@@ -251,6 +251,34 @@ namespace MDPro3
                 typeof(MainMenuUI).GetMethod("CloseModal",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(home,null);
                 Debug.Log("FRIEND_TABLES_LAYOUT_PASSED three entry and watch rows");
             }
+            if(commandLine.Contains("--notifications-check"))
+            {
+                var home=Program.instance.menu.GetUI<MainMenuUI>();
+                var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+                long now=DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var fixture=Newtonsoft.Json.Linq.JObject.FromObject(new {
+                    requests=new[]{new{id=42,name="Friend"}},rooms=new[]{new{id="notice-room"}},
+                    notifications=new object[]{
+                        new{id=4,kind="duel-invite",peer=42,name="Friend",room="notice-room",created=now,expires=now+300,seen=0},
+                        new{id=3,kind="invite-sent",peer=42,name="Friend",room="notice-room",created=now-20,expires=now+280,seen=0},
+                        new{id=2,kind="friend-request",peer=42,name="Friend",room="",created=now-40,expires=0L,seen=0},
+                        new{id=1,kind="friend-accepted",peer=43,name="Another friend",room="",created=now-100,expires=0L,seen=1}}});
+                var field=typeof(MainMenuUI).GetField("notificationFixture",flags);field.SetValue(home,fixture);
+                typeof(MainMenuUI).GetMethod("RefreshUltraHome",flags).Invoke(home,null);
+                yield return Capture("notifications-home");
+                if(!home.GetComponentsInChildren<UnityEngine.UI.Button>().Any(b=>b.name=="NOTICES"))throw new Exception("Notification entry missing from home.");
+                typeof(MainMenuUI).GetMethod("OpenNotifications",flags).Invoke(home,null);
+                yield return Capture("notifications-inbox");
+                var noticeButtons=home.GetComponentsInChildren<UnityEngine.UI.Button>();
+                if(!noticeButtons.Any(b=>b.name=="JOIN") || !noticeButtons.Any(b=>b.name=="ACCEPT") || !noticeButtons.Any(b=>b.name=="VIEW ROOM"))throw new Exception("Notification actions missing.");
+                noticeButtons.First(b=>b.name=="MARK ALL READ").onClick.Invoke();
+                yield return new WaitForSecondsRealtime(.2f);
+                if(((Newtonsoft.Json.Linq.JArray)fixture["notifications"]).Any(n=>(int)n["seen"]!=1))throw new Exception("Mark all read failed.");
+                yield return Capture("notifications-read");
+                typeof(MainMenuUI).GetMethod("CloseModal",flags).Invoke(home,null);
+                field.SetValue(home,null);typeof(MainMenuUI).GetMethod("RefreshUltraHome",flags).Invoke(home,null);
+                Debug.Log("ULTRA_NOTIFICATIONS_PASSED home badge, incoming/sent invites, friend requests, actions and mark-read");
+            }
             if(commandLine.Contains("--cloud-backup-check"))
             {
                 var cloudCheck=MDPro3.Net.UltraDeckCloudVerification.Run().AsTask();
@@ -569,15 +597,31 @@ namespace MDPro3
                 var win=new Package{Function=(int)GameMessage.Win};
                 win.Data.writer.Write((byte)OcgCore.LocalPlayer(0));win.Data.writer.Write((byte)0);
                 OcgCore.currentMessage=GameMessage.Win;
-                yield return Program.instance.ocgcore.messageDispatcher.Process(win).ToCoroutine();
+                var originalResultsFont=TMPro.TMP_Settings.defaultFontAsset;
+                try{TMPro.TMP_Settings.defaultFontAsset=null;yield return Program.instance.ocgcore.messageDispatcher.Process(win).ToCoroutine();}
+                finally{TMPro.TMP_Settings.defaultFontAsset=originalResultsFont;}
                 if(UltraProgress.Data.xp!=xp+100 || UltraProgress.Data.gems!=gems+25)throw new Exception("Duel result rewards were not awarded exactly once.");
                 UltraProgress.Finish(0,OcgCore.turns);
                 if(UltraProgress.Data.xp!=xp+100 || UltraProgress.Data.gems!=gems+25)throw new Exception("Duplicate duel result awarded twice.");
                 string replay=UltraProgress.LastMatch.replay;
                 if(string.IsNullOrEmpty(replay) || !File.Exists(Program.PATH_REPLAY+replay+Program.EXPANSION_YRP3D))throw new Exception("Completed duel replay was not saved.");
                 if(!File.Exists(Program.PATH_REPLAY+replay+Program.EXPANSION_YRP3D+".protocol"))throw new Exception("Saved replay protocol metadata was not written.");
+                var resultView=Program.instance.ocgcore.GetUI<OcgCoreUI>().transform.Find("Ultra Duel Results");
+                if(resultView==null)throw new Exception("The real duel end did not create results.");
+                var labels=resultView.GetComponentsInChildren<TMPro.TextMeshProUGUI>(true);
+                foreach(var label in labels)
+                {
+                    label.ForceMeshUpdate(true);
+                    if(label.font==null || label.font.atlasTexture==null || label.textInfo.characterCount==0)throw new Exception("Result label failed to render without a default font: "+label.text);
+                }
                 yield return Capture("post-duel-results");
-                Debug.Log("ULTRA_RESULTS_PASSED rewards, idempotency, match history and automatic replay");
+                if(Program.instance.ui_.chatPanel.showing)throw new Exception("Chat covered the post-duel results.");
+                var continueButton=resultView.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="Continue");
+                continueButton.onClick.Invoke();yield return null;
+                if(resultView!=null)continueButton.onClick.Invoke();
+                yield return new WaitForSecondsRealtime(1);
+                if(resultView!=null)throw new Exception("Continue did not close the results screen.");
+                Debug.Log("ULTRA_RESULTS_PASSED rewards, idempotency, match history, automatic replay, visible fonts without TMP default and Continue");
             }
 
             File.WriteAllText(Path.Combine(output, "passed.txt"), mode + " menu, selection, deck, local AI duel rendered.");

@@ -145,7 +145,7 @@ namespace MDPro3.UI.ServantUI
         }
         async UniTask SendRoomInvite(int id,string name,RectTransform picker)
         {
-            try{await UltraServices.Request("/invites","POST",new{id,room=UltraServices.CurrentRoomId});MessageManager.Cast("Invitation sent to "+name);Destroy(picker.gameObject);}
+            try{await UltraServices.Request("/invites","POST",new{id,room=UltraServices.CurrentRoomId});MessageManager.Cast("Invitation sent to "+name);Destroy(picker.gameObject);await UltraServices.Refresh();}
             catch(Exception e){MessageManager.Cast(e.Message);}
         }
     }

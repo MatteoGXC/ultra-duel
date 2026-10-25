@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DG.Tweening;
 using Cysharp.Threading.Tasks;
 using TMPro;
@@ -15,6 +16,16 @@ namespace MDPro3.UI.ServantUI
     }
     public static class UltraResultsScreen
     {
+        static TMP_FontAsset resultsFont;
+        static TMP_FontAsset ResolveFont(Transform parent)
+        {
+            // Packaged builds may have no TMP default font. Use the same loaded
+            // alphabetic font that already renders the home UI and duel labels.
+            var menu=Program.instance?.menu?.servantUI;
+            var labels=menu!=null?menu.GetComponentsInChildren<TextMeshProUGUI>(true):parent.GetComponentsInChildren<TextMeshProUGUI>(true);
+            var font=labels.Select(t=>t.font).FirstOrDefault(f=>f!=null && f.atlasTexture!=null && f.HasCharacter('A') && f.HasCharacter('0'));
+            return font??TMP_Settings.defaultFontAsset;
+        }
         static RectTransform R(string name,Transform parent,float x,float y,float w,float h)
         {
             var r=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();r.SetParent(parent,false);r.gameObject.layer=parent.gameObject.layer;
@@ -23,7 +34,7 @@ namespace MDPro3.UI.ServantUI
         static void Panel(RectTransform r,Color color){var i=r.gameObject.AddComponent<UltraChrome>();i.color=color;i.rimColor=new Color(.45f,.5f,.6f,.35f);i.raycastTarget=false;}
         static TextMeshProUGUI Text(Transform parent,string value,float size,float x,float y,float w,float h)
         {
-            var t=R(value,parent,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();t.font=TMP_Settings.defaultFontAsset;t.text=value;t.fontSize=size;
+            var t=R(value,parent,x,y,w,h).gameObject.AddComponent<TextMeshProUGUI>();t.font=resultsFont;t.text=value;t.fontSize=size;
             t.enableAutoSizing=true;t.fontSizeMax=size;t.fontSizeMin=size*.7f;t.color=Color.white;t.raycastTarget=false;return t;
         }
         static void Heading(Transform parent,string text)
@@ -32,6 +43,8 @@ namespace MDPro3.UI.ServantUI
         }
         public static GameObject Show(Transform parent,UltraProgress.Match game,Action next)
         {
+            resultsFont=ResolveFont(parent);
+            Program.instance?.ui_?.chatPanel?.Hide();
             var root=R("Ultra Duel Results",parent,0,0,1,1);root.gameObject.AddComponent<UltraNativeBackdrop>();root.SetAsLastSibling();
             Text(root,"DUEL RESULTS",31,.035f,.91f,.70f,.06f);
             var score=R("Duel Score",root,.055f,.18f,.39f,.65f);Panel(score,new Color(.34f,.35f,.39f,.58f));Heading(score,"Duel Score");

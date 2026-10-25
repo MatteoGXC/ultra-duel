@@ -12,7 +12,7 @@ COPY --from=build /build/libocgcore.so /build/libygoserver.so /app/native/
 COPY Data/locales/en-US/cards.cdb /app/cards.cdb
 COPY Data/script.zip /app/data/script.zip
 COPY Data/lflist.conf Data/lflist_genesys.conf /app/Data/
-COPY Server/service.py Server/player_features.py Server/deck_backups.py Server/shop-catalog.json /app/
+COPY Server/service.py Server/player_features.py Server/deck_backups.py Server/notifications.py Server/shop-catalog.json /app/
 RUN mkdir /app/Expansions /app/Replay /app/config && chown -R ultra:ultra /app
 USER ultra
 ENV ULTRA_STATE=/state ULTRA_HOST=69.48.201.156 ULTRA_PORT=9444

@@ -78,7 +78,8 @@ namespace MDPro3.UI.ServantUI
             var walletFrame=wallet.gameObject.AddComponent<UltraChrome>();walletFrame.color=new Color(.06f,.08f,.12f,.88f);walletFrame.rim=2;walletFrame.rimColor=new Color(.70f,.75f,.80f);walletFrame.raycastTarget=false;
             HomeRect("Gem",wallet,.055f,.15f,.16f,.70f).gameObject.AddComponent<UltraGem>().raycastTarget=false;
             gemLabel=HomeText(wallet,"",24,Color.white,.26f,.08f,.66f,.84f);gemLabel.alignment=TextAlignmentOptions.MidlineRight;
-            TopButton("UPDATES",OpenUpdates,.54f,0);
+            TopButton("NOTICES",OpenNotifications,.54f,0);
+            BuildNotificationsHome();
             TopButton("MISSIONS",OpenMissions,.65f,1);
             TopButton("FRIENDS",OpenFriends,.76f,2);
             TopButton("MENU",OpenMenu,.87f,3);
@@ -152,6 +153,7 @@ namespace MDPro3.UI.ServantUI
             passLabel.text="DUEL PASS   "+UltraAccount.Tier+" / 20\n<size=65%>"+(UltraAccount.Tier>UltraAccount.Claimed?"Rewards ready to claim":"WIN DUELS · EARN REWARDS")+"</size>";
             homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
             updateLabel.text="UPDATES  /  "+UltraServices.UpdateStatus+"\n<size=80%>New pass & shop · Friends & profiles · Solo fixes</size>";
+            RefreshNotificationsHome();
             var state=UltraServices.State;
             if(ownerAdminButton!=null)ownerAdminButton.gameObject.SetActive(UltraAdminAccess.IsOwner && (overlay==null || modalPage=="friends" || modalPage=="friend"));
             friendLabel.text=state==null?"FRIENDS  /  Sign in to connect and host duels":
@@ -164,6 +166,7 @@ namespace MDPro3.UI.ServantUI
             foreach(var child in hiddenHome)if(child!=null)child.SetActive(true);hiddenHome.Clear();
             if(Program.instance.currentServant==Program.instance.menu){Program.instance.ui_.wallpaper.gameObject.SetActive(true);Program.instance.ui_.wallpaper.alpha=1;}
             overlay=modal=null;modalStatus=null;modalPage=null;
+            RefreshNotificationsHome();
         }
         RectTransform OpenModal(string title,string subtitle,string page)
         {
@@ -376,7 +379,7 @@ namespace MDPro3.UI.ServantUI
             SmallButton(modal,"MATCH HISTORY",OpenHistory,.055f,.46f,.42f,.10f);
             SmallButton(modal,"PUZZLES",()=>{CloseModal();OnPuzzle();},.525f,.46f,.42f,.10f);
             SmallButton(modal,"CUT-INS",()=>{CloseModal();OnCutin();},.055f,.31f,.42f,.10f);
-            SmallButton(modal,"CHECK UPDATES",()=>UltraServices.CheckUpdates(true),.525f,.31f,.42f,.10f);
+            SmallButton(modal,"UPDATES",OpenUpdates,.525f,.31f,.42f,.10f);
             SmallButton(modal,"GITHUB",()=>Application.OpenURL(UltraServices.Repository),.055f,.16f,.42f,.10f);
             SmallButton(modal,"EXIT",()=>{CloseModal();OnExit();},.525f,.16f,.42f,.10f);
             SmallButton(modal,"GUI SCALE  "+UltraGuiScale.Percent+"%",OpenGuiScale,.055f,.025f,.42f,.08f);

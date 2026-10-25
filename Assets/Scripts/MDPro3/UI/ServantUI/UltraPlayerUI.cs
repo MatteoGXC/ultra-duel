@@ -257,6 +257,7 @@ namespace MDPro3.UI.ServantUI
                 if(room==null)hosted=await UltraServices.Request("/rooms","POST",new{format=DuelFormat.Genesys?"Genesys":"TCG",cap=DuelFormat.PointCap});
                 else hosted=await UltraServices.Request("/rooms/"+(string)room["id"]+"/join","POST",new{});
                 await UltraServices.Request("/invites","POST",new{id,room=(string)hosted["id"]});
+                await UltraServices.Refresh();
                 CloseModal();await UltraServices.JoinRoom(hosted);
                 MessageManager.Cast("Duel invitation sent. Your friend can join from Friends.");
             }));

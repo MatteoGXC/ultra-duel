@@ -1,6 +1,7 @@
 """Account cosmetics, invitations and owner tools. No client can grant currency."""
 import json
 import deck_backups
+import notifications
 import os
 from pathlib import Path
 import re
@@ -9,6 +10,7 @@ import time
 
 def initialize(db):
     deck_backups.initialize(db)
+    notifications.initialize(db)
     db.executescript('''
     create table if not exists mission_claims(user integer not null, mission text not null, primary key(user,mission));
     create table if not exists profiles(user integer primary key references users(id), gems integer not null default 0,
@@ -81,6 +83,10 @@ def profile(db, uid):
 
 def route(h, db, method, path, body, now, user, api):
     uid = user['id']; state, Problem, are_friends, rooms, lock = api
+    if path == '/notifications/read' and method == 'POST':
+        return notifications.read(db,uid,body,Problem)
+    if path == '/notifications' and method == 'GET':
+        return {'notifications':notifications.inbox(db,uid)}
     if path == '/decks':
         return deck_backups.route(db,method,body,now,uid,Problem)
     if path == '/profile' and method == 'GET':
@@ -146,7 +152,15 @@ def route(h, db, method, path, body, now, user, api):
         with lock:
             room = rooms.get(rid)
             if not room or room['hostId'] != uid: raise Problem('Create a room first.')
+        previous=db.execute('select expires from invites where sender=? and recipient=? and room=?',(uid,other,rid)).fetchone()
         db.execute('insert or replace into invites values(?,?,?,?)', (uid,other,rid,now+300))
+        # Repeated clicks update the live invite without flooding either inbox.
+        if not previous or previous['expires']<=now:
+            other_name=db.execute('select name from users where id=?',(other,)).fetchone()[0]
+            notifications.add(db,other,'duel-invite',uid,user['name'],now,rid,now+300)
+            notifications.add(db,uid,'invite-sent',other,other_name,now,rid,now+300)
+        else:
+            db.execute("update notifications set expires=? where room=? and expires>? and ((user=? and peer=? and kind='invite-sent') or (user=? and peer=? and kind='duel-invite'))",(now+300,rid,now,uid,other,other,uid))
         return {'ok':True}
     if path == '/admin/players' and method == 'GET':
         if not is_owner(state,user['name']): raise Problem('Owner permission required.',403)

@@ -167,7 +167,7 @@ def matchmaking(user, body, method, now):
         return {'status':'waiting'}
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = 'UltraDuel/0.1.12'
+    server_version = 'UltraDuel/0.1.13'
     def log_message(self, *_): pass # Passwords, tokens and private room secrets never enter access logs.
     def reply(self, data, status=200):
         body=json.dumps(data,separators=(',',':')).encode()
@@ -203,7 +203,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.12','ownerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300,'matchmaking':True,'dailyResetUtc':'00:00','cloudDecks':True}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.13','ownerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300,'matchmaking':True,'dailyResetUtc':'00:00','cloudDecks':True,'notifications':True}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')
@@ -263,17 +263,21 @@ class Handler(BaseHTTPRequestHandler):
             with LOCK:
                 clean_rooms()
                 rooms=[public_room(r) for r in ROOMS.values() if not r.get('randomMatch') and (r['hostId']==uid or are_friends(db,uid,r['hostId']))]
-            return {'id':uid,'name':user['name'],'friends':friends,'requests':requests,'sent':sent,'rooms':rooms,'admin':player_features.is_admin(STATE,user['name']),'owner':player_features.is_owner(STATE,user['name']),'profile':player_features.profile(db,uid),'invites':[dict(r) for r in db.execute('select i.room,u.name,i.sender from invites i join users u on u.id=i.sender where i.recipient=? and i.expires>?',(uid,now))]}
+            return {'id':uid,'name':user['name'],'friends':friends,'requests':requests,'sent':sent,'rooms':rooms,'admin':player_features.is_admin(STATE,user['name']),'owner':player_features.is_owner(STATE,user['name']),'profile':player_features.profile(db,uid),'notifications':player_features.notifications.inbox(db,uid),'invites':[dict(r) for r in db.execute('select i.room,u.name,i.sender from invites i join users u on u.id=i.sender where i.recipient=? and i.expires>?',(uid,now))]}
         if path=='/friends/request' and method=='POST':
-            target=db.execute('select id from users where name=?',(str(body.get('name','')).strip(),)).fetchone()
+            target=db.execute('select id,name from users where name=?',(str(body.get('name','')).strip(),)).fetchone()
             if not target: raise Problem('No player has that username.',404)
             other=target['id']
             if other==uid: raise Problem('Enter another player’s username.')
             if db.execute('select 1 from friends where (sender=? and recipient=?) or (sender=? and recipient=?)',(uid,other,other,uid)).fetchone(): raise Problem('A friendship or pending request already exists.',409)
-            db.execute('insert into friends values(?,?,0)',(uid,other)); return {'ok':True}
+            db.execute('insert into friends values(?,?,0)',(uid,other))
+            player_features.notifications.add(db,other,'friend-request',uid,user['name'],now)
+            player_features.notifications.add(db,uid,'request-sent',other,target['name'],now)
+            return {'ok':True}
         if path=='/friends/accept' and method=='POST':
             count=db.execute('update friends set accepted=1 where sender=? and recipient=? and accepted=0',(int(body['id']),uid)).rowcount
             if not count: raise Problem('Friend request not found.',404)
+            player_features.notifications.add(db,int(body['id']),'friend-accepted',uid,user['name'],now)
             return {'ok':True}
         if path.startswith('/friends/') and method=='DELETE':
             other=int(path.rsplit('/',1)[1]); db.execute('delete from friends where (sender=? and recipient=?) or (sender=? and recipient=?)',(uid,other,other,uid)); return {'ok':True}

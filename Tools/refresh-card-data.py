@@ -11,6 +11,7 @@ import time
 import urllib.error
 import urllib.request
 import zipfile
+from card_script_compat import apply_description_fixes
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT.parent/'checks/current-card-data'
@@ -82,6 +83,7 @@ def main():
         if name not in scripts and row[2] and abs(code-row[2])>10 and canonical in scripts:
             scripts[name] = scripts[canonical].replace(f'c{row[2]}'.encode(), f'c{code}'.encode())
             aliases.append(dict(id=code, alias=row[2]))
+    apply_description_fixes(scripts)
     with zipfile.ZipFile(ROOT/'Data/script.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
         for name,body in sorted(scripts.items()):
             archive.writestr('script/'+name, body)

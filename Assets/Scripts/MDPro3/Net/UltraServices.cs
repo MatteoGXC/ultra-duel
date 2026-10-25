@@ -16,7 +16,7 @@ namespace MDPro3.Net
 {
     public static class UltraServices
     {
-        public const string Version = "0.1.12";
+        public const string Version = "0.1.13";
         public const string Repository = "https://github.com/MatteoGXC/ultra-duel";
         const string SessionPath = "Data/friends-session.json";
         public static string Token { get; private set; } = "";
@@ -117,6 +117,11 @@ namespace MDPro3.Net
         {
             if(State!=null)State["profile"]=profile;
             Changed?.Invoke();
+        }
+        public static async UniTask ReadNotifications(int through)
+        {
+            string session=Token;var result=await Request("/notifications/read","POST",new{through});
+            if(State!=null && Token==session){State["notifications"]=result["notifications"];Changed?.Invoke();}
         }
         public static async UniTask Refresh()
         {

@@ -113,6 +113,7 @@ jobs:
           export ULTRA_NATIVE_DIR="$APP/Contents/Resources/Player.app/Contents/Plugins"
           export ULTRA_TEST_CONTENT="$RUNNER_TEMP/ultra-runtime"
           python3 Tests/NativeBeyondTheBraveTests.py --database "$ULTRA_TEST_CONTENT/Data/locales/en-US/cards.cdb" --scripts "$ULTRA_TEST_CONTENT/Data/script.zip"
+          python3 Tests/NativeEffectDescriptionsTests.py
           python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
           ULTRA_TIMER_TEST=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
           ULTRA_SPECTATOR_TEST=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
@@ -127,7 +128,7 @@ jobs:
           lines=config.read_text(encoding='utf-8-sig').splitlines()
           lines=[line for line in lines if not line.startswith(('Background->','UltraReferenceBackgroundApplied->'))]
           config.write_text('\n'.join(lines+['Background->16','UltraReferenceBackgroundApplied->1'])+'\n',encoding='utf-8')
-          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--rps-art-check','--friend-tables-layout','--ultra-features','--ultra-layout','--ultra-rewards-check','--ultra-ui-pages','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
+          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--rps-art-check','--friend-tables-layout','--ultra-features','--ultra-layout','--ultra-rewards-check','--notifications-check','--ultra-ui-pages','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
           process=subprocess.Popen(command,env=env)
           def desktop_capture():
               for _ in range(1200):
@@ -156,7 +157,7 @@ jobs:
           config=root/'ultra-runtime/Data/config.conf'
           lines=[line for line in config.read_text(encoding='utf-8-sig').splitlines() if not line.startswith('Background->')]
           config.write_text('\n'.join(lines+['Background->0'])+'\n',encoding='utf-8')
-          process=subprocess.Popen([str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','-logFile',str(root/'mac-duel-ui.log')],env=env)
+          process=subprocess.Popen([str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','--ultra-result-check','-logFile',str(root/'mac-duel-ui.log')],env=env)
           def desktop_capture():
               for _ in range(1200):
                   if (root/'mac-duel-ui/duel.png').exists():
