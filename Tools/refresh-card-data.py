@@ -11,7 +11,7 @@ import time
 import urllib.error
 import urllib.request
 import zipfile
-from card_script_compat import apply_description_fixes
+from card_script_compat import apply_description_fixes, align_borger_translation
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT.parent/'checks/current-card-data'
@@ -67,7 +67,7 @@ def main():
         dc = len(next(iter(data.values()))); tc = len(next(iter(text.values())))
         with db:
             db.executemany('insert or replace into datas values ('+','.join('?'*dc)+')', data.values())
-            rows = [text[i] if path.parent.name=='en-US' or i not in local else local[i] for i in data]
+            rows = [align_borger_translation(text[i] if path.parent.name=='en-US' or i not in local else local[i]) for i in data]
             db.executemany('insert or replace into texts values ('+','.join('?'*tc)+')', rows)
         assert db.execute('pragma integrity_check').fetchone()[0]=='ok'
         db.close()

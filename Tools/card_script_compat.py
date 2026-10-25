@@ -10,3 +10,12 @@ def apply_description_fixes(scripts):
     body = body.replace(b'e3:SetDescription(aux.Stringid(92895501,2))',
                         b'e3:SetDescription(aux.Stringid(92895501,3))')
     scripts[name] = body
+
+def align_borger_translation(row):
+    # Older translations have no combined-effect heading. Keep their translated
+    # draw/damage wording at the same indexes as the maintained English text.
+    if row[0] == 92895501 and not row[6] and row[4] and row[5]:
+        row = list(row)
+        row[6], row[5], row[4] = row[5], row[4], ''
+        return tuple(row)
+    return row

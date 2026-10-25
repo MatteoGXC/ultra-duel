@@ -77,3 +77,9 @@ assert not errors,errors
 labels=db.execute('select str3,str4 from texts where id=92895501').fetchone()
 assert labels==('DARK: Draw 1 card','EARTH & FIRE: Inflict 1500 damage to your opponent'),labels
 print('PASS Heavy Borger: selectable labels, draw and damage operations match the card database.')
+
+for locale in (CONTENT/'Data/locales').glob('*/cards.cdb'):
+    with sqlite3.connect(locale) as translated:
+        choices=translated.execute('select str3,str4 from texts where id=92895501').fetchone()
+        assert choices and all(choices),('Missing translated effect choice',locale,choices)
+print('PASS translated effect choices exist at the registered indexes in every bundled language.')
