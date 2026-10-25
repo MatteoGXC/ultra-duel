@@ -34,6 +34,8 @@ jobs:
             /Tools/package-mac.py
             /Tools/download-verified-runtime.py
             /Tests/NativeCardScriptTests.py
+            /Tests/NativeBeyondTheBraveTests.py
+            /Tests/NativeAdminDuelTests.py
       - name: Download private build input
         env:
           GH_TOKEN: ${{ github.token }}
@@ -103,13 +105,22 @@ jobs:
         run: |
           APP="$RUNNER_TEMP/Applications/Ultra Duel.app"
           ULTRA_NATIVE_DIR="$APP/Contents/Resources/Player.app/Contents/Plugins" python3 Tests/NativeCardScriptTests.py --all --database "$RUNNER_TEMP/ultra-runtime/Data/locales/en-US/cards.cdb" --scripts "$RUNNER_TEMP/ultra-runtime/Data/script.zip" --output "$RUNNER_TEMP/mac-card-effects.json"
+      - name: Verify installed effects, owner controls, timers and spectator packets
+        run: |
+          APP="$RUNNER_TEMP/Applications/Ultra Duel.app"
+          export ULTRA_NATIVE_DIR="$APP/Contents/Resources/Player.app/Contents/Plugins"
+          export ULTRA_TEST_CONTENT="$RUNNER_TEMP/ultra-runtime"
+          python3 Tests/NativeBeyondTheBraveTests.py --database "$ULTRA_TEST_CONTENT/Data/locales/en-US/cards.cdb" --scripts "$ULTRA_TEST_CONTENT/Data/script.zip"
+          python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
+          ULTRA_TIMER_TEST=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
+          ULTRA_SPECTATOR_TEST=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
       - name: Verify graphical game launch
         run: |
           python3 - <<'PY'
           import os,subprocess,pathlib,threading,time
           root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
           env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
-          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
+          command=[str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-ui'),'TCG','--rps-art-check','--friend-tables-layout','--deck-badges-only','-logFile',str(root/'mac-ui.log')]
           process=subprocess.Popen(command,env=env)
           def desktop_capture():
               for _ in range(1200):

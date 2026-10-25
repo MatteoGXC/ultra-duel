@@ -1,4 +1,4 @@
-"""Assemble and ad-hoc sign an Apple Silicon app on a real macOS runner."""
+"""Assemble and ad-hoc sign a native Intel or Apple Silicon app on macOS."""
 import argparse,json,os,plistlib,shutil,stat,subprocess,zipfile
 from pathlib import Path
 
@@ -62,6 +62,6 @@ def main():
     run('codesign','--force','--deep','--sign','-',app)
     run('codesign','--verify','--deep','--strict','--verbose=2',app)
     (a.output/'Applications').symlink_to('/Applications')
-    (a.output/'READ ME.txt').write_text('Ultra Duel — Apple Silicon\n\nDrag Ultra Duel into Applications, then open it.\nThe first launch downloads 3.7 GB of verified artwork and duel fields.\nAllow 10 GB of free space during setup. Paused downloads resume.\n\nGame data, decks and settings are saved in ~/Library/Application Support/Ultra Duel.\n\nThis independent build is ad-hoc signed, not Apple notarized. macOS may require Privacy & Security > Open Anyway.\n')
+    (a.output/'READ ME.txt').write_text('Ultra Duel — '+platform_name+'\n\nDrag Ultra Duel into Applications, then open it.\nThe first launch downloads approximately 4 GB of verified artwork and duel fields.\nAllow 10 GB of free space during setup. Paused downloads resume.\n\nGame data, decks and settings are saved in ~/Library/Application Support/Ultra Duel.\n\nThis independent build is ad-hoc signed, not Apple notarized. macOS may require Privacy & Security > Open Anyway.\n')
     print('MAC_APP_ASSEMBLED',app)
 if __name__=='__main__':main()
