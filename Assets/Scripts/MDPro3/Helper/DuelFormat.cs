@@ -33,8 +33,8 @@ namespace MDPro3
         {
             string path = Program.PATH_DECK + deckName + Program.EXPANSION_YDK;
             if (!File.Exists(path)) return;
-            var lines = File.ReadAllLines(path).Where(line => !line.StartsWith("#matteo-format:")).ToList();
-            lines.Insert(0, "#matteo-format:" + (Genesys ? "Genesys" : "TCG") + ":" + PointCap);
+            var lines = File.ReadAllLines(path).Where(line => !DeckFormatMetadata.IsMetadata(line)).ToList();
+            lines.Insert(0, DeckFormatMetadata.Write(Genesys ? "Genesys" : "TCG", PointCap));
             File.WriteAllLines(path, lines);
         }
         // Private local-server format IDs; translated to MR2020 plus rule flags in native code.

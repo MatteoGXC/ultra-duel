@@ -1,0 +1,23 @@
+"""Record the exact public source inputs without including local accounts or saves."""
+import hashlib
+import json
+import re
+import subprocess
+
+SCOPES = ['Assets/Scripts/MDPro3', 'Assets/Scripts/Editor', 'Tools', 'Tests',
+          'README.md', 'FORMAT-BUILD.md', 'BRANDING-MIGRATION.md']
+
+def provenance(root):
+    def git(*args):
+        return subprocess.check_output(['git', *args], cwd=root)
+    names = git('ls-files', '-c', '-o', '--exclude-standard', '--', *SCOPES).decode().splitlines()
+    files = {n: hashlib.sha256((root/n).read_bytes()).hexdigest()
+             for n in sorted(set(names)) if (root/n).is_file()}
+    settings = (root/'ProjectSettings/ProjectSettings.asset').read_text(encoding='utf-8-sig')
+    previous = git('show', 'HEAD:ProjectSettings/ProjectSettings.asset').decode('utf-8-sig')
+    def identity(text):
+        return re.findall(r'(?m)^  (productName|bundleVersion): (.*)$', text)
+    files['applicationIdentity'] = identity(settings)
+    dirty = bool(git('status', '--porcelain', '--', *SCOPES).strip()) or identity(settings) != identity(previous)
+    return dict(sourceCommit=git('rev-parse', 'HEAD').decode().strip(), sourceDirty=dirty,
+                sourceTreeSha256=hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest())

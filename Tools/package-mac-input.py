@@ -5,6 +5,7 @@ import json
 import subprocess
 from pathlib import Path
 import zipfile
+from build_source import provenance
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,6 +36,8 @@ def main():
     # Overlay current, tracked game data without copying a developer's account or settings.
     for name in subprocess.check_output(['git','ls-files','Data'],cwd=ROOT,text=True).splitlines():
         add(ROOT/name, 'Defaults/'+name)
+    for deck in (ROOT/'Deck').glob('Starter - *.ydk'):
+        add(deck,'Defaults/Deck/'+deck.name)
     audit = json.loads((ROOT/'Data/card-update-audit.json').read_text(encoding='utf-8'))
     card_ids = {row['id'] for row in audit['art'] if (ROOT/'Picture/Art'/f"{row['id']}.jpg").is_file()}
     card_ids.update(row['id'] for row in json.loads((ROOT/'Data/beyond-the-brave-index.json').read_text(encoding='utf-8')))
@@ -58,14 +61,18 @@ def main():
             copied=set()
             for entry in baseline.infolist():
                 name=entry.filename
-                if not name.startswith('Defaults/') or '/ExtendedArt/' in name or name.endswith('extended-art-audit.json') or name in files or name in copied or name in ('Defaults/build-info.json','Defaults/Data/installed-version.json'):
+                if not name.startswith('Defaults/') or '/ExtendedArt/' in name or name.endswith('extended-art-audit.json') or name in files or name in copied or name in ('Defaults/build-info.json','Defaults/Data/installed-version.json','Defaults/README.txt','Defaults/README-FIRST.txt'):
                     continue
                 target.writestr(name,baseline.read(entry));copied.add(name)
         for name,file in sorted(files.items()):target.write(file,name)
+        readme='Ultra Duel for macOS\n\nOpen Ultra Duel.app from Applications. Decks and settings remain in ~/Library/Application Support/Ultra Duel. Use the Windows installer only on Windows.\n'
+        target.writestr('Defaults/README.txt',readme)
+        target.writestr('Defaults/README-FIRST.txt',readme)
         runtime=json.loads(args.runtime.read_text(encoding='utf-8'))
         commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
         assembly=player/'Contents/Resources/Data/Managed/Assembly-CSharp.dll'
-        info=dict(version=runtime['version'],commit=commit,platform='macOS',assemblySha256=hashlib.sha256(assembly.read_bytes()).hexdigest())
+        info=dict(version=runtime['version'],commit=commit,application='Ultra Duel',executable='Player.app/Contents/MacOS/Ultra Duel',platform='macOS',assemblySha256=hashlib.sha256(assembly.read_bytes()).hexdigest())
+        info.update(provenance(ROOT))
         target.writestr('Defaults/build-info.json',json.dumps(info,indent=2))
         target.writestr('Defaults/Data/installed-version.json',json.dumps(dict(version=runtime['version'],sourceCommit=commit)))
         target.writestr('runtime.json',json.dumps(runtime,indent=2))

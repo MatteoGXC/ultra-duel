@@ -48,12 +48,12 @@ public static class WindowsInstallerSmoke
         if (args.Length > 2)
         {
             string fresh = Path.Combine(work, "fresh-game");
-            foreach (string part in Directory.GetFiles(args[2], "Matteo-Duel-Windows-*.zip"))
+            foreach (string part in Directory.GetFiles(args[2], "Ultra-Duel-Windows-*.zip"))
             {
                 extract.Invoke(null, new object[] { part, fresh });
                 Console.WriteLine("Extracted " + Path.GetFileName(part));
             }
-            if (!File.Exists(Path.Combine(fresh, "Matteo-Duel.exe"))) throw new Exception("Packaged executable missing.");
+            if (!File.Exists(Path.Combine(fresh, "Ultra-Duel.exe"))) throw new Exception("Packaged executable missing.");
             Console.WriteLine("PASS full package extracted using the installer's own extraction code.");
         }
         return 0;

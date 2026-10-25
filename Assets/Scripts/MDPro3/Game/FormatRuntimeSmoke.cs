@@ -700,6 +700,22 @@ namespace MDPro3
                     if (saved.Format != "Genesys" || saved.FormatPointCap != cap || saved.Main.Single() != 123)
                         throw new Exception("Saving deck format changed its cards or profile.");
                 }
+                var legacy = new Deck { Format = "Genesys", FormatPointCap = 47 };
+                legacy.Main.Add(89631139);
+                string oldYdk=legacy.GetYDK().Replace(DeckFormatMetadata.Prefix,DeckFormatMetadata.LegacyPrefix);
+                File.WriteAllText(path,oldYdk);
+                var legacyRead=new Deck(path);
+                if(legacyRead.Format!="Genesys" || legacyRead.FormatPointCap!=47 || legacyRead.Main.Single()!=89631139)
+                    throw new Exception("Legacy deck metadata or card list failed to load.");
+                DuelFormat.ApplyDeckFormat(name);DuelFormat.SaveDeckFormat(name);
+                string migrated=File.ReadAllText(path);
+                if(migrated.Contains(DeckFormatMetadata.LegacyPrefix) || !migrated.Contains(DeckFormatMetadata.Prefix+"Genesys:47"))
+                    throw new Exception("Saving did not migrate the legacy deck header.");
+                File.WriteAllText(path,DeckFormatMetadata.Prefix+"Genesys:0\n"+oldYdk);
+                var mixed=new Deck(path);
+                if(mixed.FormatPointCap!=0 || mixed.Main.Single()!=89631139)
+                    throw new Exception("Legacy header overrode canonical deck metadata.");
+                Debug.Log("ULTRA_DECK_METADATA_MIGRATION_PASSED legacy read, canonical save, mixed-header priority and unchanged cards");
                 File.WriteAllText(path, new Deck { Format = "TCG" }.GetYDK());
                 DuelFormat.ApplyDeckFormat(name);
                 if (DuelFormat.Genesys) throw new Exception("Switching to a TCG deck retained Genesys.");

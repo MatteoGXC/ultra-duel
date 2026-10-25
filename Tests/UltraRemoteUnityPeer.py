@@ -15,6 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--certificate',type=Path,required=True)
+    p.add_argument('--game',type=Path,default=ROOT/'release/Ultra-Duel')
     p.add_argument('--mode',choices=['TCG','Genesys'],required=True)
     p.add_argument('--cap',type=int,default=100)
     args=p.parse_args()
@@ -32,9 +33,9 @@ def main():
     api('/friends/accept','POST',dict(id=host['id']),player['token'])
     room=api('/rooms','POST',dict(format=args.mode,cap=args.cap),host['token'])
     room=api('/rooms/'+room['id']+'/join','POST',{},player['token'])
-    game=ROOT/'release/Solo-mode-update'
+    game=args.game.resolve()
     session=game/'Data/friends-session.json';before=session.read_bytes() if session.exists() else None
-    output=ROOT.parent/'checks'/f'ultra-014-remote-{args.mode}-{args.cap}'
+    output=ROOT.parent/'checks'/f'ultra-rebrand-remote-{args.mode}-{args.cap}'
     output.mkdir(parents=True,exist_ok=True)
     fixture=output/'room.json'
     fixture.write_bytes(json.dumps(room).encode())
@@ -52,7 +53,7 @@ def main():
         send(2,struct.pack('<II',len(main),len(side))+struct.pack('<'+'I'*(len(main)+len(side)),*(main+side)))
         send(0x22)
         session.write_bytes(json.dumps(dict(token=player['token'],name=player['name'])).encode())
-        result=subprocess.run([str(game/'Matteo-Duel.exe'),'--format-smoke',str(output),args.mode,
+        result=subprocess.run([str(game/'Ultra-Duel.exe'),'--format-smoke',str(output),args.mode,
             '--ultra-remote-room',str(fixture),'-screen-fullscreen','0','-screen-width','1280','-screen-height','720',
             '-logFile',str(output/'runtime.log')],cwd=game,timeout=110,creationflags=subprocess.CREATE_NO_WINDOW)
         assert result.returncode==0 and (output/'passed.txt').exists(), 'Remote Unity flow did not pass; see runtime.log'

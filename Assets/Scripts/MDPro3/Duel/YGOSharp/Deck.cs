@@ -68,6 +68,7 @@ namespace MDPro3.Duel.YGOSharp
             string st = ydk.Replace("\r", string.Empty).Replace("\\r", string.Empty).Replace("\\n", "\n");
             string[] lines = st.Split("\n", StringSplitOptions.RemoveEmptyEntries);
             int flag = -1;
+            bool hasUltraFormat = false;
 
             foreach (string line in lines)
             {
@@ -82,8 +83,11 @@ namespace MDPro3.Duel.YGOSharp
                     continue;
                 }
 
-                if (line.StartsWith("#matteo-format:"))
+                if (DeckFormatMetadata.IsMetadata(line))
                 {
+                    bool legacy = line.StartsWith(DeckFormatMetadata.LegacyPrefix, StringComparison.OrdinalIgnoreCase);
+                    if (legacy && hasUltraFormat) continue;
+                    if (!legacy) hasUltraFormat = true;
                     var profile = line.Split(':');
                     Format = profile.Length > 1 && profile[1] == "Genesys" ? "Genesys" : "TCG";
                     if (profile.Length > 2 && int.TryParse(profile[2], out int cap) && cap >= 0)
@@ -341,7 +345,7 @@ namespace MDPro3.Duel.YGOSharp
 
         public string GetYDK()
         {
-            var value = deckHint + "\r\n#matteo-format:" + Format + ":" + FormatPointCap + "\r\n#main";
+            var value = deckHint + "\r\n" + DeckFormatMetadata.Write(Format, FormatPointCap) + "\r\n#main";
             for (var i = 0; i < Main.Count; i++)
                 value += $"\r\n{Main[i]}";
             value += "\r\n#extra";

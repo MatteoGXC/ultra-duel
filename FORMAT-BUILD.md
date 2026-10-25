@@ -7,7 +7,7 @@ MDPro3 uses Master Duel assets; it is not an exact copy of every official Master
 
 ## Playing
 
-Launch Matteo-Duel.exe and keep its entire folder together.
+Launch Ultra-Duel.exe and keep its entire folder together.
 My Decks opens directly. Open a Deck and click its Format button in the editor
 header to assign TCG Advanced or Genesys (100, zero, or a custom point cap).
 This is stored inside that Deck's YDK file, survives copying/renaming/exporting,
@@ -61,7 +61,7 @@ Difficulty is estimated; every AI combo and playing strength is not exhaustively
 Prerequisites: Unity 6000.0.28f1 with an active eligible license, Microsoft C++
 Build Tools with Windows SDK, and premake5 for the native projects.
 
-1. Restore required original font assets and Windows runtime platform bundles.
+1. Restore required original font assets and Windows runtime platform bundles. If using verified packaged assets, set `ULTRA_WINDOWS_CONTENT` to their runtime data directory. The build reuses its menu/font bundles and catalog while compiling the current player; it does not create a wrapper executable.
    Art, closeups, and extra sound packs remain runtime folders alongside the game.
 2. Run `python Tools/refresh-format-data.py` to snapshot the official rule pages.
    `Data/format-data-sources.json` records the sources and names unavailable in
@@ -72,8 +72,8 @@ Build Tools with Windows SDK, and premake5 for the native projects.
    the compiled Release/x64 outputs. Keep their existing Unity metadata files.
 4. Run the Unity editor with `-batchmode -projectPath <project> -executeMethod
    WindowsFormatBuild.Build -quit -logFile <log>`.
-5. The output is `release/MDPro3-TCG-Genesys/Matteo-Duel.exe` with its
-   adjacent runtime files. Keep the whole folder together.
+5. The output is `release/Ultra-Duel/Ultra-Duel.exe` with its
+   adjacent `Ultra-Duel_Data`, `UnityPlayer.dll`, native plug-ins, content folders, and updater tools. `ULTRA_BUILD_OUTPUT` overrides the destination. The executable is the compiled Unity player. Keep the whole folder together.
 
 ## Verification status
 

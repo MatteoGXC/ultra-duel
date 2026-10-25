@@ -50,7 +50,7 @@ public class WindowsInstaller : Form
         var heading = new Label { Text = "Ultra Duel", Font = new Font("Segoe UI", 21, FontStyle.Bold), Bounds = new Rectangle(22, 15, 540, 45) };
         var description = new Label { Text = "Windows · TCG and Genesys · Solo practice\nDownloads the complete game and creates a desktop shortcut.", Bounds = new Rectangle(25, 67, 550, 48) };
         destination.SetBounds(25, 124, 450, 28);
-        destination.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UltraDuel");
+        destination.Text = MDPro3.UltraInstallMigration.DefaultInstallationDirectory(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
         browse.Text = "Browse…";
         browse.SetBounds(485, 123, 90, 30);
         browse.Click += delegate { using (var dialog = new FolderBrowserDialog()) { dialog.SelectedPath = destination.Text; if (dialog.ShowDialog() == DialogResult.OK) destination.Text = dialog.SelectedPath; } };
@@ -76,11 +76,13 @@ public class WindowsInstaller : Form
         cancellation=new CancellationTokenSource();
         browse.Enabled = destination.Enabled = false;
         install.Text="Pause";
+        MDPro3.UltraInstallMigration migration=null;
         try
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             string target = Path.GetFullPath(destination.Text.Trim());
             Directory.CreateDirectory(target);
+            MDPro3.UltraInstallMigration.AssertNotRunning(target);
             string personalStore=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Ultra Duel","UserData");
             var personalBackup=new MDPro3.UltraUserDataBackup(target,personalStore);
             status.Text="Backing up existing decks and settings…";
@@ -131,24 +133,35 @@ public class WindowsInstaller : Form
                 }).ToArray();
                 await Task.WhenAll(tasks);
             }
+            MDPro3.UltraInstallMigration.AssertNotRunning(target);
+            migration=new MDPro3.UltraInstallMigration(target);
+            migration.Prepare();
             // Extract in manifest order: the final cumulative update replaces baseline files.
             for (int i=0;i<manifest.parts.Length;i++)
             {
                 cancellation.Token.ThrowIfCancellationRequested();
                 Part part=manifest.parts[i];string zip=Path.Combine(cache,part.sha256+".zip");
                 status.Text = "Installing part " + (i+1) + " of " + manifest.parts.Length + "…";
-                await Task.Run(() => Extract(zip, target));
+                await Task.Run(() => ExtractPackage(zip, target, migration));
                 progress.Value=90+(i+1)*10/manifest.parts.Length;
             }
-            string exe = Path.Combine(target, "Ultra-Duel.exe");
-            if (!File.Exists(exe)) exe = Path.Combine(target, "Matteo-Duel.exe");
-            if (!File.Exists(exe)) throw new IOException("The game executable was not installed.");
+            MDPro3.UltraInstallMigration.ValidateRuntime(target);
+            migration.Complete();
+            string exe = Path.Combine(target, MDPro3.UltraInstallMigration.Executable);
             status.Text="Restoring your decks and settings…";
             await Task.Run(()=>{personalBackup.Restore();personalBackup.Capture();});
             try
             {
                 dynamic shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
-                dynamic shortcut = shell.CreateShortcut(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Ultra Duel.lnk"));
+                string desktop=Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                foreach(string link in Directory.GetFiles(desktop,"*.lnk"))
+                {
+                    dynamic existing=shell.CreateShortcut(link);
+                    string previous=(string)existing.TargetPath;
+                    if(MDPro3.UltraInstallMigration.LegacyExecutables.Any(n=>string.Equals(previous,Path.Combine(target,n),StringComparison.OrdinalIgnoreCase)))
+                    { existing.TargetPath=exe;existing.WorkingDirectory=target;existing.Save(); }
+                }
+                dynamic shortcut = shell.CreateShortcut(Path.Combine(desktop, "Ultra Duel.lnk"));
                 shortcut.TargetPath = exe;
                 shortcut.WorkingDirectory = target;
                 shortcut.Save();
@@ -163,11 +176,13 @@ public class WindowsInstaller : Form
         }
         catch (OperationCanceledException)
         {
+            if(migration!=null)migration.Rollback();
             status.Text="Paused. Click Install to continue the saved download.";
             install.Text="Install";install.Enabled=browse.Enabled=destination.Enabled=true;
         }
         catch (Exception error)
         {
+            if(migration!=null)migration.Rollback();
             MessageBox.Show(this, error.Message + "\n\nClose Ultra Duel before updating. Downloads are reused when you retry.", "Installation could not finish", MessageBoxButtons.OK, MessageBoxIcon.Error);
             status.Text = "Installation stopped. Your existing decks and settings are preserved.";
             install.Enabled = browse.Enabled = destination.Enabled = true;
@@ -229,25 +244,41 @@ public class WindowsInstaller : Form
     }
 
     static void Extract(string zip, string target)
+    { ExtractPackage(zip,target,null); }
+
+    static void ExtractPackage(string zip, string target, MDPro3.UltraInstallMigration migration)
     {
         string root = Path.GetFullPath(target).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
         using (var archive = ZipFile.OpenRead(zip))
         foreach (ZipArchiveEntry entry in archive.Entries)
         {
-            string path = Path.GetFullPath(Path.Combine(root, entry.FullName));
+            string relative=MDPro3.UltraInstallMigration.CanonicalArchivePath(entry.FullName);
+            if(relative==null)continue;
+            string path = Path.GetFullPath(Path.Combine(root, relative));
             if (!path.StartsWith(root, StringComparison.OrdinalIgnoreCase)) throw new IOException("Invalid archive path.");
             if (entry.FullName.EndsWith("/")) { Directory.CreateDirectory(path); continue; }
-            bool preserve = entry.FullName.Equals("Data/config.conf", StringComparison.OrdinalIgnoreCase)
-                || entry.FullName.Equals("Data/Settings.json", StringComparison.OrdinalIgnoreCase)
-                || entry.FullName.Equals("Data/mycard_apps.json", StringComparison.OrdinalIgnoreCase)
-                || entry.FullName.Equals("Data/profile.json", StringComparison.OrdinalIgnoreCase)
-                || entry.FullName.Equals("Data/friends-session.json", StringComparison.OrdinalIgnoreCase)
-                || entry.FullName.StartsWith("Deck/", StringComparison.OrdinalIgnoreCase)
-                || entry.FullName.StartsWith("Replay/", StringComparison.OrdinalIgnoreCase)
-                || entry.FullName.StartsWith("Progress/", StringComparison.OrdinalIgnoreCase);
+            bool preserve = relative.Equals("Data/config.conf", StringComparison.OrdinalIgnoreCase)
+                || relative.Equals("Data/Settings.json", StringComparison.OrdinalIgnoreCase)
+                || relative.Equals("Data/mycard_apps.json", StringComparison.OrdinalIgnoreCase)
+                || relative.Equals("Data/profile.json", StringComparison.OrdinalIgnoreCase)
+                || relative.Equals("Data/friends-session.json", StringComparison.OrdinalIgnoreCase)
+                || relative.StartsWith("Deck/", StringComparison.OrdinalIgnoreCase)
+                || relative.StartsWith("Replay/", StringComparison.OrdinalIgnoreCase)
+                || relative.StartsWith("Progress/", StringComparison.OrdinalIgnoreCase);
             if (preserve && File.Exists(path)) continue;
+            // Reinstalling or upgrading can reuse immutable runtime content.
+            // This also avoids allocating a second copy of unchanged game assets.
+            if(File.Exists(path) && new FileInfo(path).Length==entry.Length)
+            {
+                using(var content=entry.Open())
+                using(var sha=SHA256.Create())
+                    if(BitConverter.ToString(sha.ComputeHash(content)).Replace("-", "").ToLowerInvariant()==Hash(path))continue;
+            }
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            entry.ExtractToFile(path, true);
+            if(migration!=null)migration.PrepareReplacement(relative);
+            string temporary=path+".ultra-install-"+Guid.NewGuid().ToString("N");
+            try { entry.ExtractToFile(temporary);MDPro3.UltraInstallMigration.ReplaceFile(temporary,path); }
+            finally { if(File.Exists(temporary))File.Delete(temporary); }
         }
     }
 }

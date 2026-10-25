@@ -34,7 +34,7 @@ def main():
         tmp=Path(tmp);exe=tmp/'probe.exe';fixture=tmp/'fixture.bin';fixture.write_bytes(DATA)
         command=[str(compiler),'/nologo','/target:exe','/main:InstallerDownloadProbe','/out:'+str(exe)]
         command+=['/r:'+name+'.dll' for name in ['System.Windows.Forms','System.Drawing','System.Web.Extensions','System.IO.Compression','System.IO.Compression.FileSystem','Microsoft.CSharp']]
-        subprocess.run(command+[str(ROOT/'Tools/WindowsInstaller.cs'),str(ROOT/'Tests/InstallerDownloadProbe.cs')],check=True)
+        subprocess.run(command+[str(ROOT/'Tools/WindowsInstaller.cs'),str(ROOT/'Assets/Scripts/MDPro3/Game/UltraInstallMigration.cs'),str(ROOT/'Assets/Scripts/MDPro3/Game/UltraUserDataBackup.cs'),str(ROOT/'Tests/InstallerDownloadProbe.cs')],check=True)
         server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_forever,daemon=True).start()
         try:subprocess.run([str(exe),f'http://127.0.0.1:{server.server_port}',str(fixture),str(tmp/'downloads')],check=True,timeout=60)
         finally:server.shutdown();server.server_close()

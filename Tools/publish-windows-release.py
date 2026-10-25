@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.14'
+OUTPUT = ROOT.parent / 'release-work/windows-v0.1.15'
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -29,17 +29,19 @@ def main():
     manifest = json.loads((OUTPUT/'windows-manifest.json').read_text())
     version = manifest['version']
     tag = 'v'+version
-    body = ('## Ultra Duel '+version+' - Notifications and Results Fix\n\n'
-            'New players: download **Ultra-Duel-Setup.exe**. Existing players: use **Ultra-Duel-Updater.zip** beside the game executable.\n\n'
-            '- Home-screen Notices button, unread badge and recent-activity card.\n'
-            '- Persistent account history for incoming and sent duel invitations, friend requests and accepted requests.\n'
-            '- Join an invited duel, accept a friend request and mark notifications read from the inbox.\n'
-            '- Repeated invitation clicks do not flood the inbox; read state stays private to your account.\n'
-            '- Corrects Heavy Borger effect labels: DARK draws one card, EARTH & FIRE deals 1500 damage. The combined-effect heading is no longer a selectable effect.\n'
-            '- Fixes the blank post-duel results screen by using the loaded game font. Scores, rewards, level and Continue render even when the default font is missing.\n'
-            '- Retains private VPS deck backups, local save protection, crystal gems, GUI Scale and friend-room features.\n\n'
-            'Intel Mac downloads are published in a separate macOS release.\n\n'
-            'Built game source: `'+manifest['buildCommit']+'`. Upstream credits and licenses remain included.\n')
+    verification=json.loads((OUTPUT/'verification.json').read_text())
+    if verification.get('status')!='passed' or verification.get('version')!=version:
+        raise RuntimeError('Build and installation verification must pass before creating a release.')
+    if manifest.get('sourceDirty') or verification.get('sourceTreeSha256') != manifest.get('sourceTreeSha256'):
+        raise RuntimeError('Commit the validated sources and regenerate manifests before publishing; their source fingerprint must match the passed verification.')
+    body = ('## Ultra Duel '+version+'\n\n'
+            'Download **Ultra-Duel-Setup.exe** for a new installation, or extract all files from **Ultra-Duel-Updater.zip** into an existing installation and run **Update-Ultra-Duel.cmd**.\n\n'
+            '- Ultra-Duel.exe is the compiled Unity game, with the adjacent Ultra-Duel_Data runtime.\n'
+            '- Existing installations migrate automatically; superseded runtime files are archived for recovery. Decks, settings, accounts and progression are preserved.\n'
+            '- New deck saves write #ultra-format: metadata while existing deck headers remain readable.\n'
+            '- Includes notifications, readable results, corrected effect labels, Solo, TCG, Genesys and online friend rooms.\n\n'
+            'Intel Mac downloads use a separate release. Upstream MDPro3 contributors, copyright notices and licenses remain included.\n\n'
+            'Built game source: `'+manifest['buildCommit']+'`.\n')
     try: reference = api(REPO+'/git/ref/tags/'+tag)
     except urllib.error.HTTPError as error:
         if error.code != 404: raise
@@ -58,6 +60,8 @@ def main():
     upload_base = release['upload_url'].split('{')[0]
     files = [OUTPUT/name for name in ('windows-manifest.json', 'Ultra-Duel-Setup.exe',
         'update-manifest.json', 'Ultra-Duel-Update.zip', 'Ultra-Duel-Updater.zip')]
+    files += [OUTPUT/part['name'] for part in manifest['parts']]
+    files=list(dict.fromkeys(files))
     def upload(path):
         size = path.stat().st_size
         digest = hashlib.sha256()
