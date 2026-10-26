@@ -94,9 +94,25 @@ namespace MDPro3.UI.ServantUI
             var field = label.GetComponentInParent<TMP_InputField>();
             if (field != null)
             {
-                if (field.fontAsset == null)
+                // Setting the face while the label is parented makes the input field rebuild its mesh and throw.
+                var parent = label.transform.parent;
+                int sibling = label.transform.GetSiblingIndex();
+                label.transform.SetParent(null, false);
+                try
                 {
-                    try { field.fontAsset = face; }
+                    label.font = face;
+                    label.fontStyle = FontStyles.Normal;
+                    label.characterSpacing = tracking;
+                }
+                catch (Exception) { }
+                if (parent != null)
+                {
+                    label.transform.SetParent(parent, false);
+                    label.transform.SetSiblingIndex(sibling);
+                }
+                if (field.fontAsset == null && label.font != null)
+                {
+                    try { field.fontAsset = label.font; }
                     catch (Exception) { }
                 }
                 return;
@@ -127,13 +143,8 @@ namespace MDPro3.UI.ServantUI
             var field = label.GetComponentInParent<TMP_InputField>();
             if (field != null)
             {
-                if (field.fontAsset != null) return true;
-                if (!Ensure()) return false;
-                var face = (display ? displayFont : bodyFont) ?? emphasisFont ?? TMP_Settings.defaultFontAsset;
-                if (face == null) return false;
-                try { field.fontAsset = face; }
-                catch (Exception) { return false; }
-                return field.fontAsset != null;
+                Style(label, display, 0f);
+                return label.font != null || field.fontAsset != null;
             }
             try { Style(label, display, 0f); }
             catch (Exception) { }
