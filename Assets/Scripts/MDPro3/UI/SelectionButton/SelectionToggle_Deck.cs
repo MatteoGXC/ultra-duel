@@ -29,7 +29,7 @@ namespace MDPro3.UI
         protected IEnumerator enumeratorCase;
         private readonly List<Tweener> pickupTweens = new();
         private readonly List<Tweener> pickdownTweens = new();
-        private Image formatBadge;
+        private UltraChrome formatBadge;
         private TextMeshProUGUI formatBadgeLabel;
 
         protected override void Awake()
@@ -70,6 +70,11 @@ namespace MDPro3.UI
                 var deckNameLabel = Manager.GetElement<TextMeshProUGUI>("TextDeckName");
                 deckNameLabel.text = deckName;
                 UltraTheme.Repair(deckNameLabel, false);
+                deckNameLabel.fontSize = 19f;
+                deckNameLabel.alignment = TextAlignmentOptions.Center;
+                deckNameLabel.color = UltraTheme.Fg;
+                var nameRect = deckNameLabel.rectTransform;
+                nameRect.sizeDelta = new Vector2(nameRect.sizeDelta.x, 52f);
 
                 if (forcedPickup && !pickuping)
                 {
@@ -78,6 +83,7 @@ namespace MDPro3.UI
             }
 
             _ = RefreshDeckCaseAsync();
+            UltraDeckFace.Bind(this);
 
             refreshed = false;
             if (pickuping)
@@ -96,13 +102,16 @@ namespace MDPro3.UI
 
             if (formatBadge == null)
             {
-                var badge = new GameObject("Deck format badge", typeof(RectTransform), typeof(Image));
+                var badge = new GameObject("Deck format badge", typeof(RectTransform));
                 badge.layer = gameObject.layer;
                 var rect = badge.GetComponent<RectTransform>();
                 rect.SetParent(transform, false);
                 rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one;
-                rect.anchoredPosition = new Vector2(-10, -10);
-                formatBadge = badge.GetComponent<Image>();
+                rect.anchoredPosition = Vector2.zero;
+                UltraUi.EnsureRenderer(badge);
+                formatBadge = badge.AddComponent<UltraChrome>();
+                formatBadge.cut = UltraCut.Tag;
+                formatBadge.rim = 0f;
                 formatBadge.raycastTarget = false;
 
                 var text = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -122,22 +131,17 @@ namespace MDPro3.UI
                 formatBadgeLabel.overflowMode = TextOverflowModes.Overflow;
             }
 
-            // Mapping already stored on the deck: anything other than Genesys is TCG (blue on main).
-            // Genesys at a 0 point cap is the teal tag. Every other Genesys cap, including 100, is purple.
-            // The words have to be drawn with our face: these labels used to copy TextDeckName's font, which is null
-            // when SourceHanSansSC-Medium is missing, so the colored plate rendered with no glyphs.
+            // The deck only stores TCG or Genesys, plus a point cap. .u-tag is cream for TCG and accent for Genesys.
+            // A cap other than 100 stays in the words so Genesys 0 is still distinct.
             bool genesys = deck.Format == "Genesys";
             int cap = deck.FormatPointCap;
-            string label = !genesys ? "TCG" : cap == 100 ? "GENESYS" : "GENESYS " + cap;
-            Color plate = !genesys ? new Color(.13f, .37f, .76f, .98f)
-                : cap == 0 ? new Color(.02f, .46f, .42f, .98f)
-                : new Color(.57f, .19f, .88f, .98f);
-            float luma = 0.2126f * plate.r + 0.7152f * plate.g + 0.0722f * plate.b;
-            formatBadge.color = plate;
+            string label = !genesys ? "TCG" : cap == 0 ? "GENESYS 0" : cap == 100 ? "GENESYS" : "GENESYS " + cap;
+            formatBadge.color = genesys ? UltraTheme.Accent : UltraTheme.Fg;
+            formatBadge.cut = UltraCut.Tag;
             formatBadgeLabel.text = label;
             UltraTheme.Style(formatBadgeLabel, true, 12f);
             UltraTheme.Repair(formatBadgeLabel, true);
-            formatBadgeLabel.color = luma > 0.62f ? UltraTheme.Ink : Color.white;
+            formatBadgeLabel.color = genesys ? UltraTheme.AccentInk : UltraTheme.Ink;
             formatBadgeLabel.fontSize = 20;
             formatBadge.rectTransform.sizeDelta = new Vector2(Mathf.Max(88f, 18f * label.Length + 28f), 38f);
             formatBadge.transform.SetAsLastSibling();

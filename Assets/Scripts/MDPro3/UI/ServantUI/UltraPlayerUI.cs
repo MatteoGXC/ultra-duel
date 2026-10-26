@@ -100,7 +100,7 @@ namespace MDPro3.UI.ServantUI
         void OpenProfile()
         {
             string name=string.IsNullOrEmpty(UltraServices.PlayerName)?Config.Get("DuelPlayerName0","Player"):UltraServices.PlayerName;
-            OpenModal("PROFILE","", "profile");WideModal();
+            OpenModal("PROFILE","Duelist profile", "profile");WideModal();
             var card=HomeRect("Profile card",modal,.27f,.20f,.29f,.62f);HomePanel(card,UltraTheme.Panel);
             var frame=card.GetComponent<UltraChrome>();frame.rim=2;frame.followThemeRim=false;frame.rimColor=UltraTheme.Accent;
             var bannerClip=HomeRect("Profile banner",card,.015f,.72f,.97f,.265f);bannerClip.gameObject.AddComponent<RectMask2D>();

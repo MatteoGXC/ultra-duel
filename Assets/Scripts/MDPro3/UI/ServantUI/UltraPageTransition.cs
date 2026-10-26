@@ -2,6 +2,7 @@ using System;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace MDPro3.UI.ServantUI
@@ -18,9 +19,10 @@ namespace MDPro3.UI.ServantUI
             if(group==null)return;
             group.alpha=0;group.blocksRaycasts=false;
             rect.localEulerAngles=Vector3.zero;
-            rect.anchoredPosition=end+new Vector2(-70f,0f);
-            rect.DOAnchorPos(end,.25f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
-            group.DOFade(1,.25f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject).OnComplete(()=>group.blocksRaycasts=true);
+            // .scr.enter starts 70px to the right and settles in 250ms.
+            rect.anchoredPosition=end+new Vector2(70f,0f);
+            rect.DOAnchorPos(end,.25f).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
+            group.DOFade(1,.25f).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject).OnComplete(()=>group.blocksRaycasts=true);
         }
     }
     public static class UltraAdaptiveMaterial
@@ -57,6 +59,9 @@ namespace MDPro3.UI.ServantUI
         Button SquareBack(Transform parent,UnityAction action,float x,float y,float w,float h)
         {
             var r=HomeRect("Back",parent,x,y,w,h);
+            var boxMin=r.anchorMin;var boxMax=r.anchorMax;
+            r.anchorMin=r.anchorMax=new Vector2(boxMin.x,boxMax.y);
+            r.pivot=new Vector2(0f,1f);r.sizeDelta=new Vector2(64f,64f);r.anchoredPosition=Vector2.zero;
             UltraUi.EnsureRenderer(r.gameObject);
             var chrome=r.gameObject.AddComponent<UltraChrome>();
             chrome.cut=UltraCut.Small;chrome.color=UltraTheme.Panel;chrome.raycastTarget=true;
@@ -67,6 +72,72 @@ namespace MDPro3.UI.ServantUI
             var button=r.gameObject.AddComponent<Button>();button.targetGraphic=chrome;button.onClick.AddListener(action);
             r.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);
             return button;
+        }
+    }
+
+    // Servant back control: 64px notched square, left chevron. Hover fills with the accent and nudges left.
+    public sealed class UltraSquareBack : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+    {
+        UltraChrome plate;
+        UltraChevron mark;
+        RectTransform rect;
+        Vector2 rest;
+        Tween move, press;
+        float scale = 1f;
+        bool captured;
+
+        void Awake()
+        {
+            plate = GetComponent<UltraChrome>();
+            mark = GetComponentInChildren<UltraChevron>(true);
+            rect = (RectTransform)transform;
+        }
+
+        void Capture()
+        {
+            if (captured) return;
+            rest = rect.anchoredPosition;
+            captured = true;
+        }
+
+        public void OnPointerEnter(PointerEventData eventData) { Paint(true); Nudge(-3f); }
+        public void OnPointerExit(PointerEventData eventData) { Paint(false); Nudge(0f); Scale(1f); }
+        public void OnPointerDown(PointerEventData eventData) => Scale(0.9f);
+        public void OnPointerUp(PointerEventData eventData) => Scale(1f);
+
+        void Paint(bool hot)
+        {
+            if (plate != null)
+            {
+                plate.color = hot ? UltraTheme.Accent : UltraTheme.Panel;
+                plate.followThemeRim = !hot;
+                plate.rimColor = hot ? UltraTheme.Accent : UltraTheme.Line;
+                plate.SetVerticesDirty();
+            }
+            if (mark != null) mark.color = hot ? UltraTheme.AccentInk : UltraTheme.Fg;
+        }
+
+        void Nudge(float x)
+        {
+            Capture();
+            move?.Kill();
+            move = rect.DOAnchorPos(rest + new Vector2(x, 0f), UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
+        }
+
+        void Scale(float target)
+        {
+            press?.Kill();
+            press = DOTween.To(() => scale, value => { scale = value; transform.localScale = Vector3.one * value; }, target, target < 0.99f ? UltraMotion.Press : UltraMotion.Fast)
+                .SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
+        }
+
+        void OnDisable()
+        {
+            move?.Kill();
+            press?.Kill();
+            scale = 1f;
+            transform.localScale = Vector3.one;
+            if (captured) rect.anchoredPosition = rest;
         }
     }
 }

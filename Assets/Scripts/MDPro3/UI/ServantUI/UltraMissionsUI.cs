@@ -11,7 +11,7 @@ namespace MDPro3.UI.ServantUI
         string missionCategory="All Missions";
         void OpenMissions()
         {
-            OpenModal("MISSIONS","","missions");WideModal();
+            OpenModal("MISSIONS","Daily and lifetime goals","missions");WideModal();
             string[] categories={"All Missions","Daily","Lifetime","Duel Pass"};
             for(int i=0;i<categories.Length;i++)
             {

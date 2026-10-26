@@ -63,13 +63,27 @@ namespace MDPro3
             if(btnExit!=null)
             {
                 foreach(var graphic in btnExit.GetComponentsInChildren<Graphic>(true))graphic.enabled=false;
-                var backObject=new GameObject("Ultra circular back");
+                var exitRect=btnExit.GetComponent<RectTransform>();
+                if(exitRect!=null && exitRect.rect.width<240f && exitRect.rect.height<240f)
+                {
+                    exitRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,64f);
+                    exitRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,64f);
+                }
+                var backObject=new GameObject("Ultra square back");
                 backObject.transform.SetParent(btnExit.transform,false);backObject.layer=btnExit.gameObject.layer;
                 var backRect=backObject.AddComponent<RectTransform>();backRect.anchorMin=Vector2.zero;backRect.anchorMax=Vector2.one;backRect.offsetMin=backRect.offsetMax=Vector2.zero;
                 MDPro3.UI.ServantUI.UltraUi.EnsureRenderer(backObject);
-                var back=backObject.AddComponent<MDPro3.UI.ServantUI.UltraCircleBack>();back.raycastTarget=true;btnExit.targetGraphic=back;
-                var colors=btnExit.colors;colors.normalColor=Color.white;colors.highlightedColor=colors.selectedColor=new Color(.85f,.85f,.85f);colors.pressedColor=new Color(.65f,.65f,.65f);btnExit.colors=colors;
-                btnExit.gameObject.AddComponent<MDPro3.UI.ServantUI.UltraButtonMotion>();
+                var plate=backObject.AddComponent<MDPro3.UI.ServantUI.UltraChrome>();
+                plate.cut=MDPro3.UI.ServantUI.UltraCut.Small;plate.color=MDPro3.UI.ServantUI.UltraTheme.Panel;plate.raycastTarget=true;
+                var markObject=new GameObject("Chevron");
+                markObject.transform.SetParent(backObject.transform,false);markObject.layer=btnExit.gameObject.layer;
+                var markRect=markObject.AddComponent<RectTransform>();
+                markRect.anchorMin=new Vector2(.22f,.22f);markRect.anchorMax=new Vector2(.78f,.78f);markRect.offsetMin=markRect.offsetMax=Vector2.zero;
+                MDPro3.UI.ServantUI.UltraUi.EnsureRenderer(markObject);
+                var mark=markObject.AddComponent<MDPro3.UI.ServantUI.UltraChevron>();
+                mark.color=MDPro3.UI.ServantUI.UltraTheme.Fg;mark.raycastTarget=false;
+                btnExit.targetGraphic=plate;btnExit.transition=Selectable.Transition.None;
+                backObject.AddComponent<MDPro3.UI.ServantUI.UltraSquareBack>();
             }
 
             handlers = new List<UIHandler>()

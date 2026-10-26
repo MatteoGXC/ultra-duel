@@ -213,8 +213,9 @@ namespace MDPro3.UI.ServantUI
         TextMeshProUGUI label;
         Button button;
         RectTransform nudge;
-        Vector2 nudgeRest;
-        Tween move, press;
+        Vector2 nudgeRest, selfRest;
+        Tween move, press, labelMove;
+        bool selfReady;
         bool hover, down, selected, ready, wasBlocked;
         float pressScale = 1f;
 
@@ -262,8 +263,10 @@ namespace MDPro3.UI.ServantUI
             UltraTheme.Changed -= Apply;
             move?.Kill();
             press?.Kill();
+            labelMove?.Kill();
             pressScale = 1f;
             if (nudge != null) nudge.anchoredPosition = nudgeRest;
+            if (selfReady) ((RectTransform)transform).anchoredPosition = selfRest;
             transform.localScale = Vector3.one;
         }
 
@@ -278,24 +281,28 @@ namespace MDPro3.UI.ServantUI
 
         public void OnPointerEnter(PointerEventData eventData) { hover = true; Slide(true); Apply(); }
         public void OnPointerExit(PointerEventData eventData) { hover = false; down = false; Slide(false); Apply(); }
-        public void OnPointerDown(PointerEventData eventData) { down = true; Press(0.95f, 0.07f); Apply(); }
-        public void OnPointerUp(PointerEventData eventData) { down = false; Press(1f, 0.14f); Apply(); }
+        public void OnPointerDown(PointerEventData eventData) { down = true; Press(0.96f, UltraMotion.Press); Apply(); }
+        public void OnPointerUp(PointerEventData eventData) { down = false; Press(1f, UltraMotion.Fast); Apply(); }
         public void OnSelect(BaseEventData eventData) { selected = true; Slide(true); Apply(); }
         public void OnDeselect(BaseEventData eventData) { selected = false; if (!hover) Slide(false); Apply(); }
 
         void Slide(bool on)
         {
-            if (nudge == null) return;
+            var plate = (RectTransform)transform;
+            if (!selfReady) { selfRest = plate.anchoredPosition; selfReady = true; }
             move?.Kill();
-            var target = nudgeRest + (on ? new Vector2(tier == UltraTier.Hero ? 6f : 0f, tier == UltraTier.Hero ? 0f : 2f) : Vector2.zero);
-            move = nudge.DOAnchorPos(target, on ? 0.16f : 0.14f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
+            float lift = tier == UltraTier.Hero ? 3f : 2f;
+            move = plate.DOAnchorPos(selfRest + (on ? new Vector2(0f, lift) : Vector2.zero), UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
+            if (nudge == null || tier != UltraTier.Hero) return;
+            labelMove?.Kill();
+            labelMove = nudge.DOAnchorPos(nudgeRest + (on ? new Vector2(6f, 0f) : Vector2.zero), UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
         }
 
         void Press(float scale, float time)
         {
             press?.Kill();
             press = DOTween.To(() => pressScale, value => { pressScale = value; transform.localScale = Vector3.one * value; }, scale, time)
-                .SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
+                .SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
         }
 
         void EnsureUnderline()
@@ -375,7 +382,7 @@ namespace MDPro3.UI.ServantUI
                     if (underline != null)
                     {
                         underline.gameObject.SetActive(rule);
-                        underline.color = UltraTheme.Accent;
+                        underline.color = UltraTheme.Highlight;
                         PlaceUnderline(underline.rectTransform, hot);
                     }
                     break;
@@ -717,7 +724,94 @@ namespace MDPro3.UI.ServantUI
                 else if (name is "FrameText" or "SubTitle") UltraTheme.StyleEmphasis(label, 2f);
                 else UltraTheme.Repair(label, label.fontSize >= 28f);
             }
+            if (GetComponent<MainMenuUI>() == null) DecorateServantTitle();
         }
+
+        void DecorateServantTitle()
+        {
+            string subtitle = ServantSubtitle();
+            foreach (var label in GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (label.gameObject.name != "TextTitle") continue;
+                UltraHeader.Mark(label, subtitle);
+            }
+        }
+
+        string ServantSubtitle()
+        {
+            if (GetComponent<DeckSelectorUI>() != null)
+                return MDPro3.Servant.DeckSelector.condition == MDPro3.Servant.DeckSelector.Condition.ForEdit ? "Deck builder" : "Choose a deck";
+            if (GetComponent<SoloSelectorUI>() != null) return "Duel the AI";
+            if (GetComponent<AppearanceUI>() != null) return "Appearance";
+            if (GetComponent<SettingServantUI>() != null) return "Settings";
+            if (GetComponent<ReplaySelectorUI>() != null) return "Replays";
+            if (GetComponent<PuzzleSelectorUI>() != null) return "Puzzles";
+            if (GetComponent<CharacterSelectorUI>() != null) return "Characters";
+            if (GetComponent<DeckEditorUI>() != null) return "Deck editor";
+            if (GetComponent<DeckBrowserUI>() != null) return "Online decks";
+            if (GetComponent<RoomServantUI>() != null) return "Duel room";
+            if (GetComponent<OnlineServantUI>() != null) return "Online duel";
+            return null;
+        }
+    }
+
+    public static class UltraHeader
+    {
+        public static void Mark(TMP_Text title, string subtitle)
+        {
+            if (title == null) return;
+            if (title.transform.Find("Title rule") == null)
+            {
+                var ruleObject = new GameObject("Title rule", typeof(RectTransform));
+                ruleObject.layer = title.gameObject.layer;
+                var rule = ruleObject.GetComponent<RectTransform>();
+                rule.SetParent(title.transform, false);
+                rule.anchorMin = rule.anchorMax = new Vector2(0f, 0f);
+                rule.pivot = new Vector2(0f, 1f);
+                rule.anchoredPosition = new Vector2(0f, -4f);
+                rule.sizeDelta = new Vector2(84f, 5f);
+                UltraUi.EnsureRenderer(ruleObject);
+                var ink = ruleObject.AddComponent<Image>();
+                ink.raycastTarget = false;
+                ink.color = UltraTheme.Highlight;
+                ruleObject.AddComponent<UltraHighlightFill>();
+            }
+            if (string.IsNullOrEmpty(subtitle)) return;
+            var existing = title.transform.Find("Ultra subtitle");
+            TextMeshProUGUI label;
+            if (existing == null)
+            {
+                var subtitleObject = new GameObject("Ultra subtitle", typeof(RectTransform));
+                subtitleObject.layer = title.gameObject.layer;
+                var rect = subtitleObject.GetComponent<RectTransform>();
+                rect.SetParent(title.transform, false);
+                rect.anchorMin = rect.anchorMax = new Vector2(0f, 0f);
+                rect.pivot = new Vector2(0f, 1f);
+                rect.anchoredPosition = new Vector2(2f, -16f);
+                rect.sizeDelta = new Vector2(640f, 28f);
+                UltraUi.EnsureRenderer(subtitleObject);
+                label = subtitleObject.AddComponent<TextMeshProUGUI>();
+                label.fontSize = 18f;
+                label.alignment = TextAlignmentOptions.MidlineLeft;
+                label.raycastTarget = false;
+                label.overflowMode = TextOverflowModes.Overflow;
+            }
+            else label = existing.GetComponent<TextMeshProUGUI>();
+            if (label == null) return;
+            label.text = subtitle;
+            UltraTheme.StyleEmphasis(label, 14f);
+            label.fontSize = 18f;
+            label.color = UltraTheme.Mute;
+        }
+    }
+
+    public sealed class UltraHighlightFill : MonoBehaviour
+    {
+        Graphic graphic;
+        void Awake() { graphic = GetComponent<Graphic>(); }
+        void OnEnable() { UltraTheme.Changed += Paint; Paint(); }
+        void OnDisable() { UltraTheme.Changed -= Paint; }
+        void Paint() { if (graphic != null) graphic.color = UltraTheme.Highlight; }
     }
 
     // Deck tiles and other prefabs are spawned after the first skin pass. Keep repairing null faces.

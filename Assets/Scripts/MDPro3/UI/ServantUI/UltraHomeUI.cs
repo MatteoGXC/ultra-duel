@@ -587,6 +587,9 @@ namespace MDPro3.UI.ServantUI
             button.targetGraphic = chrome;
             button.transition = Selectable.Transition.None;
             button.onClick.AddListener(action);
+            var motion = card.gameObject.AddComponent<UltraButtonMotion>();
+            motion.liftPixels = 4f;
+            motion.pressScale = 0.98f;
             return button;
         }
         public void OpenFriendDuels(string mode="1v1")

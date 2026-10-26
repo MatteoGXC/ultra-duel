@@ -60,7 +60,7 @@ namespace MDPro3.UI.ServantUI
             for(int i=0;i<=20;i++){float angle=i*Mathf.PI/10;vh.AddVert(new Vector3(r.x+(x+radius*Mathf.Cos(angle))*r.width,r.y+(y+radius*Mathf.Sin(angle))*r.height),Color.white,Vector2.zero);if(i>0)vh.AddTriangle(start,start+i,start+i+1);}
         }
     }
-    public enum UltraCut { Auto, Panel, Small, Flat }
+    public enum UltraCut { Auto, Panel, Small, Flat, Tag }
 
     // Hanko ink panels: notched left edge and one clipped bottom-right corner.
     // Small controls keep only the clipped corner.
@@ -95,6 +95,18 @@ namespace MDPro3.UI.ServantUI
             vh.Clear();
             var rect = rectTransform.rect;
             if (rect.width < 2f || rect.height < 2f) return;
+            if (cut == UltraCut.Tag)
+            {
+                float chamfer = Mathf.Min(12f, rect.width * 0.35f, rect.height * 0.8f);
+                Fan(vh, new[]
+                {
+                    new Vector2(rect.xMin + chamfer, rect.yMax),
+                    new Vector2(rect.xMax, rect.yMax),
+                    new Vector2(rect.xMax, rect.yMin),
+                    new Vector2(rect.xMin, rect.yMin)
+                }, color);
+                return;
+            }
             bool thin = rect.width < 22f || rect.height < 22f || cut == UltraCut.Flat;
             if (thin)
             {

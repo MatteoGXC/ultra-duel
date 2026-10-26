@@ -187,9 +187,9 @@ namespace MDPro3.UI.ServantUI
             var handle = Addressables.LoadAssetAsync<GameObject>("UI/ItemDeck.prefab");
             handle.Completed += (result) =>
             {
-                var itemWidth = PropertyOverrider.NeedMobileLayout() ? 336f : 260f;
-                var itemHeight = PropertyOverrider.NeedMobileLayout() ? 300f : 232f;
-                var space = PropertyOverrider.NeedMobileLayout() ? 30f : 24f;
+                var itemWidth = PropertyOverrider.NeedMobileLayout() ? 340f : 304f;
+                var itemHeight = PropertyOverrider.NeedMobileLayout() ? 460f : 500f;
+                var space = PropertyOverrider.NeedMobileLayout() ? 24f : 28f;
                 var bottomPadding = (PropertyOverrider.NeedMobileLayout() ? 196f : 150f) - space;
                 superScrollView = new SuperScrollView(
                     -1,
