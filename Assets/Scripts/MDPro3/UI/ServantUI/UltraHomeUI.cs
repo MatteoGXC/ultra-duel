@@ -87,21 +87,16 @@ namespace MDPro3.UI.ServantUI
                 profileAccent.raycastTarget = false;
                 profileAccent.gameObject.AddComponent<UltraAccentFill>();
                 var avatar = profile.gameObject.AddComponent<UltraProfileHeader>(); avatar.Initialize();
-                profileLabel = HomeText(profile, "", 40, UltraTheme.Fg, .30f, .46f, .66f, .40f);
-                UltraTheme.Style(profileLabel, true, 2f);
+                profileLabel = HomeText(profile, "", 40, UltraTheme.Fg, .30f, .58f, .66f, .32f);
+                UltraTheme.Style(profileLabel, true, 1f);
                 var profileClick = profile.gameObject.AddComponent<Button>(); profileClick.onClick.AddListener(OpenProfile);
                 profileClick.targetGraphic = profile.GetComponent<Image>();
                 profile.GetComponent<Image>().raycastTarget = true;
             });
             TryHome("wallet", () =>
             {
-                var wallet = Px("Gem wallet", ultraHome, 648, 58, 300, 80);
-                var walletFrame = wallet.gameObject.AddComponent<UltraChrome>();
-                walletFrame.color = UltraTheme.Panel; walletFrame.cut = UltraCut.Panel; walletFrame.rim = 1.5f; walletFrame.followThemeRim = true; walletFrame.raycastTarget = false;
-                var gem = Px("Gem", wallet, 18, 14, 52, 52); gem.gameObject.AddComponent<UltraGem>().raycastTarget = false;
-                gemLabel = HomeText(wallet, "", 36, UltraTheme.Fg, .26f, .12f, .52f, .76f);
-                UltraTheme.Style(gemLabel, true, 2f);
-                SmallButton(wallet, "+", OpenShop, .78f, .22f, .16f, .56f, 28, UltraTier.Primary);
+                var wallet = Px("Gem wallet", ultraHome, 648, 58, 250, 80);
+                gemLabel = FillGemPlate(wallet);
             });
             TryHome("notices", () => { TopButton("NOTICES", OpenNotifications, 394, 0); BuildNotificationsHome(); });
             TryHome("missions icon", () => TopButton("MISSIONS", OpenMissions, 284, 1));
@@ -141,12 +136,15 @@ namespace MDPro3.UI.ServantUI
                 UltraTheme.Style(passLabel, true, 2f);
                 pass.GetComponent<Image>().raycastTarget = true;
                 var passButton = pass.gameObject.AddComponent<Button>(); passButton.targetGraphic = pass.GetComponent<Image>(); passButton.onClick.AddListener(OpenPass);
-                var claim = Px("Claim", pass, 430, 22, 100, 52);
-                var claimChrome = claim.gameObject.AddComponent<UltraChrome>(); claimChrome.cut = UltraCut.Small; claimChrome.raycastTarget = true;
-                var claimButton = claim.gameObject.AddComponent<Button>(); claimButton.targetGraphic = claimChrome; claimButton.onClick.AddListener(OpenPass);
-                var claimLabel = HomeText(claim, "▼", 28, Color.white, 0, 0, 1, 1);
-                if (claimLabel != null) claimLabel.alignment = TextAlignmentOptions.Center;
-                claim.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Hero);
+                var claim = Px("Claim", pass, 490, 22, 52, 52);
+                var claimChrome = claim.gameObject.AddComponent<UltraChrome>();
+                claimChrome.cut = UltraCut.Small; claimChrome.color = UltraTheme.Accent; claimChrome.rim = 0f; claimChrome.followThemeRim = false; claimChrome.raycastTarget = true;
+                claim.gameObject.AddComponent<UltraAccentFill>();
+                var mark = HomeRect("Chevron", claim, .22f, .22f, .56f, .56f);
+                var chevron = mark.gameObject.AddComponent<UltraChevron>();
+                chevron.facing = 2; chevron.color = Color.white; chevron.raycastTarget = false;
+                var claimButton = claim.gameObject.AddComponent<Button>();
+                claimButton.targetGraphic = claimChrome; claimButton.transition = Selectable.Transition.None; claimButton.onClick.AddListener(OpenPass);
             });
             TryHome("version", () =>
             {
@@ -227,12 +225,135 @@ namespace MDPro3.UI.ServantUI
             button.onClick.AddListener(action);
             return button;
         }
+        TextMeshProUGUI FillGemPlate(RectTransform plate)
+        {
+            var frame = plate.GetComponent<UltraChrome>() ?? plate.gameObject.AddComponent<UltraChrome>();
+            frame.color = UltraTheme.Panel;
+            frame.cut = UltraCut.Panel;
+            frame.rim = 1.5f;
+            frame.followThemeRim = true;
+            frame.raycastTarget = false;
+            var gem = HomeRect("Gem", plate, .06f, .16f, .22f, .68f);
+            gem.gameObject.AddComponent<UltraGem>().raycastTarget = false;
+            var label = HomeText(plate, "", 36, UltraTheme.Fg, .32f, .10f, .62f, .80f);
+            UltraTheme.Style(label, true, 2f);
+            return label;
+        }
+        void SectionLabel(Transform parent, string text, float x, float y)
+        {
+            var tick = HomeRect(text + " mark", parent, x, y, .004f, .02f);
+            var bar = tick.gameObject.AddComponent<Image>();
+            bar.color = UltraTheme.Accent;
+            bar.raycastTarget = false;
+            tick.gameObject.AddComponent<UltraAccentFill>();
+            var label = HomeText(parent, text, 14, Muted, x + .012f, y - .002f, .24f, .026f);
+            if (label != null) UltraTheme.StyleEmphasis(label, 12f);
+        }
+        Button MenuCard(string title, UnityAction action, int icon, float x, float y, float w, float h, string badge = null)
+        {
+            var rect = HomeRect(title, modal, x, y, w, h);
+            var chrome = rect.gameObject.AddComponent<UltraChrome>();
+            chrome.cut = UltraCut.Small;
+            chrome.color = UltraTheme.PanelSolid;
+            chrome.rim = 1.5f;
+            chrome.followThemeRim = true;
+            chrome.raycastTarget = true;
+            var mark = HomeRect("Icon", rect, .045f, .26f, .14f, .48f);
+            var glyph = mark.gameObject.AddComponent<UltraLineIcon>();
+            glyph.kind = icon;
+            glyph.color = UltraTheme.Accent;
+            glyph.raycastTarget = false;
+            glyph.SetVerticesDirty();
+            mark.gameObject.AddComponent<UltraAccentFill>();
+            var label = HomeText(rect, title, 22, UltraTheme.Fg, .22f, .18f, badge == null ? .72f : .46f, .64f);
+            if (label != null) label.alignment = TextAlignmentOptions.MidlineLeft;
+            if (badge != null)
+            {
+                var pill = HomeRect("Badge", rect, .70f, .26f, .24f, .48f);
+                var pillChrome = pill.gameObject.AddComponent<UltraChrome>();
+                pillChrome.cut = UltraCut.Flat;
+                pillChrome.color = UltraTheme.Accent;
+                pillChrome.rim = 0f;
+                pillChrome.followThemeRim = false;
+                pillChrome.raycastTarget = false;
+                pill.gameObject.AddComponent<UltraAccentFill>();
+                var pillText = HomeText(pill, badge, 16, UltraTheme.AccentInk, 0f, 0f, 1f, 1f);
+                if (pillText != null)
+                {
+                    pillText.alignment = TextAlignmentOptions.Center;
+                    pillText.color = UltraTheme.AccentInk;
+                }
+            }
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = chrome;
+            button.transition = Selectable.Transition.None;
+            button.onClick.AddListener(action);
+            rect.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);
+            return button;
+        }
+        Button PlusButton(Transform parent, UnityAction action, float anchorX, float anchorY)
+        {
+            var rect = new GameObject("Add friend", typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.gameObject.layer = gameObject.layer;
+            rect.SetParent(parent, false);
+            rect.anchorMin = rect.anchorMax = new Vector2(anchorX, anchorY);
+            rect.pivot = new Vector2(1f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(76f, 76f);
+            var chrome = rect.gameObject.AddComponent<UltraChrome>();
+            chrome.cut = UltraCut.Small;
+            chrome.color = UltraTheme.Fg;
+            chrome.rim = 0f;
+            chrome.followThemeRim = false;
+            chrome.raycastTarget = true;
+            var horizontal = HomeRect("Plus horizontal", rect, .28f, .42f, .44f, .16f);
+            var h = horizontal.gameObject.AddComponent<Image>();
+            h.color = UltraTheme.Ink;
+            h.raycastTarget = false;
+            var vertical = HomeRect("Plus vertical", rect, .42f, .28f, .16f, .44f);
+            var v = vertical.gameObject.AddComponent<Image>();
+            v.color = UltraTheme.Ink;
+            v.raycastTarget = false;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = chrome;
+            button.transition = Selectable.Transition.None;
+            button.onClick.AddListener(action);
+            rect.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Primary);
+            return button;
+        }
+        Button RowChevron(Transform parent, UnityAction action)
+        {
+            var rect = new GameObject("Open", typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.gameObject.layer = gameObject.layer;
+            rect.SetParent(parent, false);
+            rect.anchorMin = rect.anchorMax = new Vector2(1f, 0.5f);
+            rect.pivot = new Vector2(1f, 0.5f);
+            rect.anchoredPosition = new Vector2(-14f, 0f);
+            rect.sizeDelta = new Vector2(48f, 48f);
+            var chrome = rect.gameObject.AddComponent<UltraChrome>();
+            chrome.cut = UltraCut.Small;
+            chrome.color = UltraTheme.PanelSolid;
+            chrome.rim = 1.5f;
+            chrome.followThemeRim = true;
+            chrome.raycastTarget = true;
+            var mark = HomeRect("Chevron", rect, .28f, .28f, .44f, .44f);
+            var chevron = mark.gameObject.AddComponent<UltraChevron>();
+            chevron.facing = 1;
+            chevron.color = UltraTheme.Fg;
+            chevron.raycastTarget = false;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = chrome;
+            button.transition = Selectable.Transition.None;
+            button.onClick.AddListener(action);
+            rect.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);
+            return button;
+        }
         void RefreshUltraHome()
         {
             string name=string.IsNullOrEmpty(UltraServices.PlayerName)?Config.Get("DuelPlayerName0","Player"):UltraServices.PlayerName;
             if (string.IsNullOrWhiteSpace(name)) name="Player";
             if (profileLabel!=null) profileLabel.text=name;
-            if (profileAccent!=null) profileAccent.enabled=false;
+            if (profileAccent!=null) profileAccent.enabled=true;
             if (gemLabel!=null) gemLabel.text=UltraAccount.Gems.ToString("N0");
             if (passLabel!=null) passLabel.text="DUEL PASS   "+UltraAccount.Tier+" / 20\n<size=65%>"+(UltraAccount.Tier>UltraAccount.Claimed?"Rewards ready to claim":"WIN DUELS · EARN REWARDS")+"</size>";
             if (homeStatus!=null) homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
@@ -269,11 +390,13 @@ namespace MDPro3.UI.ServantUI
             modal=HomeRect(title,overlay,.04f,.055f,.92f,.89f);
             HomePanel(modal,drawer ? new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.96f):Color.clear);
             if(drawer){modal.anchorMin=new Vector2(.62f,0);modal.anchorMax=Vector2.one;modal.offsetMin=modal.offsetMax=Vector2.zero;shade.color=new Color(0,0,0,.55f);}
-            if(drawer){var strip=HomeRect("Drawer accent",modal,0,.78f,.008f,.22f);HomePanel(strip,UltraTheme.Accent);strip.gameObject.AddComponent<UltraAccentFill>();}
-            HomePanel(HomeRect("Top rule",modal,.04f,.84f,.92f,.002f),UltraTheme.Line);
-            var heading=HomeText(modal,title,64,UltraTheme.Fg,drawer?.16f:.075f,.875f,drawer?.78f:.70f,.09f);
+            if(drawer){var strip=HomeRect("Drawer accent",modal,0,0,.005f,1f);var stripImage=strip.gameObject.AddComponent<Image>();stripImage.color=UltraTheme.Accent;stripImage.raycastTarget=false;strip.gameObject.AddComponent<UltraAccentFill>();}
+            float hx=drawer?.16f:.075f;
+            var heading=HomeText(modal,title,64,UltraTheme.Fg,hx,.875f,drawer?.78f:.70f,.09f);
             UltraTheme.Style(heading,true,4f);
-            var sub=HomeText(modal,subtitle,18,Muted,.075f,.80f,.84f,.05f);
+            var titleRule=HomeRect("Title underline",modal,hx,.852f,drawer?.12f:.055f,.008f);
+            var titleInk=titleRule.gameObject.AddComponent<Image>();titleInk.color=UltraTheme.Accent;titleInk.raycastTarget=false;titleRule.gameObject.AddComponent<UltraAccentFill>();
+            var sub=HomeText(modal,subtitle,18,Muted,hx,.785f,.80f,.05f);
             UltraTheme.StyleEmphasis(sub,8f);
             SquareBack(modal,CloseModal,drawer?.03f:.012f,.875f,drawer?.09f:.045f,.075f);
             modal.gameObject.AddComponent<UltraPageTransition>();
@@ -342,10 +465,11 @@ namespace MDPro3.UI.ServantUI
         void ShowFriends()
         {
             OpenModal("FRIENDS",UltraServices.PlayerName+" / Follow & duel","friends");
-            HomeText(modal,"FOLLOW  /  "+((UltraServices.State?["friends"] as JArray)?.Count??0),20,Color.white,.045f,.735f,.90f,.04f);
+            var follow=HomeText(modal,"FOLLOW  /  "+((UltraServices.State?["friends"] as JArray)?.Count??0),18,UltraTheme.Fg,.055f,.735f,.80f,.04f);
+            UltraTheme.StyleEmphasis(follow,10f);
             var add=Input(modal,"Enter friend's name",.62f);
-            add.GetComponent<RectTransform>().anchorMax=new Vector2(.73f,.71f);
-            SmallButton(modal,"+",()=>Run(async()=>{await UltraServices.Request("/friends/request","POST",new{name=add.text});await UltraServices.Refresh();ShowFriends();}),.76f,.62f,.19f,.09f,28,UltraTier.Primary);
+            add.GetComponent<RectTransform>().anchorMax=new Vector2(.78f,.71f);
+            PlusButton(modal,()=>Run(async()=>{await UltraServices.Request("/friends/request","POST",new{name=add.text});await UltraServices.Refresh();ShowFriends();}),.955f,.665f);
             var content=ScrollArea();int index=0;
             var listViewport=(RectTransform)content.parent;listViewport.anchorMax=new Vector2(.955f,.58f);
             var state=UltraServices.State;
@@ -363,13 +487,18 @@ namespace MDPro3.UI.ServantUI
             foreach(var person in state?["friends"] as JArray ?? new JArray())
             {
                 int id=(int)person["id"];bool online=(bool)person["online"];
-                var row=Row(content,index++,(online?"● ":"○ ")+(string)person["name"],(string)person["activity"]??(online?"Online":"Offline"));
+                var row=Row(content,index++,(string)person["name"],(string)person["activity"]??(online?"Online":"Offline"));
                 HomePanel(HomeRect("Online edge",row,0,0,.008f,1),online?Lime:Muted);
                 var icon=HomeRect("Friend mate",row,.025f,.12f,.13f,.76f).gameObject.AddComponent<Image>();icon.preserveAspect=true;
                 LoadMatePortrait(icon,(int?)person["mate"]??1000001).Forget();
-                foreach(var label in row.GetComponentsInChildren<TextMeshProUGUI>()){var r=label.rectTransform;r.anchorMin=new Vector2(.18f,r.anchorMin.y);r.anchorMax=new Vector2(.80f,r.anchorMax.y);}
-
-                SmallButton(row,">",()=>OpenFriend(person),.82f,.20f,.15f,.60f,24);
+                var dot=HomeRect("Presence",row,.20f,.62f,0f,0f);
+                dot.anchorMin=dot.anchorMax=new Vector2(.20f,.68f);
+                dot.sizeDelta=new Vector2(8f,8f);
+                var presence=dot.gameObject.AddComponent<UltraCircleGraphic>();
+                presence.color=online?UltraTheme.Accent:UltraTheme.Mute;
+                presence.raycastTarget=false;
+                foreach(var label in row.GetComponentsInChildren<TextMeshProUGUI>()){var r=label.rectTransform;r.anchorMin=new Vector2(.24f,r.anchorMin.y);r.anchorMax=new Vector2(.78f,r.anchorMax.y);}
+                RowChevron(row,()=>OpenFriend(person));
             }
             foreach(var person in state?["sent"] as JArray ?? new JArray())
             {
@@ -377,8 +506,8 @@ namespace MDPro3.UI.ServantUI
                 SmallButton(row,"X",()=>RemoveFriend(id),.84f,.20f,.13f,.60f,18);
             }
             if(index==0)Row(content,0,"Find your friends","Add their Ultra Duel username above.");
-            SmallButton(modal,"REFRESH",()=>Run(async()=>{await UltraServices.Refresh();ShowFriends();}),.045f,.025f,.30f,.065f,16);
-            SmallButton(modal,"SIGN OUT",()=>Run(async()=>{await UltraServices.SignOut();OpenLogin();}),.65f,.025f,.30f,.065f,16);
+            SmallButton(modal,"REFRESH",()=>Run(async()=>{await UltraServices.Refresh();ShowFriends();}),.055f,.03f,.36f,.075f,18);
+            SmallButton(modal,"SIGN OUT",()=>Run(async()=>{await UltraServices.SignOut();OpenLogin();}),.58f,.03f,.36f,.075f,18);
         }
         void RemoveFriend(int id) {Run(async()=>{await UltraServices.Request("/friends/"+id,"DELETE");await UltraServices.Refresh();ShowFriends();});}
         void OpenDuel()
@@ -467,16 +596,28 @@ namespace MDPro3.UI.ServantUI
         void OpenMenu()
         {
             OpenModal("MENU","Ultra Duel  /  v"+UltraServices.Version,"menu");
-            SmallButton(modal,"SETTINGS",()=>{CloseModal();OnSetting();},.055f,.61f,.42f,.10f);
-            SmallButton(modal,"WALLPAPER",OpenWallpaper,.525f,.61f,.42f,.10f);
-            SmallButton(modal,"MATCH HISTORY",OpenHistory,.055f,.46f,.42f,.10f);
-            SmallButton(modal,"PUZZLES",()=>{CloseModal();OnPuzzle();},.525f,.46f,.42f,.10f);
-            SmallButton(modal,"CUT-INS",()=>{CloseModal();OnCutin();},.055f,.31f,.42f,.10f);
-            SmallButton(modal,"UPDATES",OpenUpdates,.525f,.31f,.42f,.10f);
-            SmallButton(modal,"GITHUB",()=>Application.OpenURL(UltraServices.Repository),.055f,.16f,.42f,.10f);
-            SmallButton(modal,"EXIT",()=>{CloseModal();OnExit();},.525f,.16f,.42f,.10f);
-            SmallButton(modal,"GUI SCALE  "+UltraGuiScale.Percent+"%",OpenGuiScale,.055f,.025f,.42f,.08f);
-            SmallButton(modal,"SAVE BACKUPS",OpenBackups,.525f,.025f,.42f,.08f);
+            var perf=HomeText(modal,"FPS N/A    |    GPU N/A    |    CPU N/A    |    LAT N/A",14,Muted,.34f,.905f,.62f,.035f);
+            if(perf!=null)
+            {
+                perf.alignment=TextAlignmentOptions.MidlineRight;
+                UltraTheme.StyleEmphasis(perf,4f);
+                perf.gameObject.AddComponent<UltraPerfReadout>();
+            }
+            const float x0=.045f,gap=.018f,w=.291f,h=.115f;
+            SectionLabel(modal,"DISPLAY",x0,.735f);
+            SectionLabel(modal,"PLAY",x0+(w+gap)*2,.735f);
+            MenuCard("SETTINGS",()=>{CloseModal();OnSetting();},0,x0,.60f,w,h);
+            MenuCard("WALLPAPER",OpenWallpaper,1,x0+w+gap,.60f,w,h);
+            MenuCard("MATCH HISTORY",OpenHistory,2,x0+(w+gap)*2,.60f,w,h);
+            MenuCard("CUT-INS",()=>{CloseModal();OnCutin();},3,x0,.46f,w,h);
+            MenuCard("GUI SCALE",OpenGuiScale,4,x0+w+gap,.46f,w,h,UltraGuiScale.Percent+"%");
+            MenuCard("PUZZLES",()=>{CloseModal();OnPuzzle();},5,x0+(w+gap)*2,.46f,w,h);
+            SectionLabel(modal,"SYSTEM",x0,.40f);
+            MenuCard("CHECK UPDATES",OpenUpdates,6,x0,.255f,w,h);
+            MenuCard("SAVE BACKUPS",OpenBackups,7,x0+w+gap,.255f,w,h);
+            MenuCard("GITHUB",()=>Application.OpenURL(UltraServices.Repository),8,x0+(w+gap)*2,.255f,w,h);
+            SectionLabel(modal,"SESSION",x0+w+gap,.175f);
+            SmallButton(modal,"EXIT",()=>{CloseModal();OnExit();},x0+w+gap,.04f,w*2f+gap,.105f,26);
         }
     }
 }

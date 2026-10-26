@@ -81,7 +81,10 @@ namespace MDPro3.UI.ServantUI
         {
             if(notificationFixture==null && string.IsNullOrEmpty(UltraServices.Token)){OpenLogin();return;}
             OpenModal("NOTIFICATIONS",UnreadNotifications+" unread / Invitations and friend activity","notifications");
-            noticeContent=ScrollArea();renderedNotifications=null;RenderNotifications();
+            noticeContent=ScrollArea();
+            var viewportImage=noticeContent.parent.GetComponent<Image>();
+            if(viewportImage!=null)viewportImage.color=new Color(0,0,0,0);
+            renderedNotifications=null;RenderNotifications();
             SmallButton(modal,"REFRESH",()=>Run(async()=>{await UltraServices.Refresh();}),.045f,.025f,.25f,.065f,18);
             SmallButton(modal,"UPDATES",OpenUpdates,.37f,.025f,.25f,.065f,18);
             SmallButton(modal,"MARK ALL READ",()=>Run(async()=>{
@@ -97,6 +100,8 @@ namespace MDPro3.UI.ServantUI
             string snapshot=(DateTimeOffset.UtcNow.ToUnixTimeSeconds()/30)+NotificationRows.ToString(Formatting.None)+(NotificationState?["requests"]?.ToString(Formatting.None)??"")+(NotificationState?["rooms"]?.ToString(Formatting.None)??"");
             if(snapshot==renderedNotifications)return;
             renderedNotifications=snapshot;
+            var stale=modal.Find("Empty state");
+            if(stale!=null)Destroy(stale.gameObject);
             foreach(Transform child in noticeContent){child.gameObject.SetActive(false);Destroy(child.gameObject);}
             var heading=modal.GetComponentsInChildren<TextMeshProUGUI>().FirstOrDefault(t=>t.text.EndsWith(" unread / Invitations and friend activity"));
             if(heading!=null)heading.text=UnreadNotifications+" unread / Invitations and friend activity";
@@ -117,7 +122,19 @@ namespace MDPro3.UI.ServantUI
                     SmallButton(row,kind=="duel-invite"?"JOIN":"VIEW ROOM",()=>{if(kind=="duel-invite")JoinFriendRoom(room);else OpenFriendTables(room);},.75f,.2f,.22f,.6f,17);
                 else SmallButton(row,"FRIENDS",ShowFriends,.75f,.2f,.22f,.6f,17);
             }
-            if(index==0)Row(noticeContent,0,"You're all caught up","Duel invitations and friend activity will appear here.");
+            if(index==0)
+            {
+                var card=HomeRect("Empty state",modal,.045f,.18f,.91f,.52f);
+                HomePanel(card,UltraTheme.Panel);
+                var edge=HomeRect("Empty edge",card,0f,.22f,.008f,.56f);
+                var edgeImage=edge.gameObject.AddComponent<Image>();
+                edgeImage.color=UltraTheme.Accent;edgeImage.raycastTarget=false;
+                edge.gameObject.AddComponent<UltraAccentFill>();
+                var title=HomeText(card,"You're all caught up",32,UltraTheme.Fg,.06f,.52f,.88f,.22f);
+                UltraTheme.Style(title,true,2f);
+                var body=HomeText(card,"Duel invitations and friend activity will appear here.",20,UltraTheme.Mute,.06f,.28f,.88f,.18f);
+                UltraTheme.Style(body,false);
+            }
         }
     }
 }

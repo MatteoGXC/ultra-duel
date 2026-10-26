@@ -42,14 +42,40 @@ namespace MDPro3.UI.ServantUI
             for(int i=1;i<36;i++)vh.AddTriangle(start,start+i,start+i+1);vh.AddTriangle(start,start+36,start+1);
         }
     }
+    public sealed class UltraAngularBar : UltraMesh
+    {
+        public float amount;
+        protected override void OnPopulateMesh(VertexHelper vh)
+        {
+            vh.Clear();
+            var r = rectTransform.rect;
+            if (r.width < 4f || r.height < 2f) return;
+            float slash = Mathf.Min(r.height * 1.2f, r.width * 0.08f);
+            Color track = Color.Lerp(new Color(0.07f, 0.08f, 0.10f, 1f), UltraTheme.Accent, 0.28f);
+            Slash(vh, r.xMin, r.xMax, r.yMin, r.yMax, slash, track, track);
+            if (amount <= 0.001f) return;
+            float end = Mathf.Lerp(r.xMin, r.xMax, Mathf.Clamp01(amount));
+            float fillSlash = Mathf.Min(slash, Mathf.Max(1f, (end - r.xMin) * 0.45f));
+            Slash(vh, r.xMin, end, r.yMin, r.yMax, fillSlash, UltraTheme.Accent, UltraTheme.Highlight);
+        }
+        static void Slash(VertexHelper vh, float x0, float x1, float y0, float y1, float slash, Color left, Color right)
+        {
+            if (x1 - x0 < 1f) return;
+            int i = vh.currentVertCount;
+            vh.AddVert(new Vector3(x0 + slash, y0), left, Vector2.zero);
+            vh.AddVert(new Vector3(x1, y0), right, Vector2.zero);
+            vh.AddVert(new Vector3(x1 - slash, y1), right, Vector2.zero);
+            vh.AddVert(new Vector3(x0, y1), left, Vector2.zero);
+            vh.AddTriangle(i, i + 1, i + 2);
+            vh.AddTriangle(i, i + 2, i + 3);
+        }
+    }
     public sealed class UltraProfileHeader : MonoBehaviour
     {
         RawImage portrait;
         UltraCircleGraphic ring;
-        UltraChrome chrome;
-        UltraProfilePlate plate;
-        RectTransform progress;
-        TextMeshProUGUI level;
+        UltraAngularBar bar;
+        TextMeshProUGUI level, xp;
         int shown=-1,loaded;
         static RectTransform R(string name,Transform parent,float x,float y,float w,float h)
         {
@@ -57,14 +83,12 @@ namespace MDPro3.UI.ServantUI
         }
         public void Initialize()
         {
-            chrome = GetComponent<UltraChrome>();
-            if (chrome != null) { chrome.color = chrome.rimColor = Color.clear; chrome.rim = 0; }
-            var circle = R("Profile icon rim", transform, .025f, .08f, .0f, .84f);
+            var circle = R("Profile icon rim", transform, .04f, .10f, .0f, .80f);
             circle.gameObject.AddComponent<AspectRatioFitter>().aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
             UltraUi.EnsureRenderer(circle.gameObject);
             ring = circle.gameObject.AddComponent<UltraCircleGraphic>();
             ring.raycastTarget = false;
-            var clip = R("Icon mask", circle, .07f, .07f, .86f, .86f);
+            var clip = R("Icon mask", circle, .16f, .16f, .68f, .68f);
             UltraUi.EnsureRenderer(clip.gameObject);
             clip.gameObject.AddComponent<UltraCircleGraphic>();
             clip.gameObject.AddComponent<Mask>().showMaskGraphic = false;
@@ -72,28 +96,39 @@ namespace MDPro3.UI.ServantUI
             UltraUi.EnsureRenderer(portraitObject);
             portrait = portraitObject.AddComponent<RawImage>();
             portrait.raycastTarget = false;
-            var label = R("Level", transform, .30f, .08f, .62f, .28f);
+            var label = R("Level", transform, .30f, .30f, .34f, .22f);
             level = UltraUi.Text(label.gameObject);
             if (level != null)
             {
-                level.font = Program.instance.ui_.tmpFont;
                 level.fontSize = 18;
-                level.color = UltraTheme.Mute;
+                level.color = UltraTheme.Fg;
+                level.alignment = TextAlignmentOptions.MidlineLeft;
                 level.raycastTarget = false;
-                UltraTheme.StyleEmphasis(level, 8f);
+                level.richText = true;
+                UltraTheme.StyleEmphasis(level, 4f);
             }
-            var track = R("XP track", transform, .30f, .40f, .62f, .08f);
+            var xpHost = R("XP", transform, .58f, .30f, .38f, .22f);
+            xp = UltraUi.Text(xpHost.gameObject);
+            if (xp != null)
+            {
+                xp.fontSize = 16;
+                xp.color = UltraTheme.Fg;
+                xp.alignment = TextAlignmentOptions.MidlineRight;
+                xp.raycastTarget = false;
+                UltraTheme.StyleEmphasis(xp, 8f);
+            }
+            var track = R("XP track", transform, .30f, .12f, .66f, .07f);
             UltraUi.EnsureRenderer(track.gameObject);
-            track.gameObject.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.1f);
-            progress = R("XP fill", transform, .30f, .40f, 0f, .08f);
-            UltraUi.EnsureRenderer(progress.gameObject);
-            var fill = progress.gameObject.AddComponent<Image>();
-            fill.color = UltraTheme.Accent;
-            fill.gameObject.AddComponent<UltraAccentFill>();
+            bar = track.gameObject.AddComponent<UltraAngularBar>();
+            bar.raycastTarget = false;
             UltraTheme.Changed += OnTheme;
             OnTheme();
         }
-        void OnTheme() { if (ring != null) ring.color = UltraTheme.Accent; }
+        void OnTheme()
+        {
+            if (ring != null) ring.color = UltraTheme.Accent;
+            if (bar != null) bar.SetVerticesDirty();
+        }
         void OnDestroy() { UltraTheme.Changed -= OnTheme; if (loaded != 0) CardImageLoader.ReleaseArt(loaded); }
         void Update()
         {
@@ -101,8 +136,14 @@ namespace MDPro3.UI.ServantUI
             int.TryParse(Config.Get("DuelFace0", "1010001"), out int id);
             if(id<1010000 || id>=1030000)id=1010001;
             if(id!=shown){shown=id;Load(id).Forget();}
-            if (level != null) level.text = "LV.  " + UltraAccount.Level + "     " + (UltraAccount.XP % 500) + " / 500 XP";
-            if (progress != null) progress.anchorMax = new Vector2(.30f + .62f * (UltraAccount.XP % 500) / 500f, .48f);
+            int into = UltraAccount.XP % 500;
+            if (level != null) level.text = "<color=#" + ColorUtility.ToHtmlStringRGB(UltraTheme.Mute) + ">LV.</color>  " + UltraAccount.Level;
+            if (xp != null) xp.text = into.ToString("N0") + " / 500 XP";
+            if (bar != null && !Mathf.Approximately(bar.amount, into / 500f))
+            {
+                bar.amount = into / 500f;
+                bar.SetVerticesDirty();
+            }
         }
         async UniTaskVoid Load(int id)
         {

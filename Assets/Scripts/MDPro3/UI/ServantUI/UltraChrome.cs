@@ -101,16 +101,34 @@ namespace MDPro3.UI.ServantUI
                 Fan(vh, new[] { new Vector2(rect.xMin, rect.yMin), new Vector2(rect.xMax, rect.yMin), new Vector2(rect.xMax, rect.yMax), new Vector2(rect.xMin, rect.yMax) }, color);
                 return;
             }
-            bool panel = cut != UltraCut.Small;
+            bool panel = cut != UltraCut.Small && rect.height > 48f && rect.width > 48f;
             float clip = Mathf.Min(panel ? 20f : 10f, rect.height * 0.34f, rect.width * 0.22f);
             var outer = Outline(rect, clip, panel);
             if (rim > 0.4f)
             {
-                Fan(vh, outer, rimColor.a > 0.01f ? rimColor : UltraTheme.Line);
-                var inner = new Rect(rect.x + rim, rect.y + rim, Mathf.Max(1f, rect.width - rim * 2f), Mathf.Max(1f, rect.height - rim * 2f));
-                Fan(vh, Outline(inner, Mathf.Max(0f, clip - rim), panel), color);
+                var innerRect = new Rect(rect.x + rim, rect.y + rim, Mathf.Max(1f, rect.width - rim * 2f), Mathf.Max(1f, rect.height - rim * 2f));
+                var inner = Outline(innerRect, Mathf.Max(0f, clip - rim), panel);
+                // The rim is a ring. Filling the whole outer shape and then a translucent
+                // inner lets the rim color show through the caption and hides the label.
+                Ring(vh, outer, inner, rimColor.a > 0.01f ? rimColor : UltraTheme.Line);
+                Fan(vh, inner, color);
             }
             else Fan(vh, outer, color);
+        }
+        static void Ring(VertexHelper vh, Vector2[] outer, Vector2[] inner, Color tint)
+        {
+            int count = Mathf.Min(outer.Length, inner.Length);
+            for (int i = 0; i < count; i++)
+            {
+                int next = (i + 1) % count;
+                int start = vh.currentVertCount;
+                vh.AddVert(outer[i], tint, Vector2.zero);
+                vh.AddVert(outer[next], tint, Vector2.zero);
+                vh.AddVert(inner[next], tint, Vector2.zero);
+                vh.AddVert(inner[i], tint, Vector2.zero);
+                vh.AddTriangle(start, start + 1, start + 2);
+                vh.AddTriangle(start, start + 2, start + 3);
+            }
         }
         static Vector2[] Outline(Rect rect, float clip, bool panel)
         {
@@ -122,7 +140,7 @@ namespace MDPro3.UI.ServantUI
                 new Vector2(rect.xMax - clip, rect.yMin),
                 new Vector2(rect.xMin, rect.yMin)
             };
-            if (panel && rect.height > 48f && rect.width > 48f)
+            if (panel)
             {
                 float notch = Mathf.Min(9f, rect.width * 0.06f);
                 points.Add(new Vector2(rect.xMin, rect.yMin + rect.height * 0.38f));

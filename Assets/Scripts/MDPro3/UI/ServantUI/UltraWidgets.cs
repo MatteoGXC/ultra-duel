@@ -95,20 +95,105 @@ namespace MDPro3.UI.ServantUI
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class UltraChevron : UltraMesh
     {
+        public int facing;
         protected override void OnPopulateMesh(VertexHelper vh)
         {
             vh.Clear();
             var r = rectTransform.rect;
-            Vector2 a = r.center + new Vector2(r.width * 0.16f, r.height * 0.28f);
-            Vector2 b = r.center + new Vector2(-r.width * 0.18f, 0f);
-            Vector2 c = r.center + new Vector2(r.width * 0.16f, -r.height * 0.28f);
-            float width = Mathf.Min(r.width, r.height) * 0.09f;
+            Vector2 a = new Vector2(0.16f, 0.28f);
+            Vector2 b = new Vector2(-0.18f, 0f);
+            Vector2 c = new Vector2(0.16f, -0.28f);
+            float rot = facing == 1 ? 180f : facing == 2 ? 90f : facing == 3 ? -90f : 0f;
+            a = Spin(a, rot); b = Spin(b, rot); c = Spin(c, rot);
+            a = r.center + Vector2.Scale(a, r.size);
+            b = r.center + Vector2.Scale(b, r.size);
+            c = r.center + Vector2.Scale(c, r.size);
+            float width = Mathf.Min(r.width, r.height) * 0.11f;
             Stroke(vh, a, b, width, color);
             Stroke(vh, b, c, width, color);
+        }
+        static Vector2 Spin(Vector2 p, float degrees)
+        {
+            float rad = degrees * Mathf.Deg2Rad;
+            float cos = Mathf.Cos(rad), sin = Mathf.Sin(rad);
+            return new Vector2(p.x * cos - p.y * sin, p.x * sin + p.y * cos);
         }
         static void Stroke(VertexHelper vh, Vector2 a, Vector2 b, float width, Color tint)
         {
             var n = Vector2.Perpendicular((b - a).normalized) * width;
+            int i = vh.currentVertCount;
+            vh.AddVert(a + n, tint, Vector2.zero);
+            vh.AddVert(b + n, tint, Vector2.zero);
+            vh.AddVert(b - n, tint, Vector2.zero);
+            vh.AddVert(a - n, tint, Vector2.zero);
+            vh.AddTriangle(i, i + 1, i + 2);
+            vh.AddTriangle(i, i + 2, i + 3);
+        }
+    }
+
+    // Stroke icons for menu cards. Color is the stroke, so an accent tint stays a glyph.
+    public sealed class UltraLineIcon : UltraMesh
+    {
+        public int kind;
+        protected override void OnPopulateMesh(VertexHelper vh)
+        {
+            vh.Clear();
+            var r = rectTransform.rect;
+            if (r.width < 2f || r.height < 2f) return;
+            float w = Mathf.Min(r.width, r.height) * 0.07f;
+            Vector2 P(float x, float y) => new Vector2(r.xMin + x * r.width, r.yMin + y * r.height);
+            void L(float x0, float y0, float x1, float y1) => Line(vh, P(x0, y0), P(x1, y1), w, color);
+            void Ring(float cx, float cy, float radius, int steps)
+            {
+                for (int i = 0; i < steps; i++)
+                {
+                    float a = i * Mathf.PI * 2f / steps;
+                    float b = (i + 1) * Mathf.PI * 2f / steps;
+                    L(cx + Mathf.Cos(a) * radius, cy + Mathf.Sin(a) * radius, cx + Mathf.Cos(b) * radius, cy + Mathf.Sin(b) * radius);
+                }
+            }
+            switch (kind)
+            {
+                case 1:
+                    L(.18f, .22f, .82f, .22f); L(.82f, .22f, .82f, .78f); L(.82f, .78f, .18f, .78f); L(.18f, .78f, .18f, .22f);
+                    L(.22f, .38f, .42f, .58f); L(.42f, .58f, .58f, .36f); L(.58f, .36f, .78f, .62f);
+                    Ring(.32f, .64f, .07f, 8);
+                    break;
+                case 2:
+                    Ring(.5f, .5f, .32f, 16); Ring(.5f, .5f, .16f, 12); Ring(.5f, .5f, .04f, 6);
+                    break;
+                case 3:
+                    L(.62f, .84f, .38f, .54f); L(.38f, .54f, .58f, .54f); L(.58f, .54f, .34f, .16f);
+                    break;
+                case 4:
+                    L(.16f, .68f, .84f, .68f); L(.16f, .32f, .84f, .32f); Ring(.36f, .68f, .08f, 8); Ring(.64f, .32f, .08f, 8);
+                    break;
+                case 5:
+                    L(.28f, .28f, .48f, .28f); L(.48f, .28f, .48f, .48f); L(.48f, .48f, .72f, .48f);
+                    L(.72f, .48f, .72f, .72f); L(.72f, .72f, .52f, .72f); L(.52f, .72f, .28f, .48f); L(.28f, .48f, .28f, .28f);
+                    break;
+                case 6:
+                    Ring(.5f, .5f, .28f, 14);
+                    L(.5f, .72f, .34f, .42f); L(.34f, .42f, .5f, .28f); L(.5f, .28f, .66f, .42f); L(.66f, .42f, .5f, .72f);
+                    break;
+                case 7:
+                    L(.22f, .22f, .78f, .22f); L(.78f, .22f, .78f, .78f); L(.78f, .78f, .22f, .78f); L(.22f, .78f, .22f, .22f);
+                    L(.36f, .62f, .64f, .62f); L(.36f, .62f, .36f, .40f);
+                    break;
+                case 8:
+                    Ring(.38f, .62f, .16f, 10); Ring(.62f, .40f, .18f, 10); L(.48f, .28f, .74f, .22f);
+                    break;
+                default:
+                    Ring(.5f, .5f, .18f, 12);
+                    L(.5f, .5f, .5f, .86f); L(.5f, .5f, .86f, .5f); L(.5f, .5f, .5f, .14f); L(.5f, .5f, .14f, .5f);
+                    L(.5f, .5f, .76f, .76f); L(.5f, .5f, .24f, .24f); L(.5f, .5f, .76f, .24f); L(.5f, .5f, .24f, .76f);
+                    break;
+            }
+        }
+        static void Line(VertexHelper vh, Vector2 a, Vector2 b, float width, Color tint)
+        {
+            var n = Vector2.Perpendicular((b - a).normalized) * width;
+            if (float.IsNaN(n.x)) return;
             int i = vh.currentVertCount;
             vh.AddVert(a + n, tint, Vector2.zero);
             vh.AddVert(b + n, tint, Vector2.zero);
@@ -154,7 +239,11 @@ namespace MDPro3.UI.ServantUI
                 nudgeRest = nudge.anchoredPosition;
                 UltraTheme.Style(label, true, tier == UltraTier.Hero ? 4f : 10f);
             }
-            if (tier == UltraTier.Hero) EnsureUnderline();
+            if (tier == UltraTier.Hero)
+            {
+                EnsureUnderline();
+                EnsureStripe();
+            }
             ready = true;
             Apply();
         }
@@ -219,13 +308,41 @@ namespace MDPro3.UI.ServantUI
             bar.transform.SetParent(transform, false);
             var rect = bar.AddComponent<RectTransform>();
             UltraUi.EnsureRenderer(bar);
-            rect.anchorMin = new Vector2(0.12f, 0.16f);
-            rect.anchorMax = new Vector2(0.12f, 0.16f);
-            rect.pivot = new Vector2(0f, 0.5f);
-            rect.sizeDelta = new Vector2(90f, 5f);
+            rect.anchorMin = new Vector2(0.08f, 0.18f);
+            rect.anchorMax = new Vector2(0.38f, 0.18f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(0f, -2f);
+            rect.offsetMax = new Vector2(0f, 2f);
             var image = bar.AddComponent<Image>();
             image.raycastTarget = false;
-            image.color = UltraTheme.Highlight;
+            image.color = UltraTheme.Accent;
+        }
+
+        void EnsureStripe()
+        {
+            if (transform.Find("Hero stripe") != null) return;
+            var bar = new GameObject("Hero stripe");
+            bar.layer = gameObject.layer;
+            bar.transform.SetParent(transform, false);
+            var rect = bar.AddComponent<RectTransform>();
+            UltraUi.EnsureRenderer(bar);
+            rect.anchorMin = new Vector2(0f, 0.22f);
+            rect.anchorMax = new Vector2(0f, 0.78f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.sizeDelta = new Vector2(5f, 0f);
+            rect.anchoredPosition = new Vector2(16f, 0f);
+            var image = bar.AddComponent<Image>();
+            image.raycastTarget = false;
+            image.color = UltraTheme.Accent;
+        }
+
+        static void PlaceUnderline(RectTransform rect, bool hot)
+        {
+            rect.anchorMin = new Vector2(0.08f, 0.18f);
+            rect.anchorMax = new Vector2(hot ? 0.90f : 0.38f, 0.18f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(0f, 4f);
         }
 
         void Apply()
@@ -233,13 +350,16 @@ namespace MDPro3.UI.ServantUI
             if (!ready || chrome == null) return;
             bool blocked = tier == UltraTier.Disabled || (button != null && !button.interactable);
             var underline = transform.Find("Hero underline")?.GetComponent<Image>();
+            var stripe = transform.Find("Hero stripe")?.GetComponent<Image>();
             if (blocked)
             {
-                chrome.color = new Color(1f, 1f, 1f, 0.06f);
+                chrome.color = UltraTheme.PanelSolid;
                 chrome.rim = 1f;
                 chrome.rimColor = UltraTheme.Line;
                 chrome.followThemeRim = false;
                 if (label != null) label.color = UltraTheme.Mute;
+                if (underline != null) underline.color = new Color(UltraTheme.Mute.r, UltraTheme.Mute.g, UltraTheme.Mute.b, 0.45f);
+                if (stripe != null) stripe.color = UltraTheme.Mute;
                 chrome.SetVerticesDirty();
                 return;
             }
@@ -248,14 +368,16 @@ namespace MDPro3.UI.ServantUI
             {
                 case UltraTier.Hero:
                     chrome.cut = UltraCut.Panel;
-                    chrome.color = hot ? Color.Lerp(UltraTheme.Accent, Color.white, 0.12f) : UltraTheme.Accent;
-                    chrome.rim = 0f;
-                    if (label != null) label.color = UltraTheme.AccentInk;
+                    chrome.color = down ? new Color(0.07f, 0.08f, 0.10f, 1f) : hot ? UltraTheme.PanelHover : UltraTheme.PanelSolid;
+                    chrome.rim = hot || down ? 2f : 1.5f;
+                    chrome.rimColor = hot || down ? UltraTheme.Accent : UltraTheme.Line;
+                    chrome.followThemeRim = false;
+                    if (label != null) label.color = UltraTheme.Fg;
+                    if (stripe != null) stripe.color = UltraTheme.Accent;
                     if (underline != null)
                     {
-                        underline.color = UltraTheme.Highlight;
-                        var rect = underline.rectTransform;
-                        rect.sizeDelta = new Vector2(hot ? Mathf.Max(180f, rectTransform().x - 72f) : 90f, 5f);
+                        underline.color = UltraTheme.Accent;
+                        PlaceUnderline(underline.rectTransform, hot);
                     }
                     break;
                 case UltraTier.Primary:
@@ -266,11 +388,11 @@ namespace MDPro3.UI.ServantUI
                     break;
                 case UltraTier.Danger:
                     chrome.cut = UltraCut.Small;
-                    chrome.color = down ? UltraTheme.DangerPress : hot ? UltraTheme.Danger : new Color(UltraTheme.Danger.r, UltraTheme.Danger.g, UltraTheme.Danger.b, 0.08f);
+                    chrome.color = down ? new Color(0.10f, 0.05f, 0.06f, 1f) : hot ? new Color(0.20f, 0.09f, 0.11f, 1f) : UltraTheme.PanelSolid;
                     chrome.rim = 2f;
                     chrome.rimColor = UltraTheme.Danger;
                     chrome.followThemeRim = false;
-                    if (label != null) label.color = hot ? Color.white : UltraTheme.Danger;
+                    if (label != null) label.color = UltraTheme.Danger;
                     break;
                 default:
                     chrome.cut = UltraCut.Small;
@@ -283,8 +405,6 @@ namespace MDPro3.UI.ServantUI
             }
             chrome.SetVerticesDirty();
         }
-
-        Vector2 rectTransform() => ((RectTransform)transform).rect.size;
     }
 
     public sealed class UltraMenuItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, ISelectHandler, IDeselectHandler
@@ -449,8 +569,8 @@ namespace MDPro3.UI.ServantUI
     {
         Image box;
         TextMeshProUGUI caption;
-        bool hover;
-        Tween lift, press;
+        bool hover, down, booted;
+        Tween lift, press, tint;
         Vector2 rest;
 
         public void Bind(Image plate, TextMeshProUGUI label)
@@ -459,15 +579,26 @@ namespace MDPro3.UI.ServantUI
             caption = label;
             if (box == null) return;
             rest = box.rectTransform.anchoredPosition;
+            var button = GetComponent<Button>();
+            if (button != null)
+            {
+                button.transition = Selectable.Transition.None;
+                var colors = button.colors;
+                colors.normalColor = colors.highlightedColor = colors.pressedColor = colors.selectedColor = Color.white;
+                colors.fadeDuration = 0.16f;
+                button.colors = colors;
+            }
             if (caption != null) UltraTheme.Style(caption, true, 12f);
+            var glyph = box.GetComponentInChildren<UltraNavIcon>();
+            if (glyph != null) glyph.color = Color.white;
             UltraTheme.Changed += Paint;
             Paint();
         }
         void OnDestroy() { UltraTheme.Changed -= Paint; }
         public void OnPointerEnter(PointerEventData eventData) { hover = true; Move(3f, 0.16f); Paint(); }
-        public void OnPointerExit(PointerEventData eventData) { hover = false; Move(0f, 0.14f); Press(1f); Paint(); }
-        public void OnPointerDown(PointerEventData eventData) { Press(0.92f); }
-        public void OnPointerUp(PointerEventData eventData) { Press(hover ? 1f : 1f); }
+        public void OnPointerExit(PointerEventData eventData) { hover = false; down = false; Move(0f, 0.14f); Press(1f); Paint(); }
+        public void OnPointerDown(PointerEventData eventData) { down = true; Press(0.92f); Paint(); }
+        public void OnPointerUp(PointerEventData eventData) { down = false; Press(1f); Paint(); }
 
         void Move(float y, float time)
         {
@@ -484,18 +615,42 @@ namespace MDPro3.UI.ServantUI
         void Paint()
         {
             if (box == null) return;
-            box.color = hover ? UltraTheme.Accent : UltraTheme.Panel;
-            var chrome = box.GetComponent<UltraChrome>();
-            if (chrome != null)
-            {
-                chrome.color = box.color;
-                chrome.rimColor = hover ? UltraTheme.Accent : UltraTheme.Line;
-                chrome.SetVerticesDirty();
-            }
-            if (caption != null) caption.color = hover ? UltraTheme.Accent : UltraTheme.Fg;
+            Color idle = UltraTheme.PanelSolid;
+            Color hot = Color.Lerp(UltraTheme.PanelHover, UltraTheme.Accent, 0.42f);
+            if (Luma(hot) < 0.16f) hot = Color.Lerp(hot, UltraTheme.Fg, 0.35f);
+            Color pressed = Color.Lerp(hot, UltraTheme.PanelSolid, 0.45f);
+            Color plate = down ? pressed : hover ? hot : idle;
+            Color edge = hover || down ? UltraTheme.Accent : UltraTheme.Line;
             var glyph = box.GetComponentInChildren<UltraNavIcon>();
-            if (glyph != null) glyph.color = hover ? UltraTheme.AccentInk : UltraTheme.Fg;
+            if (glyph != null) glyph.color = Color.white;
+            float accentLuma = Luma(UltraTheme.Accent);
+            if (caption != null) caption.color = hover ? (accentLuma > 0.28f ? UltraTheme.Accent : UltraTheme.Highlight) : UltraTheme.Fg;
+            var chrome = box.GetComponent<UltraChrome>();
+            if (!booted)
+            {
+                booted = true;
+                ApplyPlate(plate, edge, chrome);
+                return;
+            }
+            Color from = box.color;
+            Color fromEdge = chrome != null ? chrome.rimColor : edge;
+            tint?.Kill();
+            tint = DOTween.To(() => 0f, t => ApplyPlate(Color.Lerp(from, plate, t), Color.Lerp(fromEdge, edge, t), chrome), 1f, 0.17f)
+                .SetEase(Ease.OutCubic).SetUpdate(true).SetLink(gameObject);
         }
+
+        void ApplyPlate(Color plate, Color edge, UltraChrome chrome)
+        {
+            box.color = plate;
+            if (chrome == null) return;
+            chrome.color = plate;
+            chrome.rim = 2f;
+            chrome.rimColor = edge;
+            chrome.followThemeRim = false;
+            chrome.SetVerticesDirty();
+        }
+
+        static float Luma(Color c) => 0.2126f * c.r + 0.7152f * c.g + 0.0722f * c.b;
     }
 
     public sealed class UltraAccentText : MonoBehaviour
@@ -561,6 +716,29 @@ namespace MDPro3.UI.ServantUI
                 if (name is "TextTitle" or "TitleText") UltraTheme.Style(label, true, 4f);
                 else if (name is "FrameText" or "SubTitle") UltraTheme.StyleEmphasis(label, 2f);
             }
+        }
+    }
+
+    public sealed class UltraPerfReadout : MonoBehaviour
+    {
+        TMP_Text label;
+        float smooth;
+        void Awake() { label = GetComponent<TMP_Text>(); }
+        void Update()
+        {
+            if (label == null) return;
+            float dt = Mathf.Max(0.0001f, Time.unscaledDeltaTime);
+            smooth = smooth <= 0f ? dt : Mathf.Lerp(smooth, dt, 0.08f);
+            int fps = Mathf.RoundToInt(1f / smooth);
+            string cpu = "N/A", gpu = "N/A";
+            FrameTimingManager.CaptureFrameTimings();
+            var sample = new FrameTiming[1];
+            if (FrameTimingManager.GetLatestTimings(1, sample) > 0)
+            {
+                if (sample[0].cpuFrameTime > 0.01) cpu = Mathf.Clamp(Mathf.RoundToInt((float)sample[0].cpuFrameTime / 16.7f * 100f), 1, 100) + "%";
+                if (sample[0].gpuFrameTime > 0.01) gpu = Mathf.Clamp(Mathf.RoundToInt((float)sample[0].gpuFrameTime / 16.7f * 100f), 1, 100) + "%";
+            }
+            label.text = "FPS " + fps + "    |    GPU " + gpu + "    |    CPU " + cpu + "    |    LAT N/A";
         }
     }
 }

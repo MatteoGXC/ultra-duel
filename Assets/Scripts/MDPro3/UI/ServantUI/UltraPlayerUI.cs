@@ -85,13 +85,13 @@ namespace MDPro3.UI.ServantUI
             // The existing selected wallpaper stays visible on the right.
             foreach(Transform child in modal)child.gameObject.SetActive(false);
             modal.GetComponent<Image>().color=Color.clear;
+            var emblem=HomeRect("Original title artwork",modal,.22f,.64f,.56f,.15f).gameObject.AddComponent<UltraNativeTitle>();emblem.raycastTarget=false;
             var wordmark=HomeText(modal,"ULTRA DUEL",72,UltraTheme.Fg,.055f,.46f,.89f,.14f);
             wordmark.alignment=TextAlignmentOptions.Center;UltraTheme.Style(wordmark,true,6f);
             var logoGroup=wordmark.gameObject.AddComponent<CanvasGroup>();logoGroup.alpha=0;
             var logoRect=wordmark.rectTransform;var logoEnd=logoRect.anchoredPosition;logoRect.anchoredPosition+=Vector2.left*70;
             logoGroup.DOFade(1,.25f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(wordmark.gameObject);
             logoRect.DOAnchorPos(logoEnd,.25f).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(wordmark.gameObject);
-            var titleTriangle=HomeRect("Original title artwork",modal,.055f,.32f,.89f,.40f).gameObject.AddComponent<UltraNativeTitle>();titleTriangle.raycastTarget=false;
             wordmark.transform.SetAsLastSibling();
             var homeDefault=defaultSelectable;
             defaultSelectable=SmallButton(modal,"GAME START",()=>{CloseModal();defaultSelectable=homeDefault;homeDefault?.Select();},.12f,.22f,.76f,.09f,32,UltraTier.Hero);
@@ -185,8 +185,9 @@ namespace MDPro3.UI.ServantUI
         void ShowShop(string category,int page)
         {
             OpenModal("SHOP","Accessories", "shop");WideModal();
-            HomeRect("Wallet crystal",modal,.71f,.88f,.035f,.08f).gameObject.AddComponent<UltraGem>();
-            HomeText(modal,UltraAccount.Gems+" GEMS",22,Color.white,.75f,.89f,.20f,.06f);
+            var shopWallet=HomeRect("Gem wallet",modal,.68f,.865f,.27f,.09f);
+            var shopGems=FillGemPlate(shopWallet);
+            if(shopGems!=null)shopGems.text=UltraAccount.Gems.ToString("N0");
             var accessories=SmallButton(modal,"ACCESSORIES",()=>ShowShop(category,page),.045f,.71f,.42f,.065f,21,UltraTier.Primary);
             accessories.GetComponent<UltraThemedButton>().SetSelected(true);
             SmallButton(modal,"DUEL PASS",OpenPass,.49f,.71f,.46f,.065f,21);
