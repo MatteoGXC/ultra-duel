@@ -124,27 +124,39 @@ namespace MDPro3
                 if (tmp.name.StartsWith(TRANSLATE_PREFIX))
                     tmp.text = InterString.Get(tmp.text.Replace(Program.STRING_LINE_BREAK, InterString.CONFIG_LINE_BREAK).Replace("\n", InterString.CONFIG_LINE_BREAK));
                 if (tmp.name.EndsWith("Menu"))
-                {
-                    UIManager instance = Program.instance.ui_;
-
-                    if ((Language.GetConfig() == Language.English
-                        || Language.GetConfig() == Language.Japanese))
-                    {
-                        tmp.font = instance.jpMenuTmpFont;
-                        tmp.fontSize = 64f;
-                    }
-                    else if (Language.GetConfig() == Language.SimplifiedChinese)
-                    {
-                        tmp.font = instance.cnMenuTmpFont;
-                        tmp.fontSize = 62f;
-                    }
-                    else
-                    {
-                        tmp.font = instance.tmpFont;
-                        tmp.fontSize = 60f;
-                    }
-                }
+                    ApplyMenuFace(tmp, Program.instance.ui_);
             }
+        }
+
+        static void ApplyMenuFace(TextMeshProUGUI tmp, UIManager instance)
+        {
+            if (tmp == null || instance == null) return;
+            TMP_FontAsset face;
+            float size;
+            if (Language.GetConfig() == Language.English || Language.GetConfig() == Language.Japanese)
+            {
+                face = instance.jpMenuTmpFont;
+                size = 64f;
+            }
+            else if (Language.GetConfig() == Language.SimplifiedChinese)
+            {
+                face = instance.cnMenuTmpFont;
+                size = 62f;
+            }
+            else
+            {
+                face = instance.tmpFont;
+                size = 60f;
+            }
+            // Those serialized faces point at SourceHanSansSC-Medium, which was never committed.
+            // Assigning the null asset wipes glyphs. Keep a real face, and only then fall back.
+            if (face == null)
+            {
+                MDPro3.UI.ServantUI.UltraTheme.Repair(tmp, true);
+                return;
+            }
+            tmp.font = face;
+            tmp.fontSize = size;
         }
 
         public static void InitializeLanguage()
@@ -168,24 +180,7 @@ namespace MDPro3
                         tmp.text = InterString.Get(tmp.text);
 
                         if (tmp.name.EndsWith("Menu"))
-                        {
-                            if ((Language.GetConfig() == Language.English
-                                || Language.GetConfig() == Language.Japanese))
-                            {
-                                tmp.font = instance.jpMenuTmpFont;
-                                tmp.fontSize = 64f;
-                            }
-                            else if (Language.GetConfig() == Language.SimplifiedChinese)
-                            {
-                                tmp.font = instance.cnMenuTmpFont;
-                                tmp.fontSize = 62f;
-                            }
-                            else
-                            {
-                                tmp.font = instance.tmpFont;
-                                tmp.fontSize = 60f;
-                            }
-                        }
+                            ApplyMenuFace(tmp, instance);
                     }
                 }
             }
