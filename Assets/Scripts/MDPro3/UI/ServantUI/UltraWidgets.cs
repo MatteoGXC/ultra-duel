@@ -208,6 +208,7 @@ namespace MDPro3.UI.ServantUI
     {
         public UltraTier tier = UltraTier.Secondary;
         public bool selectedVisual;
+        public bool rule;
         UltraChrome chrome;
         TextMeshProUGUI label;
         Button button;
@@ -239,11 +240,8 @@ namespace MDPro3.UI.ServantUI
                 nudgeRest = nudge.anchoredPosition;
                 UltraTheme.Style(label, true, tier == UltraTier.Hero ? 4f : 10f);
             }
-            if (tier == UltraTier.Hero)
-            {
-                EnsureUnderline();
-                EnsureStripe();
-            }
+            if (tier == UltraTier.Hero) EnsureStripe();
+            if (tier == UltraTier.Hero && rule) EnsureUnderline();
             ready = true;
             Apply();
         }
@@ -358,7 +356,7 @@ namespace MDPro3.UI.ServantUI
                 chrome.rimColor = UltraTheme.Line;
                 chrome.followThemeRim = false;
                 if (label != null) label.color = UltraTheme.Mute;
-                if (underline != null) underline.color = new Color(UltraTheme.Mute.r, UltraTheme.Mute.g, UltraTheme.Mute.b, 0.45f);
+                if (underline != null) underline.gameObject.SetActive(false);
                 if (stripe != null) stripe.color = UltraTheme.Mute;
                 chrome.SetVerticesDirty();
                 return;
@@ -376,6 +374,7 @@ namespace MDPro3.UI.ServantUI
                     if (stripe != null) stripe.color = UltraTheme.Accent;
                     if (underline != null)
                     {
+                        underline.gameObject.SetActive(rule);
                         underline.color = UltraTheme.Accent;
                         PlaceUnderline(underline.rectTransform, hot);
                     }
@@ -740,5 +739,45 @@ namespace MDPro3.UI.ServantUI
             }
             label.text = "FPS " + fps + "    |    GPU " + gpu + "    |    CPU " + cpu + "    |    LAT N/A";
         }
+    }
+
+    public sealed class UltraDiamond : UltraMesh
+    {
+        protected override void OnPopulateMesh(VertexHelper vh)
+        {
+            vh.Clear();
+            var r = rectTransform.rect;
+            Vector2 c = r.center;
+            float rx = r.width * 0.46f, ry = r.height * 0.46f;
+            Vector2 top = c + new Vector2(0f, ry);
+            Vector2 right = c + new Vector2(rx, 0f);
+            Vector2 bottom = c + new Vector2(0f, -ry);
+            Vector2 left = c + new Vector2(-rx, 0f);
+            Stroke(vh, top, right);
+            Stroke(vh, right, bottom);
+            Stroke(vh, bottom, left);
+            Stroke(vh, left, top);
+        }
+        void Stroke(VertexHelper vh, Vector2 a, Vector2 b)
+        {
+            float width = Mathf.Min(rectTransform.rect.width, rectTransform.rect.height) * 0.012f;
+            var n = Vector2.Perpendicular((b - a).normalized) * Mathf.Max(1.5f, width);
+            int i = vh.currentVertCount;
+            vh.AddVert(a + n, color, Vector2.zero);
+            vh.AddVert(b + n, color, Vector2.zero);
+            vh.AddVert(b - n, color, Vector2.zero);
+            vh.AddVert(a - n, color, Vector2.zero);
+            vh.AddTriangle(i, i + 1, i + 2);
+            vh.AddTriangle(i, i + 2, i + 3);
+        }
+    }
+
+    public sealed class UltraOnAccentText : MonoBehaviour
+    {
+        TMP_Text text;
+        void Awake() { text = GetComponent<TMP_Text>(); }
+        void OnEnable() { UltraTheme.Changed += Paint; Paint(); }
+        void OnDisable() { UltraTheme.Changed -= Paint; }
+        void Paint() { if (text != null) text.color = UltraTheme.AccentInk; }
     }
 }

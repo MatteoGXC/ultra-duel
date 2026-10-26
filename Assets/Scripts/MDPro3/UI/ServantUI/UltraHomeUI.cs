@@ -221,6 +221,7 @@ namespace MDPro3.UI.ServantUI
             if (label != null) label.alignment = TextAlignmentOptions.Center;
             if (tier == UltraTier.Secondary && UltraTheme.IsDanger(text)) tier = UltraTier.Danger;
             var themed = rect.gameObject.AddComponent<UltraThemedButton>();
+            themed.rule = tier == UltraTier.Hero && text == "GAME START";
             themed.Configure(tier);
             button.onClick.AddListener(action);
             return button;
@@ -513,10 +514,80 @@ namespace MDPro3.UI.ServantUI
         void OpenDuel()
         {
             OpenModal("DUEL","Choose how you want to play","duel-modes");WideModal();
-            SmallButton(modal,"ONLINE DUEL",OpenOnlineDuel,.08f,.52f,.84f,.20f,40,UltraTier.Hero);
-            SmallButton(modal,"FRIEND DUELS",()=>OpenFriendDuels("1v1"),.08f,.34f,.40f,.14f,26);
-            SmallButton(modal,"DUOS 2v2",()=>OpenFriendDuels("2v2"),.52f,.34f,.40f,.14f,26);
-            SmallButton(modal,"SOLO",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.08f,.16f,.84f,.13f,26,UltraTier.Primary);
+            ModeCard("ONLINE DUEL","01","RANKED  ·  CASUAL","ONLINE DUEL",OpenOnlineDuel,.045f,.12f,.50f,.62f,true);
+            ModeCard("FRIEND DUELS","02","","FRIEND DUELS",()=>OpenFriendDuels("1v1"),.57f,.546f,.385f,.194f,false);
+            ModeCard("DUOS 2v2","03","","DUOS 2v2",()=>OpenFriendDuels("2v2"),.57f,.333f,.385f,.194f,false);
+            ModeCard("SOLO","04","","SOLO",()=>{CloseModal();Program.instance.ShiftToServant(Program.instance.solo);},.57f,.12f,.385f,.194f,false);
+        }
+        Button ModeCard(string name, string index, string eyebrow, string title, UnityAction action, float x, float y, float w, float h, bool hero)
+        {
+            var card = HomeRect(name, modal, x, y, w, h);
+            var chrome = card.gameObject.AddComponent<UltraChrome>();
+            chrome.cut = UltraCut.Panel;
+            chrome.color = hero ? UltraTheme.Accent : UltraTheme.PanelSolid;
+            chrome.rim = hero ? 0f : 1.5f;
+            chrome.followThemeRim = !hero;
+            chrome.raycastTarget = true;
+            if (hero)
+            {
+                card.gameObject.AddComponent<UltraAccentFill>();
+                var motif = HomeRect("Diamond", card, .58f, .18f, .34f, .62f);
+                var diamond = motif.gameObject.AddComponent<UltraDiamond>();
+                diamond.color = new Color(1f, 1f, 1f, 0.16f);
+                diamond.raycastTarget = false;
+                var echo = HomeRect("Diamond echo", card, .68f, .08f, .22f, .40f);
+                var small = echo.gameObject.AddComponent<UltraDiamond>();
+                small.color = new Color(1f, 1f, 1f, 0.10f);
+                small.raycastTarget = false;
+            }
+            else
+            {
+                var stripe = HomeRect("Stripe", card, 0f, .16f, .012f, .68f);
+                var bar = stripe.gameObject.AddComponent<Image>();
+                bar.color = UltraTheme.Accent;
+                bar.raycastTarget = false;
+                stripe.gameObject.AddComponent<UltraAccentFill>();
+            }
+            var indexLabel = HomeText(card, index, hero ? 42 : 28, hero ? Color.white : UltraTheme.Mute, .06f, .72f, .40f, .20f);
+            UltraTheme.Style(indexLabel, true, 6f);
+            if (hero && indexLabel != null) indexLabel.gameObject.AddComponent<UltraOnAccentText>();
+            if (!string.IsNullOrEmpty(eyebrow))
+            {
+                var brow = HomeText(card, eyebrow, 18, hero ? Color.white : UltraTheme.Mute, .06f, .60f, .70f, .12f);
+                UltraTheme.StyleEmphasis(brow, 10f);
+                if (hero && brow != null) brow.gameObject.AddComponent<UltraOnAccentText>();
+            }
+            var label = HomeText(card, title, hero ? 78 : 40, hero ? Color.white : UltraTheme.Fg, .06f, .08f, .68f, hero ? .28f : .42f);
+            if (label != null)
+            {
+                label.alignment = TextAlignmentOptions.BottomLeft;
+                UltraTheme.Style(label, true, 2f);
+                if (hero) label.gameObject.AddComponent<UltraOnAccentText>();
+            }
+            var mark = new GameObject("Go", typeof(RectTransform)).GetComponent<RectTransform>();
+            mark.gameObject.layer = gameObject.layer;
+            mark.SetParent(card, false);
+            mark.anchorMin = mark.anchorMax = new Vector2(1f, 0f);
+            mark.pivot = new Vector2(1f, 0f);
+            mark.anchoredPosition = new Vector2(-18f, 18f);
+            mark.sizeDelta = new Vector2(hero ? 64f : 52f, hero ? 64f : 52f);
+            var plate = mark.gameObject.AddComponent<UltraChrome>();
+            plate.cut = UltraCut.Small;
+            plate.color = hero ? UltraTheme.Ink : UltraTheme.PanelSolid;
+            plate.rim = hero ? 0f : 1.5f;
+            plate.rimColor = UltraTheme.Accent;
+            plate.followThemeRim = false;
+            plate.raycastTarget = false;
+            var chevronHost = HomeRect("Chevron", mark, .26f, .26f, .48f, .48f);
+            var chevron = chevronHost.gameObject.AddComponent<UltraChevron>();
+            chevron.facing = 1;
+            chevron.color = Color.white;
+            chevron.raycastTarget = false;
+            var button = card.gameObject.AddComponent<Button>();
+            button.targetGraphic = chrome;
+            button.transition = Selectable.Transition.None;
+            button.onClick.AddListener(action);
+            return button;
         }
         public void OpenFriendDuels(string mode="1v1")
         {
@@ -529,15 +600,24 @@ namespace MDPro3.UI.ServantUI
         {
             OpenModal("DUEL PASS","FREE PASS / Earn rewards by winning duels · No paid tier","pass");
             WideModal();int first=passPage*6+1;
-            StatPanel(modal,"GRADE",UltraAccount.Tier+" / 20",.045f,.65f,.43f,.12f);
-            StatPanel(modal,"NEXT GRADE",UltraAccount.Tier>=20?"COMPLETE":(200-UltraAccount.XP%200)+" XP",.50f,.65f,.45f,.12f);
-            HomePanel(HomeRect("XP track",modal,.06f,.615f,.88f,.012f),new Color(.17f,.22f,.28f));
-            var xpFill=HomeRect("XP fill",modal,.06f,.615f,.88f*(UltraAccount.Tier>=20?1:(UltraAccount.XP%200)/200f),.012f);HomePanel(xpFill,UltraTheme.Accent);xpFill.gameObject.AddComponent<UltraAccentFill>();
-            HomeText(modal,"FREE\nPASS",20,Color.white,.045f,.40f,.105f,.12f);
+            var head=HomeRect("Pass header",modal,.045f,.70f,.91f,.15f);
+            HomePanel(head,UltraTheme.Panel);
+            var headStripe=HomeRect("Stripe",head,0f,.18f,.008f,.64f);
+            var headBar=headStripe.gameObject.AddComponent<Image>();headBar.color=UltraTheme.Accent;headBar.raycastTarget=false;headStripe.gameObject.AddComponent<UltraAccentFill>();
+            var gradeKicker=HomeText(head,"GRADE",14,UltraTheme.Mute,.04f,.62f,.22f,.28f);UltraTheme.StyleEmphasis(gradeKicker,8f);
+            var gradeValue=HomeText(head,UltraAccount.Tier+" / 20",36,UltraTheme.Fg,.04f,.12f,.24f,.50f);UltraTheme.Style(gradeValue,true,2f);
+            var nextKicker=HomeText(head,"NEXT",14,UltraTheme.Mute,.74f,.62f,.22f,.28f);UltraTheme.StyleEmphasis(nextKicker,8f);if(nextKicker!=null)nextKicker.alignment=TextAlignmentOptions.MidlineRight;
+            var nextValue=HomeText(head,UltraAccount.Tier>=20?"COMPLETE":(200-UltraAccount.XP%200)+" XP",28,UltraTheme.Fg,.62f,.12f,.34f,.48f);UltraTheme.Style(nextValue,true,2f);if(nextValue!=null)nextValue.alignment=TextAlignmentOptions.MidlineRight;
+            var track=HomeRect("XP track",head,.30f,.38f,.40f,.10f);
+            UltraUi.EnsureRenderer(track.gameObject);
+            var passBar=track.gameObject.AddComponent<UltraAngularBar>();
+            passBar.raycastTarget=false;
+            passBar.amount=UltraAccount.Tier>=20?1f:(UltraAccount.XP%200)/200f;
+            HomeText(modal,"FREE\nPASS",18,Color.white,.045f,.56f,.12f,.10f);
             for(int col=0;col<6 && first+col<=20;col++)
             {
                 int tier=first+col;float x=.17f+col*.128f;
-                var cell=HomeRect("Grade "+tier,modal,x,.27f,.12f,.31f);
+                var cell=HomeRect("Grade "+tier,modal,x,.20f,.12f,.34f);
                 bool claimed=tier<=UltraAccount.Claimed,available=tier<=UltraAccount.Tier;
                 HomePanel(cell,UltraTheme.PanelSolid);
                 var border=cell.GetComponent<UltraChrome>();border.rim=available && !claimed?2:1;border.followThemeRim=false;border.rimColor=available && !claimed?UltraTheme.Accent:UltraTheme.Line;
@@ -554,12 +634,31 @@ namespace MDPro3.UI.ServantUI
                 var reveal=cell.gameObject.AddComponent<CanvasGroup>();reveal.alpha=0;
                 reveal.DOFade(1,.25f).SetDelay(col*.045f).SetUpdate(true).SetLink(cell.gameObject);
             }
-            SmallButton(modal,"<",()=>{passPage=Math.Max(0,passPage-1);OpenPass();},.045f,.16f,.09f,.07f,28);
-            SmallButton(modal,">",()=>{passPage=Math.Min(3,passPage+1);OpenPass();},.86f,.16f,.09f,.07f,28);
-            HomeText(modal,(passPage+1)+" / 4",16,Muted,.44f,.225f,.12f,.035f).alignment=TextAlignmentOptions.Center;
-            SmallButton(modal,"CLAIM REWARDS",()=>Run(async()=>{await UltraAccount.Claim();OpenPass();}),.30f,.12f,.40f,.09f,24,UltraTier.Hero).interactable=UltraAccount.Tier>UltraAccount.Claimed;
+            PassPager("<",0,()=>{passPage=Math.Max(0,passPage-1);OpenPass();},.045f);
+            PassPager(">",1,()=>{passPage=Math.Min(3,passPage+1);OpenPass();},.16f);
+            HomeText(modal,(passPage+1)+" / 4",16,Muted,.24f,.105f,.12f,.06f).alignment=TextAlignmentOptions.MidlineLeft;
+            SmallButton(modal,"CLAIM REWARDS",()=>Run(async()=>{await UltraAccount.Claim();OpenPass();}),.55f,.09f,.40f,.09f,24,UltraTier.Secondary).interactable=UltraAccount.Tier>UltraAccount.Claimed;
             modalStatus.rectTransform.anchorMin=new Vector2(.045f,.035f);modalStatus.rectTransform.anchorMax=new Vector2(.945f,.075f);
             modalStatus.text=UltraAccount.Profile==null?"Offline progress / Saved on this PC":"Account rewards / Saved on Ultra Duel";
+        }
+        void PassPager(string name, int facing, UnityAction action, float x)
+        {
+            var rect = HomeRect(name, modal, x, .09f, .055f, .09f);
+            var chrome = rect.gameObject.AddComponent<UltraChrome>();
+            chrome.cut = UltraCut.Small;
+            chrome.color = UltraTheme.PanelSolid;
+            chrome.rim = 1.5f;
+            chrome.followThemeRim = true;
+            chrome.raycastTarget = true;
+            var mark = HomeRect("Chevron", rect, .28f, .28f, .44f, .44f);
+            var chevron = mark.gameObject.AddComponent<UltraChevron>();
+            chevron.facing = facing;
+            chevron.color = UltraTheme.Fg;
+            chevron.raycastTarget = false;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = chrome;
+            button.transition = Selectable.Transition.None;
+            button.onClick.AddListener(action);
         }
         void OpenShop() { ShowShop("Mate",0); }
         void BuyFrame(string frame)
