@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using YgomSystem.UI;
+using Tween = DG.Tweening.Tween;
 
 namespace MDPro3.UI.ServantUI
 {
