@@ -541,17 +541,17 @@ namespace MDPro3.UI.ServantUI
                 {
                     if (container.GetComponentInParent<SelectionButton>() != button) continue;
                     string role = container.gameObject.name;
-                    bool caption = container.GetComponent<TMP_Text>() != null;
-                    if (!caption && role != "Out" && role != "Hover" && role != "SelectCursor" && role != "Button") continue;
+                    bool isCaption = container.GetComponent<TMP_Text>() != null;
+                    if (!isCaption && role != "Out" && role != "Hover" && role != "SelectCursor" && role != "Button") continue;
                     UltraTheme.TintChrome(container, role, danger);
                     bool active = button.GetSelectable() == null || button.GetSelectable().interactable;
                     container.SetColor(ColorContainer.SelectMode.Unselected, ColorContainer.StatusMode.Normal, active);
                 }
-                var caption = button.GetComponentInChildren<TextMeshProUGUI>(true);
-                if (caption != null && caption.gameObject.name == "ButtonText")
+                var buttonText = button.GetComponentInChildren<TextMeshProUGUI>(true);
+                if (buttonText != null && buttonText.gameObject.name == "ButtonText")
                 {
-                    UltraTheme.Style(caption, true, 8f);
-                    if (danger) caption.color = UltraTheme.Danger;
+                    UltraTheme.Style(buttonText, true, 8f);
+                    if (danger) buttonText.color = UltraTheme.Danger;
                 }
                 if (button.GetSelectable() != null) button.SetInteractable(button.GetSelectable().interactable);
             }
