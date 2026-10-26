@@ -108,6 +108,33 @@ namespace MDPro3.UI.ServantUI
             Remember(emphasisFont, previous);
         }
 
+        // Prefab labels keep their words and their color. A missing font asset draws nothing,
+        // so only a null face is replaced. An existing face and an existing string are left alone.
+        public static bool Repair(TMP_Text label, bool display = false)
+        {
+            if (label == null || label.font != null) return label != null && label.font != null;
+            // Input fields regenerate their text from fontAsset. Setting the child face directly throws inside TMP.
+            var field = label.GetComponentInParent<TMP_InputField>();
+            if (field != null)
+            {
+                if (field.fontAsset != null) return true;
+                if (!Ensure()) return false;
+                var face = (display ? displayFont : bodyFont) ?? emphasisFont ?? TMP_Settings.defaultFontAsset;
+                if (face == null) return false;
+                try { field.fontAsset = face; }
+                catch (Exception) { return false; }
+                return field.fontAsset != null;
+            }
+            try { Style(label, display, 0f); }
+            catch (Exception) { }
+            if (label.font == null && TMP_Settings.defaultFontAsset != null)
+            {
+                try { label.font = TMP_Settings.defaultFontAsset; }
+                catch (Exception) { }
+            }
+            return label.font != null;
+        }
+
         static bool Ensure()
         {
             if (fontsReady) return displayFont != null || bodyFont != null;

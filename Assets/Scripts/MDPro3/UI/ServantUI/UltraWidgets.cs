@@ -676,6 +676,7 @@ namespace MDPro3.UI.ServantUI
         {
             if (root == null) return;
             var host = root.GetComponent<UltraSkinHost>() ?? root.AddComponent<UltraSkinHost>();
+            if (root.GetComponent<UltraFontRepair>() == null) root.AddComponent<UltraFontRepair>();
             host.Paint();
         }
     }
@@ -714,6 +715,26 @@ namespace MDPro3.UI.ServantUI
                 string name = label.gameObject.name;
                 if (name is "TextTitle" or "TitleText") UltraTheme.Style(label, true, 4f);
                 else if (name is "FrameText" or "SubTitle") UltraTheme.StyleEmphasis(label, 2f);
+                else UltraTheme.Repair(label, label.fontSize >= 28f);
+            }
+        }
+    }
+
+    // Deck tiles and other prefabs are spawned after the first skin pass. Keep repairing null faces.
+    public sealed class UltraFontRepair : MonoBehaviour
+    {
+        float next;
+        void LateUpdate()
+        {
+            if (Time.unscaledTime < next) return;
+            next = Time.unscaledTime + 0.2f;
+            var labels = GetComponentsInChildren<TMP_Text>(true);
+            for (int i = 0; i < labels.Length; i++)
+            {
+                var label = labels[i];
+                if (label == null || label.font != null) continue;
+                bool display = label.fontSize >= 28f || label.gameObject.name is "TextTitle" or "TitleText" or "TextDeckNumValue";
+                UltraTheme.Repair(label, display);
             }
         }
     }

@@ -67,7 +67,9 @@ namespace MDPro3.UI
                 SoundLabelSelectedGamePad = "SE_DECK_CARD_SELECT";
                 Manager.GetElement("IconOn").SetActive(isOn);
 
-                Manager.GetElement<TextMeshProUGUI>("TextDeckName").text = deckName;
+                var deckNameLabel = Manager.GetElement<TextMeshProUGUI>("TextDeckName");
+                deckNameLabel.text = deckName;
+                UltraTheme.Repair(deckNameLabel, false);
 
                 if (forcedPickup && !pickuping)
                 {
@@ -112,24 +114,32 @@ namespace MDPro3.UI
                 textRect.offsetMin = new Vector2(8, 3);
                 textRect.offsetMax = new Vector2(-8, -3);
                 formatBadgeLabel = text.GetComponent<TextMeshProUGUI>();
-                formatBadgeLabel.font = Manager.GetElement<TextMeshProUGUI>("TextDeckName").font;
                 formatBadgeLabel.fontSize = 20;
-                formatBadgeLabel.enableAutoSizing = true;
-                formatBadgeLabel.fontSizeMin = 15;
-                formatBadgeLabel.fontSizeMax = 20;
+                formatBadgeLabel.enableAutoSizing = false;
                 formatBadgeLabel.alignment = TextAlignmentOptions.Center;
                 formatBadgeLabel.textWrappingMode = TextWrappingModes.NoWrap;
-                formatBadgeLabel.color = Color.white;
                 formatBadgeLabel.raycastTarget = false;
+                formatBadgeLabel.overflowMode = TextOverflowModes.Overflow;
             }
 
+            // Mapping already stored on the deck: anything other than Genesys is TCG (blue on main).
+            // Genesys at a 0 point cap is the teal tag. Every other Genesys cap, including 100, is purple.
+            // The words have to be drawn with our face: these labels used to copy TextDeckName's font, which is null
+            // when SourceHanSansSC-Medium is missing, so the colored plate rendered with no glyphs.
             bool genesys = deck.Format == "Genesys";
-            string label = !genesys ? "TCG" : deck.FormatPointCap == 100 ? "Genesys" : "Genesys " + deck.FormatPointCap;
-            formatBadgeLabel.text = label;
-            formatBadge.color = !genesys ? new Color(.13f, .37f, .76f, .98f)
-                : deck.FormatPointCap == 0 ? new Color(.02f, .46f, .42f, .98f)
+            int cap = deck.FormatPointCap;
+            string label = !genesys ? "TCG" : cap == 100 ? "GENESYS" : "GENESYS " + cap;
+            Color plate = !genesys ? new Color(.13f, .37f, .76f, .98f)
+                : cap == 0 ? new Color(.02f, .46f, .42f, .98f)
                 : new Color(.57f, .19f, .88f, .98f);
-            formatBadge.rectTransform.sizeDelta = new Vector2(label.Length > 10 ? 172 : label.Length > 7 ? 132 : 108, 36);
+            float luma = 0.2126f * plate.r + 0.7152f * plate.g + 0.0722f * plate.b;
+            formatBadge.color = plate;
+            formatBadgeLabel.text = label;
+            UltraTheme.Style(formatBadgeLabel, true, 12f);
+            UltraTheme.Repair(formatBadgeLabel, true);
+            formatBadgeLabel.color = luma > 0.62f ? UltraTheme.Ink : Color.white;
+            formatBadgeLabel.fontSize = 20;
+            formatBadge.rectTransform.sizeDelta = new Vector2(Mathf.Max(88f, 18f * label.Length + 28f), 38f);
             formatBadge.transform.SetAsLastSibling();
             formatBadge.gameObject.SetActive(true);
         }
