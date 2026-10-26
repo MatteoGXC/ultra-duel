@@ -720,7 +720,8 @@ namespace MDPro3.UI.ServantUI
             foreach (var label in GetComponentsInChildren<TMP_Text>(true))
             {
                 string name = label.gameObject.name;
-                if (name is "TextTitle" or "TitleText") UltraTheme.Style(label, true, 4f);
+                bool heading = name is "TextTitle" or "TitleText" or "Text_ServantTitle";
+                if (heading) UltraTheme.Style(label, true, 4f);
                 else if (name is "FrameText" or "SubTitle") UltraTheme.StyleEmphasis(label, 2f);
                 else UltraTheme.Repair(label, label.fontSize >= 28f);
             }
@@ -732,7 +733,7 @@ namespace MDPro3.UI.ServantUI
             string subtitle = ServantSubtitle();
             foreach (var label in GetComponentsInChildren<TMP_Text>(true))
             {
-                if (label.gameObject.name != "TextTitle") continue;
+                if (label.gameObject.name is not ("TextTitle" or "TitleText" or "Text_ServantTitle")) continue;
                 UltraHeader.Mark(label, subtitle);
             }
         }

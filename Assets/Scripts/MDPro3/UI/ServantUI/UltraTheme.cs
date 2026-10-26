@@ -91,6 +91,16 @@ namespace MDPro3.UI.ServantUI
             var face = display ? displayFont : bodyFont;
             if (face == null) face = emphasisFont;
             if (face == null) return;
+            var field = label.GetComponentInParent<TMP_InputField>();
+            if (field != null)
+            {
+                if (field.fontAsset == null)
+                {
+                    try { field.fontAsset = face; }
+                    catch (Exception) { }
+                }
+                return;
+            }
             var previous = label.font;
             label.font = face;
             label.fontStyle = FontStyles.Normal;
