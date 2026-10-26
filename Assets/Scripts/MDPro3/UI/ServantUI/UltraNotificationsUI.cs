@@ -69,7 +69,8 @@ namespace MDPro3.UI.ServantUI
                 int id=(int)latest["id"];
                 if(id!=previewNotification && noticePreview.gameObject.activeInHierarchy)
                 {
-                    var fade=noticePreview.GetComponent<CanvasGroup>()??noticePreview.gameObject.AddComponent<CanvasGroup>();
+                    var fade=noticePreview.GetComponent<CanvasGroup>();
+                    if(fade==null)fade=noticePreview.gameObject.AddComponent<CanvasGroup>();
                     fade.DOKill();fade.alpha=0;fade.DOFade(1,.3f).SetUpdate(true).SetLink(noticePreview.gameObject);
                 }
                 previewNotification=id;

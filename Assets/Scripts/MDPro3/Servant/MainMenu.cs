@@ -127,12 +127,23 @@ namespace MDPro3.Servant
             if (Buttons == null)
                 return;
 
+            // The redesigned home hides the legacy menu buttons. Measuring their
+            // inactive labels throws when a font material is not ready.
             var widths = new float[Buttons.Length];
+            int live = 0;
             for (int i = 0; i < Buttons.Length; i++)
+            {
+                if (buttons[i] == null || !buttons[i].isActiveAndEnabled)
+                    continue;
                 widths[i] = buttons[i].GetPreferredWidth();
+                live++;
+            }
+            if (live == 0)
+                return;
             var maxWidth = Mathf.Max(widths);
             foreach(var button in Buttons)
-                button.SetWidth(maxWidth);
+                if (button != null && button.isActiveAndEnabled)
+                    button.SetWidth(maxWidth);
         }
 
     }

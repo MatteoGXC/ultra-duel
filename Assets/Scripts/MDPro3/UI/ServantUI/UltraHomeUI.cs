@@ -279,6 +279,7 @@ namespace MDPro3.UI.ServantUI
             modal.gameObject.AddComponent<UltraPageTransition>();
             modalStatus=HomeText(modal,"",16,Lime,.045f,.02f,.90f,.04f);
             modalStatus.gameObject.AddComponent<UltraAccentText>();
+            if(modal.GetComponent<CanvasGroup>()==null)modal.gameObject.AddComponent<CanvasGroup>();
             return modal;
         }
         TMP_InputField Input(Transform parent,string placeholder,float y,bool password=false)

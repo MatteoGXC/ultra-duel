@@ -12,7 +12,10 @@ namespace MDPro3.UI.ServantUI
         {
             var rect=(RectTransform)transform;
             var end=rect.anchoredPosition;
-            var group=gameObject.GetComponent<CanvasGroup>()??gameObject.AddComponent<CanvasGroup>();
+            // Unity's fake null does not trigger ??, so a missing group still falls through and throws.
+            var group=gameObject.GetComponent<CanvasGroup>();
+            if(group==null)group=gameObject.AddComponent<CanvasGroup>();
+            if(group==null)return;
             group.alpha=0;group.blocksRaycasts=false;
             rect.localEulerAngles=Vector3.zero;
             rect.anchoredPosition=end+new Vector2(-70f,0f);
