@@ -34,6 +34,8 @@ namespace MDPro3.UI.ServantUI
         static Color Muted => UltraTheme.Mute;
         RectTransform ultraHome, overlay, modal;
         TextMeshProUGUI profileLabel, gemLabel, passLabel, updateLabel, friendLabel, modalStatus;
+        UltraCountPop gemCount;
+        bool homeIntroPlayed;
         Image profileAccent;
         Button ownerAdminButton;
         readonly List<GameObject> hiddenHome = new List<GameObject>();
@@ -97,6 +99,7 @@ namespace MDPro3.UI.ServantUI
             {
                 var wallet = Px("Gem wallet", ultraHome, 648, 58, 250, 80);
                 gemLabel = FillGemPlate(wallet);
+                if (gemLabel != null) gemCount = gemLabel.gameObject.AddComponent<UltraCountPop>();
             });
             TryHome("notices", () => { TopButton("NOTICES", OpenNotifications, 394, 0); BuildNotificationsHome(); });
             TryHome("missions icon", () => TopButton("MISSIONS", OpenMissions, 284, 1));
@@ -174,6 +177,7 @@ namespace MDPro3.UI.ServantUI
                 UltraServices.CheckUpdates();
                 var keys = ultraHome.gameObject.AddComponent<UltraHomeKeyboard>(); keys.open = OpenAdmin;
                 if(!Array.Exists(Environment.GetCommandLineArgs(), x => x == "--format-smoke")) ShowGameStart();
+                else PlayHomeIntro();
             });
         }
         void TryHome(string part, Action build)
@@ -228,7 +232,8 @@ namespace MDPro3.UI.ServantUI
         }
         TextMeshProUGUI FillGemPlate(RectTransform plate)
         {
-            var frame = plate.GetComponent<UltraChrome>() ?? plate.gameObject.AddComponent<UltraChrome>();
+            var frame = plate.GetComponent<UltraChrome>();
+            if (frame == null) frame = plate.gameObject.AddComponent<UltraChrome>();
             frame.color = UltraTheme.Panel;
             frame.cut = UltraCut.Panel;
             frame.rim = 1.5f;
@@ -355,7 +360,8 @@ namespace MDPro3.UI.ServantUI
             if (string.IsNullOrWhiteSpace(name)) name="Player";
             if (profileLabel!=null) profileLabel.text=name;
             if (profileAccent!=null) profileAccent.enabled=true;
-            if (gemLabel!=null) gemLabel.text=UltraAccount.Gems.ToString("N0");
+            if (gemCount!=null) gemCount.Set(UltraAccount.Gems, false);
+            else if (gemLabel!=null) gemLabel.text=UltraAccount.Gems.ToString("N0");
             if (passLabel!=null) passLabel.text="DUEL PASS   "+UltraAccount.Tier+" / 20\n<size=65%>"+(UltraAccount.Tier>UltraAccount.Claimed?"Rewards ready to claim":"WIN DUELS · EARN REWARDS")+"</size>";
             if (homeStatus!=null) homeStatus.text="Win duels · Earn rewards\n<size=70%>Next grade: "+(UltraAccount.Tier>=20?"Complete":(200-UltraAccount.XP%200)+" XP")+"</size>";
             if (updateLabel!=null) updateLabel.text="UPDATES  /  "+UltraServices.UpdateStatus+"\n<size=80%>New pass & shop · Friends & profiles · Solo fixes</size>";
@@ -368,11 +374,90 @@ namespace MDPro3.UI.ServantUI
         void CloseModal()
         {
             if(matchmakingActive)CancelMatchmaking().Forget();
-            if(overlay!=null){overlay.gameObject.SetActive(false);Destroy(overlay.gameObject);}
+            bool fromStart = modalPage=="start";
+            bool homeWasHidden = hiddenHome.Count>0;
+            var dying = overlay;
+            var page = modal;
             foreach(var child in hiddenHome)if(child!=null)child.SetActive(true);hiddenHome.Clear();
-            if(Program.instance.currentServant==Program.instance.menu){Program.instance.ui_.wallpaper.gameObject.SetActive(true);Program.instance.ui_.wallpaper.alpha=1;}
+            if(Program.instance.currentServant==Program.instance.menu && Program.instance.ui_!=null && Program.instance.ui_.wallpaper!=null)
+            {
+                Program.instance.ui_.wallpaper.gameObject.SetActive(true);
+                if(!fromStart) Program.instance.ui_.wallpaper.alpha=1;
+            }
             overlay=modal=null;modalStatus=null;modalPage=null;
+            if(dying!=null)
+            {
+                var group = dying.GetComponent<CanvasGroup>();
+                if (group == null) group = dying.gameObject.AddComponent<CanvasGroup>();
+                group.blocksRaycasts=false;
+                var rect = page!=null ? page : dying;
+                rect.DOAnchorPos(rect.anchoredPosition+new Vector2(50f,0f),.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
+                group.DOFade(0f,.25f).SetEase(UltraMotion.Ease).SetUpdate(true).OnComplete(()=>{ if(dying!=null) Destroy(dying.gameObject); });
+            }
+            if(fromStart) PlayHomeIntro();
+            else if(homeWasHidden) SlideHome(-70f,.25f);
             RefreshNotificationsHome();
+        }
+        void PlayHomeIntro()
+        {
+            if(homeIntroPlayed || ultraHome==null) return;
+            homeIntroPlayed=true;
+            string[] top = { "Profile", "Gem wallet", "NOTICES", "MISSIONS", "FRIENDS", "MENU" };
+            for(int i=0;i<top.Length;i++)
+            {
+                var piece = ultraHome.Find(top[i]) as RectTransform;
+                if(piece!=null) Slide(piece, new Vector2(0f,140f), .32f, i*0.04f);
+            }
+            var menu = ultraHome.Find("Menu");
+            string[] rows = { "DUEL", "DECK", "SOLO", "SHOP" };
+            for(int i=0;i<rows.Length;i++)
+            {
+                var item = menu!=null ? menu.Find(rows[i]) : null;
+                var motion = item!=null ? item.Find("Motion") as RectTransform : null;
+                if(motion!=null) Slide(motion, new Vector2(-70f,0f), .25f, 0.22f+i*0.04f);
+            }
+            var missions = ultraHome.Find("Missions") as RectTransform;
+            var pass = ultraHome.Find("Duel Pass") as RectTransform;
+            if(missions!=null) Slide(missions, new Vector2(-70f,0f), .25f, 0.22f+4*0.04f);
+            if(pass!=null) Slide(pass, new Vector2(-70f,0f), .25f, 0.22f+5*0.04f);
+            SlideFeatured();
+            var header = ultraHome.GetComponentInChildren<UltraProfileHeader>(true);
+            header?.BeginIntro();
+            gemCount?.HoldZero();
+            DOVirtual.DelayedCall(0.65f, ()=>gemCount?.Set(UltraAccount.Gems, true), true);
+        }
+        void SlideHome(float fromX, float time)
+        {
+            if(ultraHome==null) return;
+            foreach(Transform child in ultraHome)
+            {
+                if(!child.gameObject.activeSelf) continue;
+                if(child.name=="Modal overlay") continue;
+                Slide(child as RectTransform, new Vector2(fromX, 0f), time, 0f);
+            }
+        }
+        void Slide(RectTransform rect, Vector2 from, float time, float delay)
+        {
+            if(rect==null) return;
+            var end = rect.anchoredPosition;
+            rect.anchoredPosition = end+from;
+            var group = rect.GetComponent<CanvasGroup>();
+            if (group == null) group = rect.gameObject.AddComponent<CanvasGroup>();
+            group.alpha=0f;
+            rect.DOAnchorPos(end, time).SetDelay(delay).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(rect.gameObject);
+            group.DOFade(1f, time).SetDelay(delay).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(rect.gameObject);
+        }
+        void SlideFeatured()
+        {
+            var wall = Program.instance!=null && Program.instance.ui_!=null ? Program.instance.ui_.wallpaper : null;
+            if(wall==null) return;
+            var rect = wall.GetComponent<RectTransform>();
+            if(rect==null) return;
+            var end = rect.anchoredPosition;
+            rect.anchoredPosition = end+new Vector2(90f, 0f);
+            wall.alpha=0f;
+            rect.DOAnchorPos(end, 0.6f).SetEase(UltraMotion.Ease).SetUpdate(true);
+            wall.DOFade(1f, 0.4f).SetEase(UltraMotion.Ease).SetUpdate(true);
         }
         RectTransform OpenModal(string title,string subtitle,string page)
         {

@@ -170,6 +170,8 @@ namespace MDPro3.UI.ServantUI
         public void OnPointerEnter(PointerEventData eventData)
         {
             hot = true;
+            var cover = GetComponent<UltraDeckCover>();
+            if (cover != null && cover.HasArt) return;
             Capture();
             if (body == null) return;
             lift?.Kill();
@@ -187,6 +189,8 @@ namespace MDPro3.UI.ServantUI
         public void OnPointerExit(PointerEventData eventData)
         {
             hot = false;
+            var cover = GetComponent<UltraDeckCover>();
+            if (cover != null && cover.HasArt) { if (plus != null) plus.SetHot(false); return; }
             if (body != null && captured)
             {
                 lift?.Kill();

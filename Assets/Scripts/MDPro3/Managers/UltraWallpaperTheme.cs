@@ -18,7 +18,8 @@ namespace MDPro3
         UniversalAdditionalCameraData cameraData;
         string wallpaper;
         public string AppliedWallpaper { get; private set; }
-        float nextCheck, targetHue;
+        float nextCheck, targetHue, shownHue, hueFrom, hueTo, hueBlend;
+        bool hueReady, hueAnimating;
         public float TargetHue => targetHue;
         public Color Accent { get; private set; } = UltraTheme.Hex("4C9BE8");
         public Color Highlight { get; private set; } = UltraTheme.Hex("F25C2A");
@@ -40,9 +41,16 @@ namespace MDPro3
         void Update()
         {
             if(adjustment==null)return;
+            if(hueAnimating)
+            {
+                hueBlend+=Time.unscaledDeltaTime/0.4f;
+                if(hueBlend>=1f){hueBlend=1f;hueAnimating=false;}
+                shownHue=Mathf.LerpAngle(hueFrom,hueTo,UltraMotion.Ease.Evaluate(Mathf.Clamp01(hueBlend)));
+            }
             // The native blue diagonal bands become gray. Only red glow/sparks
             // carry the selected wallpaper's accent; black and white stay neutral.
-            var accent=Color.HSVToRGB(Mathf.Repeat(targetHue/360f,1),.85f,1);
+            // Particles and the drift loop keep playing through the color crossfade.
+            var accent=Color.HSVToRGB(Mathf.Repeat(shownHue/360f,1),.85f,1);
             const float blueBalance=.16f;
             adjustment.redOutRedIn.value=accent.r*100;
             adjustment.redOutGreenIn.value=(1-(1+blueBalance)*accent.r)*100;
@@ -53,6 +61,8 @@ namespace MDPro3
             adjustment.blueOutRedIn.value=accent.b*100;
             adjustment.blueOutGreenIn.value=(1-(1+blueBalance)*accent.b)*100;
             adjustment.blueOutBlueIn.value=blueBalance*accent.b*100;
+            Accent=UltraTheme.Accent;
+            Highlight=UltraTheme.Highlight;
             if(Time.unscaledTime<nextCheck)return;
             nextCheck=Time.unscaledTime+1;
             var selected=Config.Get("Wallpaper",UIManager.DefaultWallpaper);
@@ -75,7 +85,14 @@ namespace MDPro3
                     RenderTexture.active=target;
                     sample=new Texture2D(48,48,TextureFormat.RGBA32,false);sample.ReadPixels(new Rect(0,0,48,48),0,0);sample.Apply();
                     var pixels=sample.GetPixels32();
-                    targetHue=DominantHue(pixels);
+                    float nextHue=DominantHue(pixels);
+                    if(!hueReady){shownHue=nextHue;hueReady=true;}
+                    else if(Mathf.Abs(Mathf.DeltaAngle(shownHue,nextHue))>0.4f)
+                    {
+                        hueFrom=shownHue;hueTo=nextHue;hueBlend=0f;hueAnimating=true;
+                    }
+                    else shownHue=nextHue;
+                    targetHue=nextHue;
                     float second=SecondaryHue(pixels, targetHue, out bool hasSecond);
                     UltraTheme.ApplyPalette(targetHue, second, hasSecond);
                     Accent=UltraTheme.Accent;

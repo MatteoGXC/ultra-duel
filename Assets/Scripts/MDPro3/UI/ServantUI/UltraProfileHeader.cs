@@ -1,8 +1,10 @@
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using MDPro3.Utility;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Tween = DG.Tweening.Tween;
 
 namespace MDPro3.UI.ServantUI
 {
@@ -77,6 +79,8 @@ namespace MDPro3.UI.ServantUI
         UltraAngularBar bar;
         TextMeshProUGUI level, xp;
         int shown=-1,loaded;
+        bool counting;
+        Tween countTween;
         static RectTransform R(string name,Transform parent,float x,float y,float w,float h)
         {
             var r=new GameObject(name,typeof(RectTransform)).GetComponent<RectTransform>();r.SetParent(parent,false);r.gameObject.layer=parent.gameObject.layer;r.anchorMin=new Vector2(x,y);r.anchorMax=new Vector2(x+w,y+h);r.offsetMin=r.offsetMax=Vector2.zero;return r;
@@ -129,6 +133,31 @@ namespace MDPro3.UI.ServantUI
             if (ring != null) ring.color = UltraTheme.Accent;
             if (bar != null) bar.SetVerticesDirty();
         }
+        public void BeginIntro()
+        {
+            counting = true;
+            int into = Mathf.Max(0, UltraAccount.XP % 500);
+            if (bar != null) { bar.amount = 0f; bar.SetVerticesDirty(); }
+            if (xp != null) xp.text = "0 / 500 XP";
+            countTween?.Kill();
+            countTween = DOVirtual.DelayedCall(0.65f, () => CountXp(0, into), true).SetLink(gameObject);
+        }
+        void CountXp(int from, int into)
+        {
+            float t = 0f;
+            countTween = DOTween.To(() => t, value =>
+            {
+                t = value;
+                float eased = UltraMotion.Ease.Evaluate(value);
+                int n = Mathf.RoundToInt(Mathf.Lerp(from, into, eased));
+                if (xp != null) xp.text = n.ToString("N0") + " / 500 XP";
+                if (bar != null)
+                {
+                    bar.amount = Mathf.Lerp(from, into, eased) / 500f;
+                    bar.SetVerticesDirty();
+                }
+            }, 1f, 1.2f).SetEase(Ease.Linear).SetUpdate(true).SetLink(gameObject).OnComplete(() => { counting = false; countTween = null; });
+        }
         void OnDestroy() { UltraTheme.Changed -= OnTheme; if (loaded != 0) CardImageLoader.ReleaseArt(loaded); }
         void Update()
         {
@@ -138,8 +167,9 @@ namespace MDPro3.UI.ServantUI
             if(id!=shown){shown=id;Load(id).Forget();}
             int into = UltraAccount.XP % 500;
             if (level != null) level.text = "<color=#" + ColorUtility.ToHtmlStringRGB(UltraTheme.Mute) + ">LV.</color>  " + UltraAccount.Level;
-            if (xp != null) xp.text = into.ToString("N0") + " / 500 XP";
-            if (bar != null && !Mathf.Approximately(bar.amount, into / 500f))
+            if (counting) return;
+            if (xp != null && countTween == null) xp.text = into.ToString("N0") + " / 500 XP";
+            if (bar != null && countTween == null && !Mathf.Approximately(bar.amount, into / 500f))
             {
                 bar.amount = into / 500f;
                 bar.SetVerticesDirty();
@@ -153,6 +183,64 @@ namespace MDPro3.UI.ServantUI
             portrait.texture=sprite.texture;
             portrait.uvRect=new Rect(sprite.textureRect.x/sprite.texture.width,sprite.textureRect.y/sprite.texture.height,sprite.textureRect.width/sprite.texture.width,sprite.textureRect.height/sprite.texture.height);
             OnTheme();
+        }
+    }
+
+    public sealed class UltraCountPop : MonoBehaviour
+    {
+        TMP_Text label;
+        Tween tick, pop;
+        int shown, target = int.MinValue;
+        bool booted;
+        public bool Holding { get; private set; }
+
+        public void HoldZero()
+        {
+            tick?.Kill();
+            pop?.Kill();
+            Holding = true;
+            booted = false;
+            shown = 0;
+            target = int.MinValue;
+            if (label == null) label = GetComponent<TMP_Text>();
+            if (label != null) label.text = "0";
+            transform.localScale = Vector3.one;
+        }
+
+        public void Set(int value, bool fromZero)
+        {
+            if (label == null) label = GetComponent<TMP_Text>();
+            if (label == null) return;
+            if (Holding && !fromZero) return;
+            Holding = false;
+            if (booted && !fromZero && value == target) return;
+            int start = fromZero || !booted ? 0 : shown;
+            target = value;
+            booted = true;
+            tick?.Kill();
+            if (start == value)
+            {
+                shown = value;
+                label.text = value.ToString("N0");
+                if (fromZero) Pop();
+                return;
+            }
+            float t = 0f;
+            tick = DOTween.To(() => t, v =>
+            {
+                t = v;
+                float eased = 1f - Mathf.Pow(1f - v, 3f);
+                shown = Mathf.RoundToInt(Mathf.Lerp(start, value, eased));
+                label.text = shown.ToString("N0");
+            }, 1f, 0.9f).SetEase(Ease.Linear).SetUpdate(true).SetLink(gameObject);
+            Pop();
+        }
+
+        void Pop()
+        {
+            pop?.Kill();
+            transform.localScale = Vector3.one;
+            pop = transform.DOScale(1.08f, 0.15f).SetLoops(2, LoopType.Yoyo).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
         }
     }
 }

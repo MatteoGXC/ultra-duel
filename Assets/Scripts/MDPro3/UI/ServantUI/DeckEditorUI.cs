@@ -185,6 +185,21 @@ namespace MDPro3.UI.ServantUI
             CardCollectionView.SetCursor(_ResponseRegion == ResponseRegion.Collection);
         }
 
+        public override void Show(bool cover)
+        {
+            base.Show(cover);
+            if (Root == null) return;
+            Root.localScale = Vector3.one * 0.96f;
+            Root.DOScale(Vector3.one, 0.2f).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
+        }
+
+        public override void Hide(bool cover)
+        {
+            if (Root != null)
+                Root.DOScale(Vector3.one * 0.96f, 0.2f).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
+            base.Hide(cover);
+        }
+
         public override void ShowEvent()
         {
             base.ShowEvent();

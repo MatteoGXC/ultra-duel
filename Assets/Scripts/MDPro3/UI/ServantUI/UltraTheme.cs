@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using YgomSystem.UI;
+using Tween = DG.Tweening.Tween;
 
 namespace MDPro3.UI.ServantUI
 {
@@ -24,6 +26,10 @@ namespace MDPro3.UI.ServantUI
         public static Color Accent { get; private set; } = Hex("4C9BE8");
         public static Color Highlight { get; private set; } = Hex("F25C2A");
         public static event Action Changed;
+        static Color accentTarget = Hex("4C9BE8");
+        static Color highlightTarget = Hex("F25C2A");
+        static bool hasTarget;
+        static Tween paletteTween;
 
         public static Color AccentInk
         {
@@ -67,10 +73,23 @@ namespace MDPro3.UI.ServantUI
                 float shift = hasSecond && Mathf.Abs(Mathf.DeltaAngle(h, second)) > 26f ? second : h + 36f;
                 highlight = Color.HSVToRGB(Mathf.Repeat(shift, 360f) / 360f, 0.78f, 0.95f);
             }
-            if (Approximately(accent, Accent) && Approximately(highlight, Highlight)) return;
-            Accent = accent;
-            Highlight = highlight;
-            Changed?.Invoke();
+            if (hasTarget && Approximately(accent, accentTarget) && Approximately(highlight, highlightTarget)) return;
+            hasTarget = true;
+            accentTarget = accent;
+            highlightTarget = highlight;
+            Color fromAccent = Accent;
+            Color fromHighlight = Highlight;
+            paletteTween?.Kill();
+            float blend = 0f;
+            // --acc / --hl crossfade across the UI in 400ms. Wallpaper motion is left alone.
+            paletteTween = DOTween.To(() => blend, value =>
+            {
+                blend = value;
+                float eased = UltraMotion.Ease.Evaluate(value);
+                Accent = Color.Lerp(fromAccent, accent, eased);
+                Highlight = Color.Lerp(fromHighlight, highlight, eased);
+                Changed?.Invoke();
+            }, 1f, 0.4f).SetEase(Ease.Linear).SetUpdate(true);
         }
 
         static bool Approximately(Color a, Color b) =>

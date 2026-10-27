@@ -162,7 +162,7 @@ namespace MDPro3.UI.ServantUI
 
             DOTween.Sequence()
                 .SetUpdate(true)
-                .Append(CG.DOFade(1f, 0.25f).SetEase(Ease.OutCubic))
+                .Append(CG.DOFade(1f, 0.25f).SetEase(UltraMotion.Ease))
                 .OnComplete(() =>
                 {
                     CG.blocksRaycasts = true;
@@ -170,10 +170,10 @@ namespace MDPro3.UI.ServantUI
                 });
 
             LeftPart.anchoredPosition = new Vector2(-70f, 0f);
-            LeftPart.DOAnchorPosX(0f, 0.25f).SetEase(Ease.OutCubic).SetUpdate(true);
+            LeftPart.DOAnchorPosX(0f, 0.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
 
             RightPart.anchoredPosition = new Vector2(70f, 0f);
-            RightPart.DOAnchorPosX(0f, 0.25f).SetEase(Ease.OutCubic).SetUpdate(true);
+            RightPart.DOAnchorPosX(0f, 0.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
         }
 
         protected virtual void Show_Cover()
@@ -185,7 +185,7 @@ namespace MDPro3.UI.ServantUI
             Root.localEulerAngles = Vector3.zero;
             DOTween.Sequence()
                 .SetUpdate(true)
-                .Append(CG.DOFade(1f, 0.25f).SetEase(Ease.OutCubic))
+                .Append(CG.DOFade(1f, 0.25f).SetEase(UltraMotion.Ease))
                 .OnComplete(() =>
                 {
                     CG.blocksRaycasts = true;
@@ -193,7 +193,7 @@ namespace MDPro3.UI.ServantUI
                 });
 
             Root.anchoredPosition = new Vector2(-70f, 0f);
-            Root.DOAnchorPos(Vector2.zero, 0.25f).SetEase(Ease.OutCubic).SetUpdate(true);
+            Root.DOAnchorPos(Vector2.zero, 0.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
         }
 
         protected virtual void Show_Uncover()
@@ -205,7 +205,7 @@ namespace MDPro3.UI.ServantUI
             Root.localEulerAngles = Vector3.zero;
             DOTween.Sequence()
                 .SetUpdate(true)
-                .Append(CG.DOFade(1f, 0.25f).SetEase(Ease.OutCubic))
+                .Append(CG.DOFade(1f, 0.25f).SetEase(UltraMotion.Ease))
                 .OnComplete(() =>
                 {
                     CG.blocksRaycasts = true;
@@ -213,14 +213,14 @@ namespace MDPro3.UI.ServantUI
                 });
 
             Root.anchoredPosition = new Vector2(70f, 0f);
-            Root.DOAnchorPos(Vector2.zero, 0.25f).SetEase(Ease.OutCubic).SetUpdate(true);
+            Root.DOAnchorPos(Vector2.zero, 0.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
         }
 
         protected virtual void Hide_Pop()
         {
             CG.blocksRaycasts = false;
             CG.DOFade(0f, 0.25f)
-                .SetEase(Ease.OutCubic)
+                .SetEase(UltraMotion.Ease)
                 .SetUpdate(true)
                 .OnComplete(() =>
             {
@@ -228,15 +228,15 @@ namespace MDPro3.UI.ServantUI
                 AfterHideEvent();
             });
 
-            LeftPart.DOAnchorPosX(-70f, 0.25f).SetEase(Ease.OutCubic).SetUpdate(true);
-            RightPart.DOAnchorPosX(70f, 0.25f).SetEase(Ease.OutCubic).SetUpdate(true);
+            LeftPart.DOAnchorPosX(-50f, 0.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
+            RightPart.DOAnchorPosX(50f, 0.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
         }
 
         protected virtual void Hide_Cover()
         {
             CG.blocksRaycasts = false;
             CG.DOFade(0f, 0.25f)
-                .SetEase(Ease.OutCubic)
+                .SetEase(UltraMotion.Ease)
                 .SetUpdate(true)
                 .OnComplete(() =>
             {
@@ -244,14 +244,14 @@ namespace MDPro3.UI.ServantUI
                 AfterHideEvent();
             });
 
-            Root.DOAnchorPos(new Vector2(-70f, 0f), 0.25f).SetEase(Ease.OutCubic).SetUpdate(true);
+            Root.DOAnchorPos(new Vector2(-50f, 0f), 0.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
         }
 
         protected virtual void Hide_Uncover()
         {
             CG.blocksRaycasts = false;
             CG.DOFade(0f, 0.25f)
-                .SetEase(Ease.OutCubic)
+                .SetEase(UltraMotion.Ease)
                 .SetUpdate(true)
                 .OnComplete(() =>
             {
@@ -259,7 +259,7 @@ namespace MDPro3.UI.ServantUI
                 AfterHideEvent();
             });
 
-            Root.DOAnchorPos(new Vector2(70f, 0f), 0.25f).SetEase(Ease.OutCubic).SetUpdate(true);
+            Root.DOAnchorPos(new Vector2(50f, 0f), 0.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
         }
 
     }

@@ -94,12 +94,38 @@ namespace MDPro3
             var item = Instantiate(Program.instance.message_.messageToast);
             item.transform.SetParent(instance.transform, false);
             item.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = message;
-            Destroy(item, 2f);
-            DOTween.To(v => { }, 0f, 0f, 2f).OnComplete(() =>
+            var rect = item.GetComponent<RectTransform>();
+            var group = item.GetComponent<CanvasGroup>();
+            if (group == null) group = item.AddComponent<CanvasGroup>();
+            var end = rect.anchoredPosition;
+            rect.anchoredPosition = end + new Vector2(560f, 0f);
+            group.alpha = 0f;
+            rect.DOAnchorPos(end, 0.3f).SetEase(Ease.OutCubic).SetUpdate(true);
+            group.DOFade(1f, 0.3f).SetUpdate(true);
+            var barObject = new GameObject("Timer", typeof(RectTransform));
+            barObject.transform.SetParent(item.transform, false);
+            var bar = barObject.GetComponent<RectTransform>();
+            bar.anchorMin = new Vector2(0f, 0f);
+            bar.anchorMax = new Vector2(0f, 0f);
+            bar.pivot = new Vector2(0f, 0f);
+            bar.anchoredPosition = Vector2.zero;
+            bar.sizeDelta = new Vector2(0f, 3f);
+            var barImage = barObject.AddComponent<Image>();
+            barImage.color = new Color(0.75f, 0.29f, 0.85f, 1f);
+            barImage.raycastTarget = false;
+            float width = rect.rect.width > 8f ? rect.rect.width : 470f;
+            bar.DOSizeDelta(new Vector2(width, 3f), 2.6f).SetEase(Ease.Linear).SetUpdate(true);
+            DOVirtual.DelayedCall(2.6f, () =>
             {
-                Destroy(item);
+                if (item == null) return;
+                rect.DOAnchorPos(end + new Vector2(560f, 0f), 0.3f).SetUpdate(true);
+                group.DOFade(0f, 0.3f).SetUpdate(true);
+            }, true);
+            DOVirtual.DelayedCall(2.9f, () =>
+            {
+                if (item != null) Destroy(item);
                 CameraManager.UIBlurMinus();
-            });
+            }, true);
         }
 
         public static void Cast(string message)

@@ -102,14 +102,14 @@ namespace MDPro3.UI
 
             if (formatBadge == null)
             {
-                var badge = new GameObject("Deck format badge", typeof(RectTransform));
-                badge.layer = gameObject.layer;
-                var rect = badge.GetComponent<RectTransform>();
+                var badgeObject = new GameObject("Deck format badge", typeof(RectTransform));
+                badgeObject.layer = gameObject.layer;
+                var rect = badgeObject.GetComponent<RectTransform>();
                 rect.SetParent(transform, false);
                 rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one;
                 rect.anchoredPosition = Vector2.zero;
-                UltraUi.EnsureRenderer(badge);
-                formatBadge = badge.AddComponent<UltraChrome>();
+                UltraUi.EnsureRenderer(badgeObject);
+                formatBadge = badgeObject.AddComponent<UltraChrome>();
                 formatBadge.cut = UltraCut.Tag;
                 formatBadge.rim = 0f;
                 formatBadge.raycastTarget = false;
@@ -131,17 +131,21 @@ namespace MDPro3.UI
                 formatBadgeLabel.overflowMode = TextOverflowModes.Overflow;
             }
 
-            // The deck only stores TCG or Genesys, plus a point cap. .u-tag is cream for TCG and accent for Genesys.
-            // A cap other than 100 stays in the words so Genesys 0 is still distinct.
+            // The deck only stores TCG or Genesys, plus a point cap. A cap other than 100 stays in the words.
             bool genesys = deck.Format == "Genesys";
             int cap = deck.FormatPointCap;
             string label = !genesys ? "TCG" : cap == 0 ? "GENESYS 0" : cap == 100 ? "GENESYS" : "GENESYS " + cap;
-            formatBadge.color = genesys ? UltraTheme.Accent : UltraTheme.Fg;
+            Color badge = !genesys ? UltraTheme.Hex("2F6BFF") : cap == 0 ? UltraTheme.Hex("14B8A6") : UltraTheme.Hex("8A4DFF");
+            Color ink = cap == 0 && genesys ? UltraTheme.Hex("04201D") : Color.white;
+            formatBadge.color = badge;
             formatBadge.cut = UltraCut.Tag;
             formatBadgeLabel.text = label;
             UltraTheme.Style(formatBadgeLabel, true, 12f);
             UltraTheme.Repair(formatBadgeLabel, true);
-            formatBadgeLabel.color = genesys ? UltraTheme.AccentInk : UltraTheme.Ink;
+            formatBadgeLabel.color = ink;
+            var cover = GetComponent<UltraDeckCover>();
+            if (cover == null) cover = gameObject.AddComponent<UltraDeckCover>();
+            cover.Apply(this, deck);
             formatBadgeLabel.fontSize = 20;
             formatBadge.rectTransform.sizeDelta = new Vector2(Mathf.Max(88f, 18f * label.Length + 28f), 38f);
             formatBadge.transform.SetAsLastSibling();
@@ -273,6 +277,19 @@ namespace MDPro3.UI
             else
             {
                 AudioManager.PlaySE(SoundLabelClick);
+                var decks = Program.instance.deckSelector.GetUI<DeckSelectorUI>().decks;
+                decks.TryGetValue(deckName, out var deck);
+                bool genesys = deck != null && deck.Format == "Genesys";
+                int cap = deck != null ? deck.FormatPointCap : 100;
+                string format = !genesys ? "TCG" : cap == 0 ? "GENESYS 0" : cap == 100 ? "GENESYS" : "GENESYS " + cap;
+                Color badge = !genesys ? UltraTheme.Hex("2F6BFF") : cap == 0 ? UltraTheme.Hex("14B8A6") : UltraTheme.Hex("8A4DFF");
+                Color ink = cap == 0 && genesys ? UltraTheme.Hex("04201D") : Color.white;
+                UltraDeckModal.Open(this, deck, format, badge, ink, OpenChosenDeck);
+            }
+        }
+
+        void OpenChosenDeck()
+        {
                 Config.SetConfigDeck(deckName, true);
                 if (DeckSelector.condition == DeckSelector.Condition.ForEdit)
                 {
@@ -293,7 +310,6 @@ namespace MDPro3.UI
                         DuelFormat.ApplyDeckFormat(Config.GetConfigDeckName());
                     Program.instance.ShiftToServant(Program.instance.solo);
                 }
-            }
         }
 
         protected override void OnSubmit()
@@ -449,7 +465,8 @@ namespace MDPro3.UI
         protected override void HoverOn()
         {
             base.HoverOn();
-            ShowPickup();
+            var cover = GetComponent<UltraDeckCover>();
+            if (cover == null || !cover.HasArt) ShowPickup();
         }
 
         protected override void HoverOff(bool force = false)
