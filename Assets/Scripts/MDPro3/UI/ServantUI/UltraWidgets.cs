@@ -202,6 +202,13 @@ namespace MDPro3.UI.ServantUI
                 case 8:
                     Ring(.38f, .62f, .16f, 10); Ring(.62f, .40f, .18f, 10); L(.48f, .28f, .74f, .22f);
                     break;
+                case 9:
+                    L(.18f, .22f, .56f, .22f); L(.56f, .22f, .56f, .78f); L(.56f, .78f, .18f, .78f); L(.18f, .78f, .18f, .22f);
+                    L(.46f, .50f, .84f, .50f); L(.68f, .34f, .84f, .50f); L(.68f, .66f, .84f, .50f);
+                    break;
+                case 10:
+                    L(.30f, .30f, .70f, .70f); L(.70f, .30f, .30f, .70f);
+                    break;
                 default:
                     Ring(.5f, .5f, .18f, 12);
                     L(.5f, .5f, .5f, .86f); L(.5f, .5f, .86f, .5f); L(.5f, .5f, .5f, .14f); L(.5f, .5f, .14f, .5f);
@@ -226,6 +233,7 @@ namespace MDPro3.UI.ServantUI
     public sealed class UltraThemedButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, ISelectHandler, IDeselectHandler
     {
         public UltraTier tier = UltraTier.Secondary;
+        public float liftOverride = -1f;
         public bool selectedVisual;
         public bool rule;
         UltraChrome chrome;
@@ -310,7 +318,7 @@ namespace MDPro3.UI.ServantUI
             var plate = (RectTransform)transform;
             if (!selfReady) { selfRest = plate.anchoredPosition; selfReady = true; }
             move?.Kill();
-            float lift = tier == UltraTier.Hero ? 3f : 2f;
+            float lift = liftOverride >= 0f ? liftOverride : tier == UltraTier.Hero ? 3f : 2f;
             move = plate.DOAnchorPos(selfRest + (on ? new Vector2(0f, lift) : Vector2.zero), UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
             if (nudge == null || tier != UltraTier.Hero) return;
             labelMove?.Kill();

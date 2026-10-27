@@ -37,6 +37,8 @@ namespace MDPro3.UI.ServantUI
         UltraCountPop gemCount;
         bool homeIntroPlayed;
         bool launchGate;
+        const float AccessScale = 1.3f;
+        static float Ax(float value) => value * AccessScale;
         RectTransform accessCard, accessRule, accessWelcome;
         Button accessContinue, accessSwitch, accessSignIn, accessCreate;
         TMP_InputField accessUser, accessPass;
@@ -250,67 +252,74 @@ namespace MDPro3.UI.ServantUI
             UltraTheme.Style(label, true, 2f);
             return label;
         }
-        void SectionLabel(Transform parent, string text, float x, float y)
+        float MenuGroup(string text, float top)
         {
-            var tick = HomeRect(text + " mark", parent, x, y, .004f, .02f);
-            var bar = tick.gameObject.AddComponent<Image>();
-            bar.color = UltraTheme.Accent;
-            bar.raycastTarget = false;
-            tick.gameObject.AddComponent<UltraAccentFill>();
-            var label = HomeText(parent, text, 14, Muted, x + .012f, y - .002f, .24f, .026f);
-            if (label != null) UltraTheme.StyleEmphasis(label, 12f);
+            var host = Px(text + " label", modal, 48f, top, 420f, 22f);
+            var label = HomeText(host, text, 14, Muted, 0f, 0f, 1f, 1f);
+            if (label != null)
+            {
+                label.enableAutoSizing = false;
+                label.fontSize = 14f;
+                label.alignment = TextAlignmentOptions.MidlineLeft;
+                UltraTheme.StyleEmphasis(label, 10f);
+                label.fontSize = 14f;
+                label.color = Muted;
+            }
+            return top + 30f;
         }
-        Button MenuCard(string title, UnityAction action, int icon, float x, float y, float w, float h, string badge = null)
+        Button MenuTile(string title, string description, UnityAction action, int icon, float x, float y, float width, UltraTier tier)
         {
-            var rect = HomeRect(title, modal, x, y, w, h);
+            bool danger = tier == UltraTier.Danger;
+            var rect = Px(title, modal, x, y, width, 96f);
             var chrome = rect.gameObject.AddComponent<UltraChrome>();
-            chrome.cut = UltraCut.Panel;
+            chrome.cut = UltraCut.Small;
             chrome.color = UltraTheme.PanelSolid;
-            chrome.rim = 1.5f;
-            chrome.followThemeRim = true;
+            chrome.rim = danger ? 2f : 1.5f;
+            chrome.rimColor = danger ? UltraTheme.Danger : UltraTheme.Line;
+            chrome.followThemeRim = false;
             chrome.raycastTarget = true;
-            var edge = HomeRect("Card accent", rect, 0f, .2f, .012f, .6f);
-            var edgeImage = edge.gameObject.AddComponent<Image>();
-            edgeImage.color = UltraTheme.Accent;
-            edgeImage.raycastTarget = false;
-            edge.gameObject.AddComponent<UltraAccentFill>();
-            var well = HomeRect("Icon well", rect, .045f, .18f, .16f, .64f);
-            var wellChrome = well.gameObject.AddComponent<UltraChrome>();
-            wellChrome.cut = UltraCut.Small;
-            wellChrome.color = UltraTheme.Ink;
-            wellChrome.rim = 0f;
-            wellChrome.raycastTarget = false;
-            var mark = HomeRect("Icon", well, .18f, .18f, .64f, .64f);
+            if (!danger)
+            {
+                var edge = Px("Accent edge", rect, 0f, 20f, 3f, 56f);
+                var edgeImage = edge.gameObject.AddComponent<Image>();
+                edgeImage.color = UltraTheme.Accent;
+                edgeImage.raycastTarget = false;
+            }
+            var tint = danger ? UltraTheme.Danger : UltraTheme.Accent;
+            var well = Px("Icon well", rect, 24f, 24f, 48f, 48f);
+            var wellImage = well.gameObject.AddComponent<Image>();
+            wellImage.color = new Color(tint.r, tint.g, tint.b, 0.18f);
+            wellImage.raycastTarget = false;
+            var mark = Px("Icon", well, 10f, 10f, 28f, 28f);
             var glyph = mark.gameObject.AddComponent<UltraLineIcon>();
             glyph.kind = icon;
-            glyph.color = UltraTheme.Accent;
+            glyph.color = tint;
             glyph.raycastTarget = false;
-            glyph.SetVerticesDirty();
-            mark.gameObject.AddComponent<UltraAccentFill>();
-            var label = HomeText(rect, title, 22, UltraTheme.Fg, .22f, .18f, badge == null ? .72f : .46f, .64f);
-            if (label != null) label.alignment = TextAlignmentOptions.MidlineLeft;
-            if (badge != null)
-            {
-                var pill = HomeRect("Badge", rect, .70f, .26f, .24f, .48f);
-                var pillChrome = pill.gameObject.AddComponent<UltraChrome>();
-                pillChrome.cut = UltraCut.Flat;
-                pillChrome.color = UltraTheme.Accent;
-                pillChrome.rim = 0f;
-                pillChrome.followThemeRim = false;
-                pillChrome.raycastTarget = false;
-                pill.gameObject.AddComponent<UltraAccentFill>();
-                var pillText = HomeText(pill, badge, 16, UltraTheme.AccentInk, 0f, 0f, 1f, 1f);
-                if (pillText != null)
-                {
-                    pillText.alignment = TextAlignmentOptions.Center;
-                    pillText.color = UltraTheme.AccentInk;
-                }
-            }
+            var titleHost = Px("Title", rect, 88f, 16f, width - 104f, 32f);
+            var titleLabel = HomeText(titleHost, title, 20, danger ? UltraTheme.Danger : UltraTheme.Fg, 0f, 0f, 1f, 1f);
+            var descHost = Px("Description", rect, 88f, 50f, width - 104f, 28f);
+            var descLabel = HomeText(descHost, description, 14, Muted, 0f, 0f, 1f, 1f);
             var button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = chrome;
             button.transition = Selectable.Transition.None;
             button.onClick.AddListener(action);
-            rect.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);
+            var themed = rect.gameObject.AddComponent<UltraThemedButton>();
+            themed.liftOverride = 6f;
+            themed.Configure(tier);
+            if (titleLabel != null)
+            {
+                titleLabel.enableAutoSizing = false;
+                titleLabel.fontSize = 20f;
+                titleLabel.alignment = TextAlignmentOptions.MidlineLeft;
+                titleLabel.color = danger ? UltraTheme.Danger : UltraTheme.Fg;
+            }
+            if (descLabel != null)
+            {
+                descLabel.enableAutoSizing = false;
+                descLabel.fontSize = 14f;
+                descLabel.alignment = TextAlignmentOptions.MidlineLeft;
+                descLabel.color = Muted;
+            }
             return button;
         }
         Button PlusButton(Transform parent, UnityAction action, float anchorX, float anchorY)
@@ -592,17 +601,17 @@ namespace MDPro3.UI.ServantUI
             accessCard.anchoredPosition=Vector2.zero;
             HomePanel(accessCard,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.98f));
             modal=accessCard;
-            var wordHost=Px("Wordmark",accessCard,32f,28f,456f,48f);
-            var word=HomeText(wordHost,"ULTRA DUEL",40,Color.white,0f,0f,1f,1f);
+            var wordHost=Px("Wordmark",accessCard,Ax(32f),Ax(28f),Ax(456f),Ax(48f));
+            var word=HomeText(wordHost,"ULTRA DUEL",Ax(40f),Color.white,0f,0f,1f,1f);
             if(word!=null)
             {
                 word.alignment=TextAlignmentOptions.Center;
                 word.enableAutoSizing=false;
-                word.fontSize=40f;
+                word.fontSize=Ax(40f);
                 UltraTheme.Style(word,true,6f);
-                word.fontSize=40f;
+                word.fontSize=Ax(40f);
             }
-            accessRule=Px("Wordmark underline",accessCard,240f,84f,40f,4f);
+            accessRule=Px("Wordmark underline",accessCard,Ax(240f),Ax(84f),Ax(40f),Ax(4f));
             accessRule.anchorMin=accessRule.anchorMax=new Vector2(.5f,1f);
             accessRule.pivot=new Vector2(.5f,1f);
             var ruleInk=accessRule.gameObject.AddComponent<Image>();ruleInk.color=UltraTheme.Accent;ruleInk.raycastTarget=false;
@@ -612,8 +621,8 @@ namespace MDPro3.UI.ServantUI
             if(accessRemembered)
             {
                 string who=string.IsNullOrEmpty(UltraServices.PlayerName)?"Duelist":UltraServices.PlayerName;
-                accessWelcome=Px("Welcome row",accessCard,32f,120f,456f,40f);
-                var disc=Px("Profile picture",accessWelcome,0f,2f,36f,36f);
+                accessWelcome=Px("Welcome row",accessCard,Ax(32f),Ax(120f),Ax(456f),Ax(40f));
+                var disc=Px("Profile picture",accessWelcome,0f,Ax(2f),Ax(36f),Ax(36f));
                 UltraUi.EnsureRenderer(disc.gameObject);
                 var maskGraphic=disc.gameObject.AddComponent<UltraCircleGraphic>();
                 maskGraphic.color=UltraTheme.PanelSolid;maskGraphic.raycastTarget=false;
@@ -622,19 +631,19 @@ namespace MDPro3.UI.ServantUI
                 face.anchorMin=Vector2.zero;face.anchorMax=Vector2.one;face.offsetMin=face.offsetMax=Vector2.zero;
                 var portrait=face.gameObject.AddComponent<Image>();portrait.preserveAspect=true;portrait.raycastTarget=false;
                 LoadProfileIcon(portrait,ProfileIconId()).Forget();
-                var hello=HomeText(accessWelcome,"Welcome back, "+who,18,UltraTheme.Fg,.12f,0f,.86f,1f);
-                if(hello!=null){hello.enableAutoSizing=false;hello.fontSize=18f;hello.alignment=TextAlignmentOptions.MidlineLeft;UltraTheme.Style(hello,false);}
+                var hello=HomeText(accessWelcome,"Welcome back, "+who,Ax(18f),UltraTheme.Fg,.12f,0f,.86f,1f);
+                if(hello!=null){hello.enableAutoSizing=false;hello.fontSize=Ax(18f);hello.alignment=TextAlignmentOptions.MidlineLeft;UltraTheme.Style(hello,false);}
             }
             accessUser=AccessField("Username (3–24 characters)",false);
             accessPass=AccessField("Password (8 characters minimum)",true);
             if(accessRemembered && accessUser!=null && !string.IsNullOrEmpty(UltraServices.PlayerName)) accessUser.text=UltraServices.PlayerName;
             UnityAction signIn=()=>Run(async()=>{await UltraServices.SignIn(accessUser.text,accessPass.text,false);accessPass.text="";ShowFriends();});
             UnityAction create=()=>Run(async()=>{await UltraServices.SignIn(accessUser.text,accessPass.text,true);accessPass.text="";ShowFriends();});
-            accessContinue=AccessButton("CONTINUE",CloseModal,UltraTier.Primary,22f);
+            accessContinue=AccessButton("CONTINUE",CloseModal,UltraTier.Primary,Ax(22f));
             accessSwitch=AccessLink("Use a different account",()=>LayoutAccess(true));
-            accessSignIn=AccessButton("SIGN IN",signIn,UltraTier.Primary,20f);
-            accessCreate=AccessButton("CREATE ACCOUNT",create,UltraTier.Secondary,18f);
-            var statusHost=Px("Access status",overlay,0f,0f,520f,28f);
+            accessSignIn=AccessButton("SIGN IN",signIn,UltraTier.Primary,Ax(20f));
+            accessCreate=AccessButton("CREATE ACCOUNT",create,UltraTier.Secondary,Ax(18f));
+            var statusHost=Px("Access status",overlay,0f,0f,Ax(520f),Ax(28f));
             statusHost.anchorMin=statusHost.anchorMax=new Vector2(.5f,.5f);
             statusHost.pivot=new Vector2(.5f,1f);
             modalStatus=HomeText(statusHost,"",16,Lime,0f,0f,1f,1f);
@@ -646,31 +655,31 @@ namespace MDPro3.UI.ServantUI
         void LayoutAccess(bool credentials)
         {
             if(accessCard==null) return;
-            const float pad=32f, inner=456f;
-            float y=28f;
+            float pad=Ax(32f), inner=Ax(456f), cardW=Ax(520f);
+            float y=Ax(28f);
             var word=accessCard.Find("Wordmark") as RectTransform;
-            if(word!=null) Place(word,pad,y,inner,48f);
-            y+=48f+8f;
+            if(word!=null) Place(word,pad,y,inner,Ax(48f));
+            y+=Ax(48f)+Ax(8f);
             if(accessRule!=null)
             {
                 accessRule.anchorMin=accessRule.anchorMax=new Vector2(.5f,1f);
                 accessRule.pivot=new Vector2(.5f,1f);
                 accessRule.anchoredPosition=new Vector2(0f,-y);
-                accessRule.sizeDelta=new Vector2(40f,4f);
+                accessRule.sizeDelta=new Vector2(Ax(40f),Ax(4f));
             }
-            y+=4f+16f;
+            y+=Ax(4f)+Ax(16f);
             if(accessWelcome!=null)
             {
                 accessWelcome.gameObject.SetActive(accessRemembered);
                 if(accessRemembered)
                 {
                     string who=string.IsNullOrEmpty(UltraServices.PlayerName)?"Duelist":UltraServices.PlayerName;
-                    float textW=Mathf.Clamp(who.Length*10f+150f,180f,380f);
-                    float rowW=36f+12f+textW;
-                    Place(accessWelcome,(520f-rowW)*0.5f,y,rowW,40f);
+                    float textW=Mathf.Clamp(Ax(who.Length*10f+150f),Ax(180f),Ax(380f));
+                    float rowW=Ax(36f)+Ax(12f)+textW;
+                    Place(accessWelcome,(cardW-rowW)*0.5f,y,rowW,Ax(40f));
                     var hello=accessWelcome.Find("Label") as RectTransform;
-                    if(hello!=null) Place(hello,48f,0f,textW,40f);
-                    y+=40f+20f;
+                    if(hello!=null) Place(hello,Ax(48f),0f,textW,Ax(40f));
+                    y+=Ax(40f)+Ax(20f);
                 }
             }
             bool quick=accessRemembered && !credentials;
@@ -682,23 +691,23 @@ namespace MDPro3.UI.ServantUI
             if(accessCreate!=null) accessCreate.gameObject.SetActive(!quick);
             if(quick)
             {
-                Place(accessContinue.transform as RectTransform,pad,y,inner,56f);
-                y+=56f+12f;
-                Place(accessSwitch.transform as RectTransform,pad,y,inner,28f);
-                y+=28f+20f;
+                Place(accessContinue.transform as RectTransform,pad,y,inner,Ax(56f));
+                y+=Ax(56f)+Ax(12f);
+                Place(accessSwitch.transform as RectTransform,pad,y,inner,Ax(28f));
+                y+=Ax(28f)+Ax(20f);
             }
             else
             {
-                Place(accessUser.transform as RectTransform,pad,y,inner,52f);
-                y+=52f+16f;
-                Place(accessPass.transform as RectTransform,pad,y,inner,52f);
-                y+=52f+16f;
-                Place(accessSignIn.transform as RectTransform,pad,y,inner,52f);
-                y+=52f+16f;
-                Place(accessCreate.transform as RectTransform,pad,y,inner,52f);
-                y+=52f+16f;
+                Place(accessUser.transform as RectTransform,pad,y,inner,Ax(52f));
+                y+=Ax(52f)+Ax(16f);
+                Place(accessPass.transform as RectTransform,pad,y,inner,Ax(52f));
+                y+=Ax(52f)+Ax(16f);
+                Place(accessSignIn.transform as RectTransform,pad,y,inner,Ax(52f));
+                y+=Ax(52f)+Ax(16f);
+                Place(accessCreate.transform as RectTransform,pad,y,inner,Ax(52f));
+                y+=Ax(52f)+Ax(16f);
             }
-            accessCard.sizeDelta=new Vector2(520f,y);
+            accessCard.sizeDelta=new Vector2(cardW,y);
             if(modalStatus!=null)
             {
                 var status=modalStatus.rectTransform.parent as RectTransform;
@@ -707,7 +716,7 @@ namespace MDPro3.UI.ServantUI
                     status.anchorMin=status.anchorMax=new Vector2(.5f,.5f);
                     status.pivot=new Vector2(.5f,1f);
                     status.anchoredPosition=new Vector2(0f,-(y*0.5f+10f));
-                    status.sizeDelta=new Vector2(520f,28f);
+                    status.sizeDelta=new Vector2(Ax(520f),Ax(28f));
                 }
             }
         }
@@ -721,12 +730,12 @@ namespace MDPro3.UI.ServantUI
         }
         TMP_InputField AccessField(string placeholder,bool password)
         {
-            var rect=Px(placeholder,accessCard,32f,0f,456f,52f);
+            var rect=Px(placeholder,accessCard,Ax(32f),0f,Ax(456f),Ax(52f));
             HomePanel(rect,UltraTheme.PanelSolid);
             rect.GetComponent<Image>().raycastTarget=true;
             var field=rect.gameObject.AddComponent<TMP_InputField>();
-            var text=HomeText(rect,"",22,UltraTheme.Fg,.04f,.12f,.92f,.76f);UltraTheme.Style(text,false);
-            var hint=HomeText(rect,placeholder,20,Muted,.04f,.12f,.92f,.76f);UltraTheme.Style(hint,false);
+            var text=HomeText(rect,"",Ax(22f),UltraTheme.Fg,.04f,.12f,.92f,.76f);UltraTheme.Style(text,false);
+            var hint=HomeText(rect,placeholder,Ax(20f),Muted,.04f,.12f,.92f,.76f);UltraTheme.Style(hint,false);
             if(text!=null) text.enableAutoSizing=false;
             if(hint!=null) hint.enableAutoSizing=false;
             field.textViewport=rect;field.textComponent=text;field.placeholder=hint;
@@ -736,7 +745,7 @@ namespace MDPro3.UI.ServantUI
         }
         Button AccessButton(string text,UnityAction action,UltraTier tier,float size)
         {
-            var rect=Px(text,accessCard,32f,0f,456f,52f);
+            var rect=Px(text,accessCard,Ax(32f),0f,Ax(456f),Ax(52f));
             var image=rect.gameObject.AddComponent<UltraChrome>();image.raycastTarget=true;
             var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=image;
             var label=HomeText(rect,text,size,UltraTheme.Fg,.06f,.08f,.88f,.84f);
@@ -747,11 +756,11 @@ namespace MDPro3.UI.ServantUI
         }
         Button AccessLink(string text,UnityAction action)
         {
-            var rect=Px(text,accessCard,32f,0f,456f,28f);
+            var rect=Px(text,accessCard,Ax(32f),0f,Ax(456f),Ax(28f));
             var hit=rect.gameObject.AddComponent<Image>();hit.color=Color.clear;hit.raycastTarget=true;
             var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=hit;button.transition=Selectable.Transition.None;
-            var label=HomeText(rect,text,16,UltraTheme.Accent,0f,0f,1f,1f);
-            if(label!=null){label.alignment=TextAlignmentOptions.Center;label.enableAutoSizing=false;label.fontSize=16f;label.color=UltraTheme.Accent;UltraTheme.Style(label,false);}
+            var label=HomeText(rect,text,Ax(16f),UltraTheme.Accent,0f,0f,1f,1f);
+            if(label!=null){label.alignment=TextAlignmentOptions.Center;label.enableAutoSizing=false;label.fontSize=Ax(16f);label.color=UltraTheme.Accent;UltraTheme.Style(label,false);}
             button.onClick.AddListener(action);
             return button;
         }
@@ -1010,30 +1019,55 @@ namespace MDPro3.UI.ServantUI
         async UniTaskVoid SyncBackups(){await UltraDeckCloud.Sync(true);OpenBackups();}
         void OpenMenu()
         {
-            OpenModal("MENU","Ultra Duel  /  v"+UltraServices.Version,"menu");
-            var perf=HomeText(modal,"FPS N/A    |    GPU N/A    |    CPU N/A    |    LAT N/A",14,Muted,.34f,.905f,.62f,.035f);
-            if(perf!=null)
+            OpenModal("MENU", "", "menu");
+            var version = Px("Build version", overlay, 28f, 0f, 560f, 22f);
+            version.anchorMin = version.anchorMax = new Vector2(0f, 0f);
+            version.pivot = new Vector2(0f, 0f);
+            version.anchoredPosition = new Vector2(28f, 16f);
+            var versionLabel = HomeText(version, "Ultra Duel  /  v" + UltraServices.Version, 14, Muted, 0f, 0f, 1f, 1f);
+            if (versionLabel != null)
             {
-                perf.alignment=TextAlignmentOptions.MidlineRight;
-                UltraTheme.StyleEmphasis(perf,4f);
+                versionLabel.enableAutoSizing = false;
+                versionLabel.fontSize = 14f;
+                versionLabel.alignment = TextAlignmentOptions.MidlineLeft;
+                UltraTheme.StyleEmphasis(versionLabel, 2f);
+                versionLabel.fontSize = 14f;
+                versionLabel.color = Muted;
+            }
+            var perfHost = Px("Perf", modal, 1040f, 48f, 680f, 24f);
+            var perf = HomeText(perfHost, "FPS N/A    |    GPU N/A    |    CPU N/A    |    LAT N/A", 14, Muted, 0f, 0f, 1f, 1f);
+            if (perf != null)
+            {
+                perf.alignment = TextAlignmentOptions.MidlineRight;
+                perf.enableAutoSizing = false;
+                perf.fontSize = 14f;
+                UltraTheme.StyleEmphasis(perf, 4f);
+                perf.fontSize = 14f;
                 perf.gameObject.AddComponent<UltraPerfReadout>();
             }
-            SectionLabel(modal,"DISPLAY",.04f,.80f);
-            MenuCard("SETTINGS",()=>{CloseModal();OnSetting();},0,.04f,.615f,.30f,.145f);
-            MenuCard("WALLPAPER",OpenWallpaper,1,.355f,.615f,.30f,.145f);
-            MenuCard("CUT-INS",()=>{CloseModal();OnCutin();},3,.04f,.455f,.30f,.145f);
-            MenuCard("GUI SCALE",OpenGuiScale,4,.355f,.455f,.30f,.145f,UltraGuiScale.Percent+"%");
-            SectionLabel(modal,"PLAY",.675f,.80f);
-            MenuCard("MATCH HISTORY",OpenHistory,2,.675f,.585f,.285f,.17f);
-            MenuCard("PUZZLES",()=>{CloseModal();OnPuzzle();},5,.675f,.40f,.285f,.17f);
-            SectionLabel(modal,"SYSTEM",.04f,.385f);
-            MenuCard("CHECK UPDATES",OpenUpdates,6,.04f,.22f,.30f,.145f);
-            MenuCard("SAVE BACKUPS",OpenBackups,7,.355f,.22f,.30f,.145f);
-            MenuCard("GITHUB",()=>Application.OpenURL(UltraServices.Repository),8,.675f,.22f,.285f,.145f);
-            SectionLabel(modal,"SESSION",.04f,.155f);
-            float sessionW=(.30f+.015f+.30f-.015f)*.5f;
-            SmallButton(modal,"SIGN OUT",()=>Run(async()=>{await UltraServices.SignOut();OpenLogin();}),.04f,.03f,sessionW,.10f,22);
-            SmallButton(modal,"EXIT",()=>{CloseModal();OnExit();},.04f+sessionW+.015f,.03f,sessionW,.10f,22,UltraTier.Danger);
+            const float left = 48f;
+            const float col = 546f;
+            const float gap = 16f;
+            float top = 168f;
+            top = MenuGroup("DISPLAY", top);
+            MenuTile("SETTINGS", "Audio, video, controls", () => { CloseModal(); OnSetting(); }, 0, left, top, col, UltraTier.Secondary);
+            MenuTile("WALLPAPER", "Duel background", OpenWallpaper, 1, left + col + gap, top, col, UltraTier.Secondary);
+            MenuTile("CUT-INS", "Match intro clips", () => { CloseModal(); OnCutin(); }, 3, left + (col + gap) * 2f, top, col, UltraTier.Secondary);
+            top += 108f;
+            MenuTile("GUI SCALE", "Interface size, " + UltraGuiScale.Percent + "%", OpenGuiScale, 4, left, top, col, UltraTier.Secondary);
+            top += 124f;
+            top = MenuGroup("PLAY", top);
+            MenuTile("MATCH HISTORY", "Recent duels", OpenHistory, 2, left, top, col, UltraTier.Secondary);
+            MenuTile("PUZZLES", "Solo challenges", () => { CloseModal(); OnPuzzle(); }, 5, left + col + gap, top, col, UltraTier.Secondary);
+            top += 124f;
+            top = MenuGroup("SYSTEM", top);
+            MenuTile("CHECK UPDATES", "Look for a new build", OpenUpdates, 6, left, top, col, UltraTier.Secondary);
+            MenuTile("SAVE BACKUPS", "Cloud and local copies", OpenBackups, 7, left + col + gap, top, col, UltraTier.Secondary);
+            MenuTile("GITHUB", "Source and releases", () => Application.OpenURL(UltraServices.Repository), 8, left + (col + gap) * 2f, top, col, UltraTier.Secondary);
+            top += 124f;
+            top = MenuGroup("SESSION", top);
+            MenuTile("SIGN OUT", "Leave this account", () => Run(async () => { await UltraServices.SignOut(); OpenLogin(); }), 9, left, top, col, UltraTier.Danger);
+            MenuTile("EXIT", "Close Ultra Duel", () => { CloseModal(); OnExit(); }, 10, left + col + gap, top, col, UltraTier.Secondary);
         }
     }
 }

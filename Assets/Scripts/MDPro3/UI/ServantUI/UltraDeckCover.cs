@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
@@ -18,11 +19,22 @@ namespace MDPro3.UI.ServantUI
         public int cardId;
         public string archetype;
         public int copies;
+        public int[] candidates;
     }
 
-    // Cover art is the deck's own majority archetype, not a fixed illustration.
+    // Cover art is the majority archetype's ace. Copy count never picks the card.
     public static class UltraDeckArchetype
     {
+        // Signature monster for an archetype. Missing entries use the highest-level monster of that archetype in the deck.
+        static readonly Dictionary<string, int> Aces = new Dictionary<string, int>(StringComparer.Ordinal)
+        {
+            { "Kewl Tune", 65961304 },
+            { "Branded", 87746184 },
+            { "Dracotail", 33760966 },
+            { "Dogmatika", 51522296 },
+            { "Despia", 53971455 },
+        };
+
         public static UltraDeckCoverChoice Choose(Deck deck, string deckName)
         {
             var choice = new UltraDeckCoverChoice();
@@ -40,12 +52,13 @@ namespace MDPro3.UI.ServantUI
             }
             if (copies.Count == 0) return choice;
 
+            string prefix = DeckPrefix(deckName);
             var totals = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var pair in copies)
             {
                 var card = Lookup(pair.Key);
                 if (card == null) continue;
-                foreach (string name in Names(card))
+                foreach (string name in Names(card, prefix))
                 {
                     totals.TryGetValue(name, out int count);
                     totals[name] = count + pair.Value;
@@ -53,6 +66,7 @@ namespace MDPro3.UI.ServantUI
             }
 
             string archetype = "";
+            int archetypeCards = 0;
             if (totals.Count > 0)
             {
                 int best = 0;
@@ -61,26 +75,82 @@ namespace MDPro3.UI.ServantUI
                 foreach (var pair in totals) if (pair.Value == best) tied.Add(pair.Key);
                 tied.Sort(StringComparer.Ordinal);
                 archetype = tied.Count == 1 ? tied[0] : tied[new System.Random(Seed(deck, deckName)).Next(tied.Count)];
+                archetypeCards = best;
             }
 
-            int cardId = 0, bestCopies = -1, bestLevel = -1;
+            var queue = new List<int>();
+            if (archetype.Length > 0 && Aces.TryGetValue(archetype, out int ace))
+            {
+                var aceCard = Lookup(ace);
+                if (aceCard != null && Has(aceCard, archetype, prefix)) queue.Add(ace);
+            }
+
+            var bosses = new List<Boss>();
             foreach (var pair in copies)
             {
                 var card = Lookup(pair.Key);
-                if (card == null) continue;
-                if (archetype.Length > 0 && !Has(card, archetype)) continue;
-                int level = card.Level;
-                if (pair.Value > bestCopies || (pair.Value == bestCopies && level > bestLevel) || (pair.Value == bestCopies && level == bestLevel && pair.Key > cardId))
+                if (card == null || archetype.Length == 0 || !Has(card, archetype, prefix)) continue;
+                if (!card.HasType(CardType.Monster)) continue;
+                bosses.Add(new Boss { id = pair.Key, level = card.Level });
+            }
+            bosses.Sort((a, b) =>
+            {
+                int level = b.level.CompareTo(a.level);
+                return level != 0 ? level : b.id.CompareTo(a.id);
+            });
+            foreach (var boss in bosses)
+                if (!queue.Contains(boss.id)) queue.Add(boss.id);
+
+            if (queue.Count == 0 && archetype.Length > 0)
+            {
+                foreach (var pair in copies)
                 {
-                    cardId = pair.Key;
-                    bestCopies = pair.Value;
-                    bestLevel = level;
+                    var card = Lookup(pair.Key);
+                    if (card != null && Has(card, archetype, prefix) && !queue.Contains(pair.Key))
+                        queue.Add(pair.Key);
                 }
             }
-            choice.cardId = cardId;
+
+            if (archetype.Length == 0)
+            {
+                var monsters = new List<Boss>();
+                foreach (var pair in copies)
+                {
+                    var card = Lookup(pair.Key);
+                    if (card == null || !card.HasType(CardType.Monster)) continue;
+                    monsters.Add(new Boss { id = pair.Key, level = card.Level, copies = pair.Value });
+                }
+                monsters.Sort((a, b) =>
+                {
+                    int level = b.level.CompareTo(a.level);
+                    if (level != 0) return level;
+                    int count = b.copies.CompareTo(a.copies);
+                    return count != 0 ? count : b.id.CompareTo(a.id);
+                });
+                foreach (var monster in monsters)
+                    if (!queue.Contains(monster.id)) queue.Add(monster.id);
+                if (monsters.Count > 0) archetypeCards = monsters[0].copies;
+            }
+
+            choice.cardId = queue.Count > 0 ? queue[0] : 0;
             choice.archetype = archetype;
-            choice.copies = Mathf.Max(0, bestCopies);
+            choice.copies = archetypeCards;
+            choice.candidates = queue.ToArray();
             return choice;
+        }
+
+        struct Boss
+        {
+            public int id, level, copies;
+        }
+
+        static string DeckPrefix(string deckName)
+        {
+            if (string.IsNullOrWhiteSpace(deckName)) return "";
+            string stem = deckName.Trim();
+            int cut = stem.IndexOf(" (Cloud ", StringComparison.Ordinal);
+            if (cut > 0) stem = stem.Substring(0, cut).Trim();
+            return stem;
         }
 
         static int Seed(Deck deck, string deckName)
@@ -102,70 +172,178 @@ namespace MDPro3.UI.ServantUI
             return card != null && card.Id > 0 ? card : null;
         }
 
-        static IEnumerable<string> Names(Card card)
+        static IEnumerable<string> Names(Card card, string prefix)
         {
             string raw = card.GetSetName();
             if (string.IsNullOrWhiteSpace(raw) && !string.IsNullOrWhiteSpace(card.strSetName)) raw = card.strSetName;
-            if (string.IsNullOrWhiteSpace(raw)) yield break;
-            var parts = raw.Split('|');
-            var seen = new HashSet<string>(StringComparer.Ordinal);
-            foreach (string part in parts)
+            bool any = false;
+            if (!string.IsNullOrWhiteSpace(raw))
             {
-                string name = part.Trim();
-                if (name.Length == 0 || !seen.Add(name)) continue;
-                yield return name;
+                var parts = raw.Split('|');
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                foreach (string part in parts)
+                {
+                    string name = part.Trim();
+                    if (name.Length == 0 || !seen.Add(name)) continue;
+                    any = true;
+                    yield return name;
+                }
+            }
+            if (any || string.IsNullOrEmpty(card.Name)) yield break;
+            string stem = prefix ?? "";
+            while (stem.Length >= 4)
+            {
+                if (card.Name.StartsWith(stem, StringComparison.Ordinal))
+                {
+                    yield return stem;
+                    yield break;
+                }
+                int space = stem.LastIndexOf(' ');
+                if (space < 4) break;
+                stem = stem.Substring(0, space).Trim();
             }
         }
 
-        static bool Has(Card card, string archetype)
+        static bool Has(Card card, string archetype, string prefix)
         {
-            foreach (string name in Names(card))
+            foreach (string name in Names(card, prefix))
                 if (name == archetype) return true;
             return false;
         }
+
+        internal static async UniTask<CoverArt> Illustration(int id, CancellationToken token)
+        {
+            try
+            {
+                var texture = await CardImageLoader.LoadArtAsync(id, false, token);
+                if (texture != null) return new CoverArt { texture = texture, cached = true };
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception e) { Debug.LogWarning("Deck cover " + id + ": " + e.Message); }
+            return new CoverArt { texture = null, cached = false };
+        }
+    }
+
+    struct CoverArt
+    {
+        public Texture2D texture;
+        public bool cached;
     }
 
     public sealed class UltraDeckCover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
-        public bool HasArt => art != null && art.texture != null && art.enabled;
+        public bool HasArt => Backdrop != null && Backdrop.ArtVisible;
+        public bool Presented => Backdrop != null && (Backdrop.ArtVisible || Backdrop.FallbackVisible);
         public string Archetype { get; private set; } = "";
         public int CardId { get; private set; }
+        public UltraDeckBackdrop Backdrop
+        {
+            get
+            {
+                var body = Find("Body");
+                return body != null ? body.GetComponent<UltraDeckBackdrop>() : null;
+            }
+        }
         RawImage art;
+        Texture2D owned;
+        bool ownArt;
         RectTransform artRect, shadeRect, body;
-        int loaded, requested, loadSerial;
+        int loaded, requested, loadSerial, misses;
+        int[] queue = Array.Empty<int>();
         string shownDeck;
         bool entered, hot, parkedReady;
         Vector2 artRest, parked;
 
         public void Apply(SelectionToggle_Deck tile, Deck deck)
         {
+            Present(tile, deck);
+        }
+
+        public void Present(SelectionToggle_Deck tile, Deck deck = null)
+        {
             if (tile == null || tile.index == 0) return;
+            if (deck == null && Program.instance != null && Program.instance.deckSelector != null)
+            {
+                var ui = Program.instance.deckSelector.GetUI<DeckSelectorUI>();
+                if (ui != null && ui.decks != null) ui.decks.TryGetValue(tile.deckName, out deck);
+            }
             var choice = UltraDeckArchetype.Choose(deck, tile.deckName);
             Archetype = choice.archetype ?? "";
             CardId = choice.cardId;
-            Debug.Log("ULTRA_DECK_COVER name=" + tile.deckName + " id=" + (deck != null ? deck.deckId : "") + " archetype=" + (Archetype.Length > 0 ? Archetype : "(fallback)") + " card=" + CardId);
+            Debug.Log("ULTRA_DECK_COVER name=" + tile.deckName
+                + " majority=" + (Archetype.Length > 0 ? Archetype : "(none)")
+                + " representative=" + CardId
+                + " cards=" + choice.copies);
+            bool pending = HasCards(deck) && choice.cardId <= 0;
+            if (pending && misses < 8)
+            {
+                misses++;
+                Retry(tile, deck).Forget();
+            }
+            else if (!pending) misses = 0;
+            var body = Find("Body") as RectTransform;
+            if (body == null) return;
+            if (body.GetComponent<RectMask2D>() == null) body.gameObject.AddComponent<RectMask2D>();
+            var caseImage = Find("DeckImage") != null ? Find("DeckImage").GetComponent<Image>() : null;
+            var name = Find("TextDeckName") != null ? Find("TextDeckName").GetComponent<TMP_Text>() : null;
+            if (name == null && Find("Deck name") != null) name = Find("Deck name").GetComponent<TMP_Text>();
+            UltraDeckPlate.Compose(body, caseImage, name, deck, tile.deckName);
+            var chrome = body.Find("Ultra deck plate");
+            if (chrome != null) chrome.gameObject.SetActive(false);
+            Retire("Deck cover");
+            Retire("Deck cover shade");
+            if (caseImage != null)
+            {
+                caseImage.gameObject.SetActive(true);
+                caseImage.enabled = true;
+                var shell = Find("DeckCaseIcon");
+                if (shell != null && !caseImage.transform.IsChildOf(shell)) shell.gameObject.SetActive(false);
+            }
+            foreach (string fan in new[] { "CardPos0", "CardPos1", "CardPos2", "IconAddDeck" })
+            {
+                var part = Find(fan);
+                if (part != null) part.gameObject.SetActive(false);
+            }
             if (shownDeck != tile.deckName)
             {
                 shownDeck = tile.deckName;
                 entered = false;
             }
             if (!entered) Enter(tile.index);
-            if (CardId > 0 && (requested != CardId || !HasArt))
-                BeginLoad(CardId, tile.destroyCancellationToken);
             PlaceBadge(transform);
+        }
+
+        static bool HasCards(Deck deck)
+        {
+            if (deck == null) return false;
+            return (deck.Main != null && deck.Main.Count > 0) || (deck.Extra != null && deck.Extra.Count > 0) || (deck.Side != null && deck.Side.Count > 0);
+        }
+
+        void Retire(string objectName)
+        {
+            var part = Find(objectName);
+            if (part != null) part.gameObject.SetActive(false);
+        }
+
+        async UniTaskVoid Retry(SelectionToggle_Deck tile, Deck deck)
+        {
+            try
+            {
+                await UniTask.Delay(300, cancellationToken: tile != null ? tile.destroyCancellationToken : destroyCancellationToken);
+                if (this != null) Apply(tile, deck);
+            }
+            catch (OperationCanceledException) { }
         }
 
         void OnEnable()
         {
-            if (CardId > 0 && !HasArt)
-                BeginLoad(CardId, destroyCancellationToken);
             PlaceBadge(transform);
         }
 
-        void BeginLoad(int id, CancellationToken token)
+        void BeginLoad(CancellationToken token)
         {
-            requested = id;
-            Load(id, ++loadSerial, token).Forget();
+            requested = queue.Length > 0 ? queue[0] : CardId;
+            Load(++loadSerial, token).Forget();
         }
 
         void Enter(int index)
@@ -187,29 +365,58 @@ namespace MDPro3.UI.ServantUI
             group.DOFade(1f, 0.3f).SetDelay(delay).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
         }
 
-        async UniTaskVoid Load(int id, int serial, CancellationToken token)
+        async UniTaskVoid Load(int serial, CancellationToken token)
         {
+            int[] ids = queue != null && queue.Length > 0 ? queue : CardId > 0 ? new[] { CardId } : Array.Empty<int>();
             try
             {
                 Texture2D texture = null;
-                for (int attempt = 0; attempt < 3 && texture == null; attempt++)
+                int used = 0;
+                bool cropped = false;
+                for (int index = 0; index < ids.Length && texture == null; index++)
                 {
-                    if (attempt > 0)
-                        await UniTask.Delay(160, cancellationToken: token);
-                    texture = await CardImageLoader.LoadArtAsync(id, false, token);
+                    int id = ids[index];
+                    if (id <= 0) continue;
+                    int tries = index == 0 ? 3 : 1;
+                    CoverArt found = default;
+                    for (int attempt = 0; attempt < tries && found.texture == null; attempt++)
+                    {
+                        if (attempt > 0)
+                            await UniTask.Delay(160, cancellationToken: token);
+                        found = await UltraDeckArchetype.Illustration(id, token);
+                    }
+                    if (found.texture != null)
+                    {
+                        texture = found.texture;
+                        used = id;
+                        cropped = !found.cached;
+                    }
                 }
-                if (this == null || id != CardId || serial != loadSerial)
+                if (this == null || serial != loadSerial)
                 {
-                    if (texture != null) CardImageLoader.ReleaseArt(id);
+                    ReleaseHeld(texture, used, cropped);
                     return;
                 }
                 if (texture == null)
                 {
-                    if (requested == id) requested = 0;
+                    requested = 0;
                     return;
                 }
-                if (loaded != 0 && loaded != id) CardImageLoader.ReleaseArt(loaded);
-                loaded = id;
+                CardId = used;
+                ownArt = cropped;
+                if (cropped)
+                {
+                    if (loaded != 0) CardImageLoader.ReleaseArt(loaded);
+                    loaded = 0;
+                    if (owned != null && owned != texture) UnityEngine.Object.Destroy(owned);
+                    owned = texture;
+                }
+                else
+                {
+                    if (owned != null) { UnityEngine.Object.Destroy(owned); owned = null; }
+                    if (loaded != 0 && loaded != used) CardImageLoader.ReleaseArt(loaded);
+                    loaded = used;
+                }
                 EnsureArt();
                 if (art == null) return;
                 art.color = Color.white;
@@ -220,11 +427,11 @@ namespace MDPro3.UI.ServantUI
             }
             catch (OperationCanceledException)
             {
-                if (serial == loadSerial && requested == id) requested = 0;
+                if (serial == loadSerial) requested = 0;
             }
             catch (Exception e)
             {
-                if (serial == loadSerial && requested == id) requested = 0;
+                if (serial == loadSerial) requested = 0;
                 Debug.LogWarning("Deck cover: " + e.Message);
             }
         }
@@ -405,7 +612,15 @@ namespace MDPro3.UI.ServantUI
 
         void OnDestroy()
         {
+            if (owned != null) UnityEngine.Object.Destroy(owned);
             if (loaded != 0) CardImageLoader.ReleaseArt(loaded);
+        }
+
+        internal static void ReleaseHeld(Texture2D texture, int id, bool cropped)
+        {
+            if (texture == null) return;
+            if (cropped) UnityEngine.Object.Destroy(texture);
+            else if (id > 0) CardImageLoader.ReleaseArt(id);
         }
     }
 
@@ -432,13 +647,78 @@ namespace MDPro3.UI.ServantUI
         }
     }
 
+    // Accent-tinted fill used until archetype art is ready, and whenever a deck has no art.
+    public sealed class UltraDeckFallback : UltraMesh
+    {
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            UltraTheme.Changed += OnTheme;
+        }
+
+        protected override void OnDisable()
+        {
+            UltraTheme.Changed -= OnTheme;
+            base.OnDisable();
+        }
+
+        void OnTheme()
+        {
+            SetVerticesDirty();
+        }
+
+        protected override void OnPopulateMesh(VertexHelper vh)
+        {
+            vh.Clear();
+            var r = rectTransform.rect;
+            if (r.width < 4f || r.height < 4f) return;
+            Color accent = UltraTheme.Accent;
+            Color top = Color.Lerp(new Color(0.06f, 0.07f, 0.11f, 1f), accent, 0.62f);
+            Color bottom = Color.Lerp(new Color(0.03f, 0.035f, 0.05f, 1f), accent, 0.16f);
+            int n = vh.currentVertCount;
+            vh.AddVert(new Vector3(r.xMin, r.yMin), bottom, Vector2.zero);
+            vh.AddVert(new Vector3(r.xMax, r.yMin), bottom, Vector2.zero);
+            vh.AddVert(new Vector3(r.xMax, r.yMax), top, Vector2.zero);
+            vh.AddVert(new Vector3(r.xMin, r.yMax), top, Vector2.zero);
+            vh.AddTriangle(n, n + 1, n + 2);
+            vh.AddTriangle(n, n + 2, n + 3);
+            Color dot = new Color(1f, 1f, 1f, 0.07f);
+            const float step = 28f;
+            const float radius = 3.1f;
+            int row = 0;
+            for (float y = r.yMin + 16f; y < r.yMax - 8f; y += step, row++)
+            {
+                float shift = (row % 2) * step * 0.5f;
+                for (float x = r.xMin + 14f + shift; x < r.xMax - 8f; x += step)
+                {
+                    int i = vh.currentVertCount;
+                    vh.AddVert(new Vector3(x, y - radius), dot, Vector2.zero);
+                    vh.AddVert(new Vector3(x + radius, y), dot, Vector2.zero);
+                    vh.AddVert(new Vector3(x, y + radius), dot, Vector2.zero);
+                    vh.AddVert(new Vector3(x - radius, y), dot, Vector2.zero);
+                    vh.AddTriangle(i, i + 1, i + 2);
+                    vh.AddTriangle(i, i + 2, i + 3);
+                }
+            }
+        }
+    }
+
     // Archetype art sits behind a chosen deck case. The case and the name stay in front.
     public sealed class UltraDeckBackdrop : MonoBehaviour
     {
         public static readonly Color BackdropInk = new Color(0.65f, 0.65f, 0.65f, 1f);
+        public bool ArtVisible => art != null && art.enabled && art.texture != null && art.color.a > 0.45f;
+        public bool FallbackVisible => fallback != null && fallback.enabled && fallback.gameObject.activeInHierarchy;
+        public RectTransform ArtRect => artRect;
+        public RectTransform FallbackRect => fallbackRect;
         RawImage art;
-        RectTransform artRect, shadeRect;
+        UltraDeckFallback fallback;
+        RectTransform artRect, shadeRect, fallbackRect;
+        Texture2D owned;
+        Tween fade;
+        int[] queue = Array.Empty<int>();
         int loaded, requested, serial, misses;
+        bool ownArt, revealed;
         Vector2 fitted;
 
         public static void Apply(RectTransform plate, Deck deck, string deckName)
@@ -451,26 +731,29 @@ namespace MDPro3.UI.ServantUI
 
         public void Show(Deck deck, string deckName)
         {
+            Ensure();
             var choice = UltraDeckArchetype.Choose(deck, deckName);
+            queue = choice.candidates ?? Array.Empty<int>();
             if (choice.cardId <= 0)
             {
+                ClearArt();
                 bool pending = deck != null && ((deck.Main != null && deck.Main.Count > 0) || (deck.Extra != null && deck.Extra.Count > 0));
                 if (pending && misses < 8)
                 {
                     misses++;
                     Retry(deck, deckName).Forget();
                 }
-                else Hide();
                 return;
             }
             misses = 0;
-            if (shadeRect != null) shadeRect.gameObject.SetActive(true);
-            if (requested == choice.cardId && art != null && art.texture != null && art.enabled)
+            if (requested == choice.cardId && ArtVisible)
             {
                 Stack();
                 return;
             }
-            Load(choice.cardId, ++serial, destroyCancellationToken).Forget();
+            ClearArt();
+            requested = choice.cardId;
+            Load(++serial, destroyCancellationToken).Forget();
         }
 
         async UniTaskVoid Retry(Deck deck, string deckName)
@@ -483,58 +766,126 @@ namespace MDPro3.UI.ServantUI
             catch (OperationCanceledException) { }
         }
 
-        void Hide()
+        void ClearArt()
         {
-            requested = 0;
-            if (art != null) art.enabled = false;
-            if (shadeRect != null) shadeRect.gameObject.SetActive(false);
+            fade?.Kill();
+            revealed = false;
+            fitted = Vector2.zero;
+            if (art == null) return;
+            art.DOKill();
+            var ink = BackdropInk;
+            ink.a = 0f;
+            art.color = ink;
+            art.texture = null;
+            art.enabled = false;
+            art.uvRect = new Rect(0f, 0f, 1f, 1f);
         }
 
-        async UniTaskVoid Load(int id, int ticket, CancellationToken token)
+        void Hide()
         {
-            requested = id;
+            ClearArt();
+            requested = 0;
+        }
+
+        async UniTaskVoid Load(int ticket, CancellationToken token)
+        {
+            int[] ids = queue != null && queue.Length > 0 ? queue : Array.Empty<int>();
+            int first = ids.Length > 0 ? ids[0] : 0;
+            requested = first;
             try
             {
                 Texture2D texture = null;
-                for (int attempt = 0; attempt < 3 && texture == null; attempt++)
+                int used = 0;
+                bool cropped = false;
+                for (int index = 0; index < ids.Length && texture == null; index++)
                 {
-                    if (attempt > 0) await UniTask.Delay(160, cancellationToken: token);
-                    texture = await CardImageLoader.LoadArtAsync(id, false, token);
+                    int id = ids[index];
+                    if (id <= 0) continue;
+                    int tries = index == 0 ? 3 : 1;
+                    CoverArt found = default;
+                    for (int attempt = 0; attempt < tries && found.texture == null; attempt++)
+                    {
+                        if (attempt > 0) await UniTask.Delay(160, cancellationToken: token);
+                        found = await UltraDeckArchetype.Illustration(id, token);
+                    }
+                    if (found.texture != null)
+                    {
+                        texture = found.texture;
+                        used = id;
+                        cropped = !found.cached;
+                    }
                 }
                 if (this == null || ticket != serial)
                 {
-                    if (texture != null) CardImageLoader.ReleaseArt(id);
+                    UltraDeckCover.ReleaseHeld(texture, used, cropped);
                     return;
                 }
                 if (texture == null)
                 {
-                    if (requested == id) requested = 0;
+                    if (requested == first) requested = 0;
                     return;
                 }
-                if (loaded != 0 && loaded != id) CardImageLoader.ReleaseArt(loaded);
-                loaded = id;
+                if (cropped)
+                {
+                    if (loaded != 0) CardImageLoader.ReleaseArt(loaded);
+                    loaded = 0;
+                    if (owned != null && owned != texture) UnityEngine.Object.Destroy(owned);
+                    owned = texture;
+                    ownArt = true;
+                }
+                else
+                {
+                    if (owned != null) { UnityEngine.Object.Destroy(owned); owned = null; }
+                    ownArt = false;
+                    if (loaded != 0 && loaded != used) CardImageLoader.ReleaseArt(loaded);
+                    loaded = used;
+                }
                 Ensure();
-                art.color = BackdropInk;
+                fade?.Kill();
+                revealed = false;
+                fitted = Vector2.zero;
+                art.DOKill();
+                var ink = BackdropInk;
+                ink.a = 0f;
+                art.color = ink;
+                art.uvRect = new Rect(0f, 0f, 1f, 1f);
                 art.texture = texture;
                 art.enabled = true;
-                fitted = Vector2.zero;
                 if (shadeRect != null) shadeRect.gameObject.SetActive(true);
                 Stack();
             }
             catch (OperationCanceledException)
             {
-                if (ticket == serial && requested == id) requested = 0;
+                if (ticket == serial && requested == first) requested = 0;
             }
             catch (Exception e)
             {
-                if (ticket == serial && requested == id) requested = 0;
+                if (ticket == serial && requested == first) requested = 0;
                 Debug.LogWarning("Deck backdrop: " + e.Message);
             }
         }
 
         void Ensure()
         {
-            if (art != null) return;
+            if (fallback == null)
+            {
+                var plate = new GameObject("Deck fallback", typeof(RectTransform));
+                plate.layer = gameObject.layer;
+                fallbackRect = plate.GetComponent<RectTransform>();
+                fallbackRect.SetParent(transform, false);
+                fallbackRect.anchorMin = Vector2.zero;
+                fallbackRect.anchorMax = Vector2.one;
+                fallbackRect.offsetMin = fallbackRect.offsetMax = Vector2.zero;
+                UltraUi.EnsureRenderer(plate);
+                fallback = plate.AddComponent<UltraDeckFallback>();
+                fallback.raycastTarget = false;
+                fallback.color = Color.white;
+            }
+            if (art != null)
+            {
+                Stack();
+                return;
+            }
             var host = new GameObject("Deck backdrop", typeof(RectTransform));
             host.layer = gameObject.layer;
             artRect = host.GetComponent<RectTransform>();
@@ -545,7 +896,10 @@ namespace MDPro3.UI.ServantUI
             UltraUi.EnsureRenderer(host);
             art = host.AddComponent<RawImage>();
             art.raycastTarget = false;
-            art.color = BackdropInk;
+            var hidden = BackdropInk;
+            hidden.a = 0f;
+            art.color = hidden;
+            art.enabled = false;
             var shadeObject = new GameObject("Deck backdrop shade", typeof(RectTransform));
             shadeObject.layer = gameObject.layer;
             shadeRect = shadeObject.GetComponent<RectTransform>();
@@ -563,21 +917,45 @@ namespace MDPro3.UI.ServantUI
         {
             Stack();
             if (art == null || art.texture == null || !art.enabled) return;
-            art.color = BackdropInk;
             var size = art.rectTransform.rect.size;
-            if (size.x < 8f || size.y < 8f || size == fitted) return;
-            UltraDeckCover.FitFace(art, art.texture);
-            fitted = size;
+            if (size.x < 8f || size.y < 8f) return;
+            if (size != fitted)
+            {
+                UltraDeckCover.FitFace(art, art.texture);
+                fitted = size;
+            }
+            if (!revealed) Reveal();
+        }
+
+        void Reveal()
+        {
+            revealed = true;
+            fade?.Kill();
+            var ink = BackdropInk;
+            ink.a = 0f;
+            art.color = ink;
+            fade = DOTween.To(() => art != null ? art.color.a : 0f, value =>
+            {
+                if (art == null) return;
+                var color = BackdropInk;
+                color.a = value;
+                art.color = color;
+            }, 1f, 0.28f).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
         }
 
         void Stack()
         {
-            if (artRect != null && artRect.GetSiblingIndex() != 0) artRect.SetSiblingIndex(0);
-            if (shadeRect != null && shadeRect.GetSiblingIndex() != 1) shadeRect.SetSiblingIndex(1);
+            int index = 0;
+            if (fallbackRect != null && fallbackRect.GetSiblingIndex() != index) fallbackRect.SetSiblingIndex(index);
+            if (fallbackRect != null) index++;
+            if (artRect != null && artRect.GetSiblingIndex() != index) artRect.SetSiblingIndex(index);
+            if (artRect != null) index++;
+            if (shadeRect != null && shadeRect.GetSiblingIndex() != index) shadeRect.SetSiblingIndex(index);
         }
 
         void OnDestroy()
         {
+            if (owned != null) UnityEngine.Object.Destroy(owned);
             if (loaded != 0) CardImageLoader.ReleaseArt(loaded);
         }
     }
@@ -660,6 +1038,7 @@ namespace MDPro3.UI.ServantUI
             if (nameLabel.transform.parent != plate) nameLabel.transform.SetParent(plate, false);
             Silence(nameLabel.gameObject);
             if (caseImage != null) Silence(caseImage.gameObject);
+            if (plate.GetComponent<RectMask2D>() == null) plate.gameObject.AddComponent<RectMask2D>();
             EnsureBadge(plate);
             Apply();
         }
@@ -712,20 +1091,26 @@ namespace MDPro3.UI.ServantUI
                 var rect = nameLabel.rectTransform;
                 rect.anchorMin = rect.anchorMax = new Vector2(1f, 0f);
                 rect.pivot = new Vector2(1f, 0f);
-                float nameW = Mathf.Max(96f, width - 16f - caseW - 36f);
-                rect.sizeDelta = new Vector2(nameW, 32f);
-                rect.anchoredPosition = new Vector2(-14f, 16f);
+                float nameW = width - 16f - caseW - 28f;
+                if (nameW < 72f) nameW = Mathf.Max(48f, width - 28f);
+                nameW = Mathf.Min(nameW, width - 28f);
+                rect.sizeDelta = new Vector2(nameW, 44f);
+                rect.anchoredPosition = new Vector2(-14f, 14f);
                 nameLabel.enableAutoSizing = false;
-                nameLabel.fontSize = 18f;
+                nameLabel.fontSize = 16f;
                 nameLabel.color = Color.white;
                 nameLabel.alignment = TextAlignmentOptions.BottomRight;
-                nameLabel.textWrappingMode = TextWrappingModes.NoWrap;
-                nameLabel.overflowMode = TextOverflowModes.Overflow;
+                nameLabel.textWrappingMode = TextWrappingModes.Normal;
+                nameLabel.overflowMode = TextOverflowModes.Ellipsis;
+                nameLabel.maxVisibleLines = 2;
                 nameLabel.raycastTarget = false;
                 UltraTheme.Style(nameLabel, true, 0.5f);
-                nameLabel.fontSize = 18f;
+                nameLabel.fontSize = 16f;
                 nameLabel.enableAutoSizing = false;
                 nameLabel.fontStyle = FontStyles.Normal;
+                nameLabel.textWrappingMode = TextWrappingModes.Normal;
+                nameLabel.overflowMode = TextOverflowModes.Ellipsis;
+                nameLabel.maxVisibleLines = 2;
                 rect.SetAsLastSibling();
             }
             PlaceBadge(width);
@@ -749,6 +1134,14 @@ namespace MDPro3.UI.ServantUI
         void EnsureBadge(RectTransform plate)
         {
             if (badge != null) return;
+            for (int i = 0; i < plate.childCount; i++)
+            {
+                var child = plate.GetChild(i);
+                if (child.name != "Deck format badge") continue;
+                badge = child.GetComponent<UltraChrome>();
+                badgeLabel = child.GetComponentInChildren<TextMeshProUGUI>(true);
+                if (badge != null && badgeLabel != null) return;
+            }
             var badgeObject = new GameObject("Deck format badge", typeof(RectTransform));
             badgeObject.layer = gameObject.layer;
             var rect = badgeObject.GetComponent<RectTransform>();

@@ -84,6 +84,12 @@ namespace MDPro3.UI
 
             _ = RefreshDeckCaseAsync();
             UltraDeckFace.Bind(this);
+            if (index != 0)
+            {
+                var cover = GetComponent<UltraDeckCover>();
+                if (cover == null) cover = gameObject.AddComponent<UltraDeckCover>();
+                cover.Present(this);
+            }
 
             refreshed = false;
             if (pickuping)
@@ -145,9 +151,6 @@ namespace MDPro3.UI
             UltraTheme.Style(formatBadgeLabel, true, 12f);
             UltraTheme.Repair(formatBadgeLabel, true);
             formatBadgeLabel.color = ink;
-            var cover = GetComponent<UltraDeckCover>();
-            if (cover == null) cover = gameObject.AddComponent<UltraDeckCover>();
-            cover.Apply(this, deck);
             formatBadgeLabel.fontSize = 20;
             formatBadge.rectTransform.sizeDelta = new Vector2(Mathf.Max(88f, 18f * label.Length + 28f), 38f);
             formatBadge.gameObject.SetActive(true);
