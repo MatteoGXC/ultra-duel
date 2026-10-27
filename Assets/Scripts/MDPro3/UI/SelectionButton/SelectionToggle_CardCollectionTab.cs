@@ -19,7 +19,10 @@ namespace MDPro3.UI
 
         private void Start()
         {
-            if (Program.instance.deckEditor.GetUI<DeckEditorUI>().CardCollectionView.defaultArea == area)
+            var editor = Program.instance != null ? Program.instance.deckEditor : null;
+            var ui = editor != null ? editor.GetUI<DeckEditorUI>() : null;
+            if (ui == null || ui.CardCollectionView == null) return;
+            if (ui.CardCollectionView.defaultArea == area)
                 SetToggleOn();
         }
 

@@ -91,6 +91,14 @@ namespace MDPro3
             buildersLoaded = true;
         }
 
+        static void RepairBuilderFonts(CardBuilder builder)
+        {
+            if (builder == null) return;
+            var labels = builder.GetComponentsInChildren<TMP_Text>(true);
+            for (int i = 0; i < labels.Length; i++)
+                UI.ServantUI.UltraTheme.Repair(labels[i], false);
+        }
+
         private CardBuilder ocgBuilder;
         private CardBuilder rdBuilder;
 
@@ -110,6 +118,7 @@ namespace MDPro3
                 if (rdBuilder != null)
                     rdBuilder.gameObject.SetActive(false);
                 ocgBuilder.gameObject.SetActive(true);
+                RepairBuilderFonts(ocgBuilder);
                 return ocgBuilder;
             }
             else
@@ -119,6 +128,7 @@ namespace MDPro3
                 if (ocgBuilder != null)
                     ocgBuilder.gameObject.SetActive(false);
                 rdBuilder.gameObject.SetActive(true);
+                RepairBuilderFonts(rdBuilder);
                 return rdBuilder;
             }
         }
