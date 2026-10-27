@@ -51,10 +51,11 @@ namespace MDPro3.UI.ServantUI
                 if(!DuelFormat.Validate(deck,"Your Deck"))return;
                 var room=await UltraServices.Request("/rooms","POST",new{format=DuelFormat.Genesys?"Genesys":"TCG",cap=DuelFormat.PointCap,mode=friendRoomMode});
                 ShowFriendTables(room);
-            }),.70f,.53f,.25f,.085f,24,UltraTier.Hero);
-            var deckPlate=HomeRect("Deck plate",modal,.69f,.115f,.27f,.39f);HomePanel(deckPlate,UltraTheme.Panel);
+            }),.70f,.545f,.25f,.085f,24,UltraTier.Hero);
+            var deckHeading=HomeText(modal,"YOUR DECK",18,UltraTheme.Fg,.70f,.482f,.25f,.05f);
+            if(deckHeading!=null) deckHeading.alignment=TextAlignmentOptions.Center;
+            var deckPlate=HomeRect("Deck plate",modal,.70f,.115f,.25f,.355f);HomePanel(deckPlate,UltraTheme.Panel);
             var deckEdge=HomeRect("Deck accent",deckPlate,0f,.18f,.014f,.64f);HomePanel(deckEdge,UltraTheme.Accent);deckEdge.gameObject.AddComponent<UltraAccentFill>();
-            HomeText(deckPlate,"YOUR DECK",17,Muted,.08f,.80f,.84f,.16f);
             var caseImage=HomeRect("Deck case",deckPlate,.28f,.26f,.44f,.52f).gameObject.AddComponent<Image>();caseImage.preserveAspect=true;LoadRoomDeckCase(deckPlate,caseImage).Forget();
             var deckName=HomeText(deckPlate,Config.GetConfigDeckName(),20,Color.white,.06f,.04f,.88f,.18f);if(deckName!=null)deckName.alignment=TextAlignmentOptions.Center;
             SmallButton(modal,"REFRESH",()=>Run(async()=>{await UltraServices.Refresh();ShowRooms(false);}),.045f,.025f,.20f,.075f,20);

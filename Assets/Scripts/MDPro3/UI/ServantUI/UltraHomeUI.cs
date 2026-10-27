@@ -569,9 +569,8 @@ namespace MDPro3.UI.ServantUI
         void OpenLogin()
         {
             OpenModal("DUELIST ACCESS","Sign in to connect with your friends and keep your account rewards.","login");WideModal();
-            var card=HomeRect("Access terminal",modal,.18f,.16f,.64f,.66f);HomePanel(card,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.96f));
+            var card=HomeRect("Access terminal",modal,.18f,.05f,.64f,.68f);HomePanel(card,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.96f));
             HomeText(card,"ULTRA DUEL",39,Color.white,.08f,.78f,.84f,.14f).alignment=TextAlignmentOptions.Center;
-            HomePanel(HomeRect("Access rule",card,.08f,.74f,.84f,.004f),Muted);
             bool remembered=!string.IsNullOrEmpty(UltraServices.Token);
             var name=Input(card,"Username (3–24 characters)",.56f);
             var password=Input(card,"Password (8 characters minimum)",remembered?.42f:.40f,true);

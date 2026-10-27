@@ -111,7 +111,8 @@ namespace MDPro3.UI.ServantUI
                 else {names+="Open seat";if(required!=4)allReady=false;}
                 if(p!=null)allReady&=p.ready;
                 if(i<required-1)names+=required==4?(i==1?"   VS   ":" / "):"                 VS                 ";
-                if(i<roomPlayers.Count){tableAvatars[i].sprite=roomPlayers[i].GetAvatar().sprite;tableAvatars[i].preserveAspect=true;tableAvatars[i].color=p==null?new Color(.28f,.28f,.32f):Color.white;if(i==RoomServant.SelfType && p!=null)LoadLocalFace(tableAvatars[i]).Forget();}
+                if(i<roomPlayers.Count){tableAvatars[i].sprite=roomPlayers[i].GetAvatar().sprite;tableAvatars[i].preserveAspect=true;tableAvatars[i].color=p==null?new Color(.28f,.28f,.32f):Color.white;}
+                if(i==RoomServant.SelfType && p!=null)LoadLocalFace(tableAvatars[i]).Forget();
             }
             tableLabel.text=names;membersLabel.text=DuelFormat.DisplayName+" / "+(required==4?"DUOS / ":"")+count+" / "+required+" Members";
             deckLabel.text=Config.GetConfigDeckName();
