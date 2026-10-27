@@ -8,7 +8,6 @@ using MDPro3.Utility;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Tween = DG.Tweening.Tween;
 
 namespace MDPro3.UI.ServantUI
 {
@@ -124,14 +123,13 @@ namespace MDPro3.UI.ServantUI
         }
     }
 
-    public sealed class UltraDeckCover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
+    public sealed class UltraDeckCover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         public bool HasArt => art != null && art.texture != null && art.enabled;
         public string Archetype { get; private set; } = "";
         public int CardId { get; private set; }
         RawImage art;
-        RectTransform artRect, body;
-        Tween zoom;
+        RectTransform artRect, shadeRect, body;
         int loaded, requested, loadSerial;
         string shownDeck;
         bool entered, hot, parkedReady;
@@ -237,17 +235,17 @@ namespace MDPro3.UI.ServantUI
             host.layer = gameObject.layer;
             artRect = host.GetComponent<RectTransform>();
             artRect.SetParent(body, false);
-            artRect.SetAsFirstSibling();
             artRect.anchorMin = Vector2.zero;
             artRect.anchorMax = Vector2.one;
             artRect.offsetMin = artRect.offsetMax = Vector2.zero;
-            artRect.localScale = Vector3.one * 1.02f;
+            artRect.localScale = Vector3.one;
             UltraUi.EnsureRenderer(host);
             art = host.AddComponent<RawImage>();
+            art.color = Color.white;
             art.raycastTarget = false;
             var shadeObject = new GameObject("Deck cover shade", typeof(RectTransform));
             shadeObject.layer = gameObject.layer;
-            var shadeRect = shadeObject.GetComponent<RectTransform>();
+            shadeRect = shadeObject.GetComponent<RectTransform>();
             shadeRect.SetParent(body, false);
             shadeRect.SetSiblingIndex(artRect.GetSiblingIndex() + 1);
             shadeRect.anchorMin = Vector2.zero;
@@ -297,7 +295,24 @@ namespace MDPro3.UI.ServantUI
 
         void LateUpdate()
         {
+            StackLayers();
             PlaceBadge(transform);
+        }
+
+        // Plate, then art, then the bottom shade, then the format tag. The plate used to sit on top of the picture.
+        void StackLayers()
+        {
+            if (artRect == null || body == null) return;
+            Transform plate = null;
+            for (int i = 0; i < body.childCount; i++)
+                if (body.GetChild(i).name == "Ultra deck plate") { plate = body.GetChild(i); break; }
+            int artAt = plate != null ? plate.GetSiblingIndex() + 1 : 0;
+            if (artRect.GetSiblingIndex() != artAt) artRect.SetSiblingIndex(artAt);
+            if (shadeRect != null)
+            {
+                int shadeAt = artRect.GetSiblingIndex() + 1;
+                if (shadeRect.GetSiblingIndex() != shadeAt) shadeRect.SetSiblingIndex(shadeAt);
+            }
         }
 
         static void Cover(RawImage image, Texture texture)
@@ -330,34 +345,23 @@ namespace MDPro3.UI.ServantUI
         public void OnPointerEnter(PointerEventData eventData)
         {
             hot = true;
-            if (artRect == null) return;
-            zoom?.Kill();
-            zoom = artRect.DOScale(1.1f, 1.4f).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
-            Lift(8f);
-        }
-
-        public void OnPointerMove(PointerEventData eventData)
-        {
-            if (!hot || body == null) return;
-            var cam = eventData.enterEventCamera ?? eventData.pressEventCamera;
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(body, eventData.position, cam, out var local)) return;
-            float x = body.rect.width > 1f ? local.x / body.rect.width : 0f;
-            float y = body.rect.height > 1f ? local.y / body.rect.height : 0f;
-            body.localRotation = Quaternion.Euler(-y * 10f, x * 12f, 0f);
-            if (artRect != null) artRect.anchoredPosition = artRest + new Vector2(-x * 14f, -y * 14f);
+            if (art != null)
+                art.DOColor(new Color(1.08f, 1.08f, 1.08f, 1f), UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
+            if (body != null)
+                body.DOScale(1.03f, UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
+            Lift(10f);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
             hot = false;
+            if (art != null)
+                art.DOColor(Color.white, UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
             if (artRect != null)
-            {
-                zoom?.Kill();
-                zoom = artRect.DOScale(1.02f, 1.4f).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
                 artRect.DOAnchorPos(artRest, UltraMotion.Med).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
-            }
             if (body != null)
             {
+                body.DOScale(1f, UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
                 body.DOLocalRotate(Vector3.zero, UltraMotion.Fast).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
                 Lift(0f);
             }
@@ -372,7 +376,6 @@ namespace MDPro3.UI.ServantUI
 
         void OnDestroy()
         {
-            zoom?.Kill();
             if (loaded != 0) CardImageLoader.ReleaseArt(loaded);
         }
     }

@@ -184,7 +184,10 @@ namespace MDPro3.UI.ServantUI
         }
         void ShowShop(string category,int page)
         {
-            OpenModal("SHOP","Accessories", "shop");WideModal();
+            bool refresh=modalPage=="shop";
+            int direction=!refresh || page>shopPage || category!=shopCategory ? 1 : -1;
+            shopCategory=category;shopPage=page;
+            OpenModal("SHOP","Accessories", "shop", !refresh);WideModal();
             var shopWallet=HomeRect("Gem wallet",modal,.68f,.865f,.27f,.09f);
             var shopGems=FillGemPlate(shopWallet);
             if(shopGems!=null)shopGems.text=UltraAccount.Gems.ToString("N0");
@@ -206,6 +209,7 @@ namespace MDPro3.UI.ServantUI
             {
                 var item=list[page*5+i];bool owned=UltraAccount.Owns(item);
                 var card=HomeRect(item.Name,modal,.25f+i*.142f,.19f,.132f,.385f);
+                if(refresh) ShopArrive(card, i, direction);
                 HomePanel(card,new Color(.055f,.075f,.13f,.94f));
                 var trim=card.GetComponent<UltraChrome>();trim.rim=2;trim.rimColor=owned?Lime:new Color(.38f,.36f,.65f);
                 HomePanel(HomeRect("Banner",card,.02f,.90f,.96f,.09f),owned?new Color(.2f,.42f,.1f):new Color(.22f,.12f,.37f));
@@ -216,11 +220,21 @@ namespace MDPro3.UI.ServantUI
                 SmallButton(card,owned?(item.kind=="Frame"?"EQUIP":"OWNED"):item.price+" GEMS",()=>Run(async()=>{await UltraAccount.Buy(item);ShowShop(category,page);modalStatus.text=item.Name+" unlocked.";}),.06f,.045f,.88f,.16f,18).interactable=!owned || item.kind=="Frame";
             }
             if(category=="Field")HomeText(modal,"Each set includes the duel field, mate base and field parts.",17,Muted,.25f,.17f,.70f,.04f);
-            SmallButton(modal,"<",()=>ShowShop(category,page-1),.25f,.02f,.10f,.07f,24).interactable=page>0;
+            ArrowButton(modal,0,()=>ShowShop(category,page-1),.25f,.02f,.10f,.07f).interactable=page>0;
             HomeText(modal,(page+1)+" / "+pages,18,Muted,.39f,.02f,.14f,.07f);
-            SmallButton(modal,">",()=>ShowShop(category,page+1),.55f,.02f,.10f,.07f,24).interactable=page+1<pages;
+            ArrowButton(modal,1,()=>ShowShop(category,page+1),.55f,.02f,.10f,.07f).interactable=page+1<pages;
             modalStatus.rectTransform.anchorMin=new Vector2(.25f,.105f);modalStatus.rectTransform.anchorMax=new Vector2(.95f,.155f);
             modalStatus.text="Earn gems in duels and the free pass. Starter accessories stay available.";
+        }
+        void ShopArrive(RectTransform card, int index, int direction)
+        {
+            var group=card.gameObject.AddComponent<CanvasGroup>();
+            group.alpha=0f;
+            var end=card.anchoredPosition;
+            card.anchoredPosition=end+new Vector2(direction*48f,0f);
+            float delay=index*0.035f;
+            card.DOAnchorPos(end,.22f).SetDelay(delay).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(card.gameObject);
+            group.DOFade(1f,.22f).SetDelay(delay).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(card.gameObject);
         }
         async UniTask LoadProduct(Image image,UltraAccount.Product item)
         {

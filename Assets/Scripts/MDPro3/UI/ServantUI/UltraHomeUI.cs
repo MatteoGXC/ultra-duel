@@ -40,7 +40,10 @@ namespace MDPro3.UI.ServantUI
         Button ownerAdminButton;
         readonly List<GameObject> hiddenHome = new List<GameObject>();
         bool actionBusy;
+        bool replacingModal;
         string modalPage;
+        int shopPage;
+        string shopCategory = "Mate";
 
         void OnDestroy()
         {
@@ -256,12 +259,23 @@ namespace MDPro3.UI.ServantUI
         {
             var rect = HomeRect(title, modal, x, y, w, h);
             var chrome = rect.gameObject.AddComponent<UltraChrome>();
-            chrome.cut = UltraCut.Small;
+            chrome.cut = UltraCut.Panel;
             chrome.color = UltraTheme.PanelSolid;
             chrome.rim = 1.5f;
             chrome.followThemeRim = true;
             chrome.raycastTarget = true;
-            var mark = HomeRect("Icon", rect, .045f, .26f, .14f, .48f);
+            var edge = HomeRect("Card accent", rect, 0f, .2f, .012f, .6f);
+            var edgeImage = edge.gameObject.AddComponent<Image>();
+            edgeImage.color = UltraTheme.Accent;
+            edgeImage.raycastTarget = false;
+            edge.gameObject.AddComponent<UltraAccentFill>();
+            var well = HomeRect("Icon well", rect, .045f, .18f, .16f, .64f);
+            var wellChrome = well.gameObject.AddComponent<UltraChrome>();
+            wellChrome.cut = UltraCut.Small;
+            wellChrome.color = UltraTheme.Ink;
+            wellChrome.rim = 0f;
+            wellChrome.raycastTarget = false;
+            var mark = HomeRect("Icon", well, .18f, .18f, .64f, .64f);
             var glyph = mark.gameObject.AddComponent<UltraLineIcon>();
             glyph.kind = icon;
             glyph.color = UltraTheme.Accent;
@@ -376,12 +390,8 @@ namespace MDPro3.UI.ServantUI
             var dying = overlay;
             var page = modal;
             foreach(var child in hiddenHome)if(child!=null)child.SetActive(true);hiddenHome.Clear();
-            if(Program.instance.currentServant==Program.instance.menu && Program.instance.ui_!=null && Program.instance.ui_.wallpaper!=null)
-            {
-                Program.instance.ui_.wallpaper.gameObject.SetActive(true);
-                if(!fromStart) Program.instance.ui_.wallpaper.alpha=1;
-            }
             overlay=modal=null;modalStatus=null;modalPage=null;
+            if(!replacingModal) ApplyWallpaper();
             if(dying!=null)
             {
                 var group = dying.GetComponent<CanvasGroup>();
@@ -456,9 +466,20 @@ namespace MDPro3.UI.ServantUI
             rect.DOAnchorPos(end, 0.6f).SetEase(UltraMotion.Ease).SetUpdate(true);
             wall.DOFade(1f, 0.4f).SetEase(UltraMotion.Ease).SetUpdate(true);
         }
-        RectTransform OpenModal(string title,string subtitle,string page)
+        void ApplyWallpaper()
         {
-            CloseModal();modalPage=page;
+            if(Program.instance==null || Program.instance.ui_==null) return;
+            bool home=Program.instance.currentServant==Program.instance.menu;
+            bool show=home && (string.IsNullOrEmpty(modalPage) || modalPage=="start");
+            if(show) UIManager.ShowWallpaper(0.25f);
+            else UIManager.HideWallpaper(0.2f);
+        }
+        RectTransform OpenModal(string title,string subtitle,string page,bool replay=true)
+        {
+            replacingModal=true;
+            CloseModal();
+            replacingModal=false;
+            modalPage=page;
             overlay=HomeRect("Modal overlay",ultraHome,0,0,1,1);
             var shade=overlay.gameObject.AddComponent<Image>();shade.color=new Color(0,0,0,.45f);
             bool drawer=page=="friends" || page=="friend";
@@ -482,11 +503,33 @@ namespace MDPro3.UI.ServantUI
             var sub=HomeText(modal,subtitle,18,Muted,hx,.785f,.80f,.05f);
             UltraTheme.StyleEmphasis(sub,8f);
             SquareBack(modal,CloseModal,drawer?.03f:.012f,.875f,drawer?.09f:.045f,.075f);
-            modal.gameObject.AddComponent<UltraPageTransition>();
+            if(replay) modal.gameObject.AddComponent<UltraPageTransition>();
             modalStatus=HomeText(modal,"",16,Lime,.045f,.02f,.90f,.04f);
             modalStatus.gameObject.AddComponent<UltraAccentText>();
             if(modal.GetComponent<CanvasGroup>()==null)modal.gameObject.AddComponent<CanvasGroup>();
+            ApplyWallpaper();
             return modal;
+        }
+        Button ArrowButton(Transform parent, int facing, UnityAction action, float x, float y, float w, float h)
+        {
+            var rect = HomeRect(facing == 0 ? "Previous" : "Next", parent, x, y, w, h);
+            var chrome = rect.gameObject.AddComponent<UltraChrome>();
+            chrome.cut = UltraCut.Small;
+            chrome.color = UltraTheme.PanelSolid;
+            chrome.rim = 1.5f;
+            chrome.followThemeRim = true;
+            chrome.raycastTarget = true;
+            var mark = HomeRect("Arrow", rect, .28f, .22f, .44f, .56f);
+            var arrow = mark.gameObject.AddComponent<UltraChevron>();
+            arrow.facing = facing;
+            arrow.color = UltraTheme.Fg;
+            arrow.raycastTarget = false;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = chrome;
+            button.transition = Selectable.Transition.None;
+            button.onClick.AddListener(action);
+            rect.gameObject.AddComponent<UltraThemedButton>().Configure(UltraTier.Secondary);
+            return button;
         }
         TMP_InputField Input(Transform parent,string placeholder,float y,bool password=false)
         {
@@ -518,14 +561,15 @@ namespace MDPro3.UI.ServantUI
         void OpenLogin()
         {
             OpenModal("DUELIST ACCESS","Sign in to connect with your friends and keep your account rewards.","login");WideModal();
-            var card=HomeRect("Access terminal",modal,.25f,.13f,.50f,.66f);HomePanel(card,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.94f));
-            HomeText(card,"ULTRA DUEL",39,Color.white,.06f,.78f,.88f,.13f).alignment=TextAlignmentOptions.Center;
-            HomePanel(HomeRect("Access rule",card,.06f,.74f,.88f,.004f),Muted);
-            var name=Input(card,"Username (3–24 characters)",.57f);
-            var password=Input(card,"Password (8 characters minimum)",.39f,true);
-            SmallButton(card,"SIGN IN",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();}),.055f,.15f,.42f,.13f,23,UltraTier.Hero);
-            SmallButton(card,"CREATE ACCOUNT",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,true);password.text="";ShowFriends();}),.525f,.15f,.42f,.13f,23);
-            HomeText(modal,"Connect with friends, see who is online, and join private TCG or Genesys rooms.",20,Muted,.055f,.13f,.89f,.11f);
+            var card=HomeRect("Access terminal",modal,.18f,.16f,.64f,.66f);HomePanel(card,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.96f));
+            HomeText(card,"ULTRA DUEL",39,Color.white,.08f,.78f,.84f,.14f).alignment=TextAlignmentOptions.Center;
+            HomePanel(HomeRect("Access rule",card,.08f,.74f,.84f,.004f),Muted);
+            var name=Input(card,"Username (3–24 characters)",.56f);
+            var password=Input(card,"Password (8 characters minimum)",.40f,true);
+            SmallButton(card,"SIGN IN",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();}),.08f,.22f,.40f,.12f,23,UltraTier.Primary);
+            SmallButton(card,"CREATE ACCOUNT",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,true);password.text="";ShowFriends();}),.52f,.22f,.40f,.12f,23);
+            var blurb=HomeText(card,"Connect with friends, see who is online, and join private TCG or Genesys rooms.",18,Muted,.08f,.05f,.84f,.12f);
+            if(blurb!=null){blurb.alignment=TextAlignmentOptions.Center;blurb.textWrappingMode=TextWrappingModes.Normal;}
         }
         RectTransform ScrollArea()
         {
@@ -678,9 +722,9 @@ namespace MDPro3.UI.ServantUI
         {
             friendRoomMode=mode;
             if(string.IsNullOrEmpty(UltraServices.Token)){OpenLogin();return;}
-            ShowRooms();Run(async()=>{await UltraServices.Refresh();if(modalPage=="rooms")ShowRooms();});
+            ShowRooms();Run(async()=>{await UltraServices.Refresh();if(modalPage=="rooms")ShowRooms(false);});
         }
-        void ShowRooms() { BuildRoomBrowser(); }
+        void ShowRooms(bool replay = true) { BuildRoomBrowser(replay); }
         void OpenPass()
         {
             OpenModal("DUEL PASS","Earn rewards by winning duels · No paid tier","pass");
@@ -790,21 +834,22 @@ namespace MDPro3.UI.ServantUI
                 UltraTheme.StyleEmphasis(perf,4f);
                 perf.gameObject.AddComponent<UltraPerfReadout>();
             }
-            const float x0=.045f,gap=.018f,w=.291f,h=.115f;
-            SectionLabel(modal,"DISPLAY",x0,.735f);
-            SectionLabel(modal,"PLAY",x0+(w+gap)*2,.735f);
-            MenuCard("SETTINGS",()=>{CloseModal();OnSetting();},0,x0,.60f,w,h);
-            MenuCard("WALLPAPER",OpenWallpaper,1,x0+w+gap,.60f,w,h);
-            MenuCard("MATCH HISTORY",OpenHistory,2,x0+(w+gap)*2,.60f,w,h);
-            MenuCard("CUT-INS",()=>{CloseModal();OnCutin();},3,x0,.46f,w,h);
-            MenuCard("GUI SCALE",OpenGuiScale,4,x0+w+gap,.46f,w,h,UltraGuiScale.Percent+"%");
-            MenuCard("PUZZLES",()=>{CloseModal();OnPuzzle();},5,x0+(w+gap)*2,.46f,w,h);
-            SectionLabel(modal,"SYSTEM",x0,.40f);
-            MenuCard("CHECK UPDATES",OpenUpdates,6,x0,.255f,w,h);
-            MenuCard("SAVE BACKUPS",OpenBackups,7,x0+w+gap,.255f,w,h);
-            MenuCard("GITHUB",()=>Application.OpenURL(UltraServices.Repository),8,x0+(w+gap)*2,.255f,w,h);
-            SectionLabel(modal,"SESSION",x0+w+gap,.175f);
-            SmallButton(modal,"EXIT",()=>{CloseModal();OnExit();},x0+w+gap,.04f,w*2f+gap,.105f,26);
+            SectionLabel(modal,"DISPLAY",.04f,.80f);
+            MenuCard("SETTINGS",()=>{CloseModal();OnSetting();},0,.04f,.615f,.30f,.145f);
+            MenuCard("WALLPAPER",OpenWallpaper,1,.355f,.615f,.30f,.145f);
+            MenuCard("CUT-INS",()=>{CloseModal();OnCutin();},3,.04f,.455f,.30f,.145f);
+            MenuCard("GUI SCALE",OpenGuiScale,4,.355f,.455f,.30f,.145f,UltraGuiScale.Percent+"%");
+            SectionLabel(modal,"PLAY",.675f,.80f);
+            MenuCard("MATCH HISTORY",OpenHistory,2,.675f,.585f,.285f,.17f);
+            MenuCard("PUZZLES",()=>{CloseModal();OnPuzzle();},5,.675f,.40f,.285f,.17f);
+            SectionLabel(modal,"SYSTEM",.04f,.385f);
+            MenuCard("CHECK UPDATES",OpenUpdates,6,.04f,.22f,.30f,.145f);
+            MenuCard("SAVE BACKUPS",OpenBackups,7,.355f,.22f,.30f,.145f);
+            MenuCard("GITHUB",()=>Application.OpenURL(UltraServices.Repository),8,.675f,.22f,.285f,.145f);
+            SectionLabel(modal,"SESSION",.04f,.155f);
+            float sessionW=(.30f+.015f+.30f-.015f)*.5f;
+            SmallButton(modal,"SIGN OUT",()=>Run(async()=>{await UltraServices.SignOut();OpenLogin();}),.04f,.03f,sessionW,.10f,22);
+            SmallButton(modal,"EXIT",()=>{CloseModal();OnExit();},.04f+sessionW+.015f,.03f,sessionW,.10f,22,UltraTier.Danger);
         }
     }
 }

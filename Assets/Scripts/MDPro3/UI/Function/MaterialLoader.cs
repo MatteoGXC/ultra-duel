@@ -207,41 +207,44 @@ namespace MDPro3
 
         public static Material GetCardMaterial(int code, bool use3D = false)
         {
-            Material mat = null;
-
+            Material normalSource = use3D ? cardMatNormal3D : cardMatNormalUI;
             if (code < 0)
-            {
-                mat = UnityEngine.Object.Instantiate(use3D ? cardMatNormal3D : cardMatNormalUI);
-                return mat;
-            }
+                return normalSource == null ? null : UnityEngine.Object.Instantiate(normalSource);
 
             bool rushDuel = CardRenderer.NeedRushDuelStyle(code);
             var rarity = CardRarity.GetRarity(code);
             var overFrame = CardImageLoader.GetOverFrame(code);
 
+            Material source = null;
             switch (rarity)
             {
                 case CardRarity.Rarity.Normal:
-                    mat = UnityEngine.Object.Instantiate(use3D ? cardMatNormal3D : cardMatNormalUI);
+                    source = normalSource;
                     break;
                 case CardRarity.Rarity.Shine:
-                    //mat = UnityEngine.Object.Instantiate(overFrame == null ? rushDuel ? use3D ? cardMatShineRD3D : cardMatShineRDUI : use3D ? cardMatShine3D : cardMatShineUI
-                    mat = UnityEngine.Object.Instantiate(overFrame == null ? rushDuel ? use3D ? cardMatShineOFRD3D : cardMatShineOFRDUI : use3D ? cardMatShineOF3D : cardMatShineOFUI
-                        : rushDuel ? use3D ? cardMatShineOFRD3D : cardMatShineOFRDUI : use3D ? cardMatShineOF3D : cardMatShineOFUI);
+                    source = overFrame == null ? rushDuel ? use3D ? cardMatShineOFRD3D : cardMatShineOFRDUI : use3D ? cardMatShineOF3D : cardMatShineOFUI
+                        : rushDuel ? use3D ? cardMatShineOFRD3D : cardMatShineOFRDUI : use3D ? cardMatShineOF3D : cardMatShineOFUI;
                     break;
                 case CardRarity.Rarity.Royal:
-                    mat = UnityEngine.Object.Instantiate(overFrame == null ? rushDuel ? use3D ? cardMatRoyalRD3D : cardMatRoyalRDUI : use3D ? cardMatRoyal3D : cardMatRoyalUI
-                        : rushDuel ? use3D ? cardMatRoyalOFRD3D : cardMatRoyalOFRDUI : use3D ? cardMatRoyalOF3D : cardMatRoyalOFUI);
+                    source = overFrame == null ? rushDuel ? use3D ? cardMatRoyalRD3D : cardMatRoyalRDUI : use3D ? cardMatRoyal3D : cardMatRoyalUI
+                        : rushDuel ? use3D ? cardMatRoyalOFRD3D : cardMatRoyalOFRDUI : use3D ? cardMatRoyalOF3D : cardMatRoyalOFUI;
                     break;
                 case CardRarity.Rarity.Gold:
-                    mat = UnityEngine.Object.Instantiate(overFrame == null ? rushDuel ? use3D ? cardMatGoldRD3D : cardMatGoldRDUI : use3D ? cardMatGold3D : cardMatGoldUI
-                        : rushDuel ? use3D ? cardMatGoldOFRD3D : cardMatGoldOFRDUI : use3D ? cardMatGoldOF3D : cardMatGoldOFUI);
+                    source = overFrame == null ? rushDuel ? use3D ? cardMatGoldRD3D : cardMatGoldRDUI : use3D ? cardMatGold3D : cardMatGoldUI
+                        : rushDuel ? use3D ? cardMatGoldOFRD3D : cardMatGoldOFRDUI : use3D ? cardMatGoldOF3D : cardMatGoldOFUI;
                     break;
                 case CardRarity.Rarity.Millennium:
-                    mat = UnityEngine.Object.Instantiate(overFrame == null ? rushDuel ? use3D ? cardMatMillenniumRD3D : cardMatMillenniumRDUI : use3D ? cardMatMillennium3D : cardMatMillenniumUI
-                        : rushDuel ? use3D ? cardMatMillenniumOFRD3D : cardMatMillenniumOFRDUI : use3D ? cardMatMillenniumOF3D : cardMatMillenniumOFUI);
+                    source = overFrame == null ? rushDuel ? use3D ? cardMatMillenniumRD3D : cardMatMillenniumRDUI : use3D ? cardMatMillennium3D : cardMatMillenniumUI
+                        : rushDuel ? use3D ? cardMatMillenniumOFRD3D : cardMatMillenniumOFRDUI : use3D ? cardMatMillenniumOF3D : cardMatMillenniumOFUI;
                     break;
             }
+
+            // Shine and royal sources are often missing. Instantiating a null material left the art window on the loading texture.
+            if (source == null) source = normalSource;
+            if (source == null) return null;
+            Material mat = UnityEngine.Object.Instantiate(source);
+            if (rarity != CardRarity.Rarity.Normal && source == normalSource)
+                return mat;
 
             if (rarity != CardRarity.Rarity.Normal)
             {

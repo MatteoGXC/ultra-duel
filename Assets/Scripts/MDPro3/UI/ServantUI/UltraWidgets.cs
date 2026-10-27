@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using DG.Tweening;
+using MDPro3.UI.Popup;
 using MDPro3.UI;
 using TMPro;
 using UnityEngine;
@@ -100,17 +102,34 @@ namespace MDPro3.UI.ServantUI
         {
             vh.Clear();
             var r = rectTransform.rect;
-            Vector2 a = new Vector2(0.16f, 0.28f);
-            Vector2 b = new Vector2(-0.18f, 0f);
-            Vector2 c = new Vector2(0.16f, -0.28f);
+            if (r.width < 2f || r.height < 2f) return;
+            // Facing 0 points left: a shaft plus a head, not a bare chevron.
             float rot = facing == 1 ? 180f : facing == 2 ? 90f : facing == 3 ? -90f : 0f;
-            a = Spin(a, rot); b = Spin(b, rot); c = Spin(c, rot);
-            a = r.center + Vector2.Scale(a, r.size);
-            b = r.center + Vector2.Scale(b, r.size);
-            c = r.center + Vector2.Scale(c, r.size);
-            float width = Mathf.Min(r.width, r.height) * 0.11f;
-            Stroke(vh, a, b, width, color);
-            Stroke(vh, b, c, width, color);
+            Vector2 U(float x, float y)
+            {
+                var p = Spin(new Vector2(x - 0.5f, y - 0.5f), rot);
+                return r.center + new Vector2(p.x * r.width, p.y * r.height);
+            }
+            Quad(vh, U(0.40f, 0.42f), U(0.84f, 0.42f), U(0.84f, 0.58f), U(0.40f, 0.58f), color);
+            Tri(vh, U(0.14f, 0.50f), U(0.50f, 0.80f), U(0.50f, 0.20f), color);
+        }
+        static void Quad(VertexHelper vh, Vector2 a, Vector2 b, Vector2 c, Vector2 d, Color tint)
+        {
+            int i = vh.currentVertCount;
+            vh.AddVert(a, tint, Vector2.zero);
+            vh.AddVert(b, tint, Vector2.zero);
+            vh.AddVert(c, tint, Vector2.zero);
+            vh.AddVert(d, tint, Vector2.zero);
+            vh.AddTriangle(i, i + 1, i + 2);
+            vh.AddTriangle(i, i + 2, i + 3);
+        }
+        static void Tri(VertexHelper vh, Vector2 a, Vector2 b, Vector2 c, Color tint)
+        {
+            int i = vh.currentVertCount;
+            vh.AddVert(a, tint, Vector2.zero);
+            vh.AddVert(b, tint, Vector2.zero);
+            vh.AddVert(c, tint, Vector2.zero);
+            vh.AddTriangle(i, i + 1, i + 2);
         }
         static Vector2 Spin(Vector2 p, float degrees)
         {
@@ -241,7 +260,7 @@ namespace MDPro3.UI.ServantUI
                 nudgeRest = nudge.anchoredPosition;
                 UltraTheme.Style(label, true, tier == UltraTier.Hero ? 4f : 10f);
             }
-            if (tier == UltraTier.Hero) EnsureStripe();
+            if (tier == UltraTier.Hero && rule) EnsureStripe();
             if (tier == UltraTier.Hero && rule) EnsureUnderline();
             ready = true;
             Apply();
@@ -1115,9 +1134,10 @@ namespace MDPro3.UI.ServantUI
             else label = existing.GetComponent<TextMeshProUGUI>();
             if (label == null) return;
             label.text = subtitle;
-            UltraTheme.StyleEmphasis(label, 14f);
-            label.fontSize = 18f;
-            label.color = UltraTheme.Mute;
+            UltraTheme.Style(label, true, 1f);
+            label.fontSize = 22f;
+            label.fontStyle = FontStyles.Bold;
+            label.color = UltraTheme.Fg;
         }
     }
 
@@ -1447,5 +1467,104 @@ namespace MDPro3.UI.ServantUI
             Paint();
         }
         void Paint() { UltraEditorChrome.Apply(this); }
+    }
+
+    // The format picker is a stock popup. Repaint it while it is open so the lime selection pill cannot come back.
+    public sealed class UltraFormatChrome : MonoBehaviour
+    {
+        bool ruled;
+        void OnEnable() { StartCoroutine(PaintLoop()); }
+        IEnumerator PaintLoop()
+        {
+            while (isActiveAndEnabled)
+            {
+                Paint();
+                yield return new WaitForEndOfFrame();
+            }
+        }
+        void Paint()
+        {
+            EnsureHeader();
+            foreach (var image in GetComponentsInChildren<Image>(true))
+            {
+                if (image is UltraChrome) continue;
+                if (image.GetComponentInParent<SelectionToggle_PopupSelectionItem>() != null) continue;
+                var c = image.color;
+                if (Lime(c))
+                {
+                    image.sprite = null;
+                    image.color = UltraTheme.Accent;
+                    continue;
+                }
+                var rect = image.rectTransform.rect;
+                if (rect.width > 80f && rect.height > 24f && c.a > 0.35f && c.b > c.r + 0.08f && c.b > 0.18f)
+                    image.color = new Color(UltraTheme.PanelSolid.r, UltraTheme.PanelSolid.g, UltraTheme.PanelSolid.b, c.a);
+            }
+            var current = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            foreach (var item in GetComponentsInChildren<SelectionToggle_PopupSelectionItem>(true))
+            {
+                bool on = item.isOn || (current != null && (current.transform == item.transform || current.transform.IsChildOf(item.transform)));
+                foreach (var image in item.GetComponentsInChildren<Image>(true))
+                {
+                    if (image is UltraChrome) continue;
+                    string n = image.gameObject.name;
+                    bool plate = n is "Out" or "Base" or "Background" or "Image";
+                    bool ornament = n is "SelectCursor" or "Cursor" or "Checkmark" or "Hover" or "Over" or "Corner";
+                    if (ornament || Lime(image.color))
+                    {
+                        image.sprite = null;
+                        image.color = on ? UltraTheme.Accent : Color.clear;
+                        continue;
+                    }
+                    if (plate)
+                        image.color = on ? UltraTheme.Accent : UltraTheme.PanelSolid;
+                }
+                var label = item.GetComponentInChildren<TMP_Text>(true);
+                if (label == null) continue;
+                label.color = on ? UltraTheme.AccentInk : UltraTheme.Fg;
+                var ink = label.GetComponent<ColorContainerGraphic>();
+                if (ink != null) ink.baseColor = label.color;
+            }
+        }
+        static bool Lime(Color c)
+        {
+            return c.a > 0.2f && c.g > 0.45f && c.g > c.r + 0.12f && c.g > c.b + 0.05f;
+        }
+        void EnsureHeader()
+        {
+            if (ruled) return;
+            Transform title = null;
+            foreach (var t in GetComponentsInChildren<Transform>(true))
+                if (t.name == "TitleArea") { title = t; break; }
+            if (title == null) return;
+            ruled = true;
+            var plateObject = new GameObject("Ultra format header", typeof(RectTransform));
+            plateObject.layer = gameObject.layer;
+            var plate = plateObject.GetComponent<RectTransform>();
+            plate.SetParent(title, false);
+            plate.SetAsFirstSibling();
+            plate.anchorMin = Vector2.zero;
+            plate.anchorMax = Vector2.one;
+            plate.offsetMin = plate.offsetMax = Vector2.zero;
+            UltraUi.EnsureRenderer(plateObject);
+            var chrome = plateObject.AddComponent<UltraChrome>();
+            chrome.cut = UltraCut.Panel;
+            chrome.color = UltraTheme.PanelSolid;
+            chrome.raycastTarget = false;
+            var ruleObject = new GameObject("Ultra header rule", typeof(RectTransform));
+            ruleObject.layer = gameObject.layer;
+            var rule = ruleObject.GetComponent<RectTransform>();
+            rule.SetParent(title, false);
+            rule.anchorMin = new Vector2(0.06f, 0f);
+            rule.anchorMax = new Vector2(0.28f, 0f);
+            rule.pivot = new Vector2(0f, 0f);
+            rule.sizeDelta = new Vector2(0f, 4f);
+            rule.anchoredPosition = new Vector2(0f, 6f);
+            UltraUi.EnsureRenderer(ruleObject);
+            var ink = ruleObject.AddComponent<Image>();
+            ink.color = UltraTheme.Accent;
+            ink.raycastTarget = false;
+            ruleObject.AddComponent<UltraAccentFill>();
+        }
     }
 }

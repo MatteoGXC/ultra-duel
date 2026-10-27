@@ -6,6 +6,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using MDPro3.UI.PropertyOverride;
+using MDPro3.UI.ServantUI;
 
 namespace MDPro3.UI.Popup
 {
@@ -19,6 +20,10 @@ namespace MDPro3.UI.Popup
         protected override void InitializeSelections()
         {
             base.InitializeSelections();
+            string title = args != null && args.Count > 0 ? args[0] : "";
+            if (title.IndexOf("format", StringComparison.OrdinalIgnoreCase) >= 0
+                && GetComponent<UltraFormatChrome>() == null)
+                gameObject.AddComponent<UltraFormatChrome>();
 
             Manager.GetElement<TextMeshProUGUI>("MessageText").text = args[1];
             Manager.GetElement("MessageArea").SetActive(args[1] != string.Empty);

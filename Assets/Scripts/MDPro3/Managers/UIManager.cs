@@ -261,11 +261,13 @@ namespace MDPro3
             return front;
         }
 
+        static Tween wallpaperFade;
         public static void ShowWallpaper(float time)
         {
+            wallpaperFade?.Kill();
             UIManager instance = Program.instance.ui_;
             instance.wallpaper.gameObject.SetActive(true);
-            DOTween.To(() => instance.wallpaper.alpha, x => instance.wallpaper.alpha = x, 1, time);
+            wallpaperFade = DOTween.To(() => instance.wallpaper.alpha, x => instance.wallpaper.alpha = x, 1, time).SetUpdate(true);
             foreach (var p in instance.wallpaper.transform.GetComponentsInChildren<ParticleSystem>(true))
             {
                 p.gameObject.SetActive(true);
@@ -281,8 +283,12 @@ namespace MDPro3
 
         public static void HideWallpaper(float time)
         {
-            DOTween.To(() => Program.instance.ui_.wallpaper.alpha, x => Program.instance.ui_.wallpaper.alpha = x, 0, time).OnComplete(() =>
-                Program.instance.ui_.wallpaper.gameObject.SetActive(false));
+            wallpaperFade?.Kill();
+            var wall = Program.instance.ui_.wallpaper;
+            wallpaperFade = DOTween.To(() => wall.alpha, x => wall.alpha = x, 0, time).SetUpdate(true).OnComplete(() =>
+            {
+                if (wall != null && wall.alpha <= 0.01f) wall.gameObject.SetActive(false);
+            });
             foreach (var p in Program.instance.ui_.wallpaper.transform.GetComponentsInChildren<ParticleSystem>(true))
                 p.gameObject.SetActive(false);
             foreach (var skeleton in Program.instance.ui_.wallpaper.transform.GetComponentsInChildren<SkeletonAnimation>())

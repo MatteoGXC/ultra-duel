@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
 using MDPro3.Servant;
+using MDPro3.UI.ServantUI;
 
 namespace MDPro3.UI
 {
@@ -54,8 +55,9 @@ namespace MDPro3.UI
         {
             if (showing)
             {
-                if(!input.isFocused)
-                    HideWithSound();
+                if (input != null && input.isFocused)
+                    input.DeactivateInputField();
+                HideWithSound();
             }
             else
                 Show();
@@ -63,7 +65,10 @@ namespace MDPro3.UI
 
         public void Show(bool takeOver = true)
         {
+            EnsureClose();
             base.Show();
+            RestyleChat();
+            if (BG != null) BG.blocksRaycasts = false;
             if (Program.instance.currentServant != Program.instance.room
                 && !DeviceInfo.OnMobile())
                 input.Select();
@@ -87,6 +92,66 @@ namespace MDPro3.UI
             if (input.isFocused)
                 return false;
             return base.NeedResponse() || Program.instance.room.showing;
+        }
+
+        void EnsureClose()
+        {
+            if (Window == null || Window.Find("Ultra chat close") != null) return;
+            var close = new GameObject("Ultra chat close", typeof(RectTransform));
+            close.layer = gameObject.layer;
+            var rect = close.GetComponent<RectTransform>();
+            rect.SetParent(Window, false);
+            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.sizeDelta = new Vector2(132f, 44f);
+            rect.anchoredPosition = new Vector2(-18f, -16f);
+            var chrome = close.AddComponent<UltraChrome>();
+            chrome.color = UltraTheme.PanelSolid;
+            chrome.cut = UltraCut.Small;
+            chrome.raycastTarget = true;
+            var button = close.AddComponent<Button>();
+            button.targetGraphic = chrome;
+            button.onClick.AddListener(() =>
+            {
+                if (input != null) input.DeactivateInputField();
+                HideWithSound();
+            });
+            var labelObject = new GameObject("Label", typeof(RectTransform));
+            labelObject.layer = gameObject.layer;
+            var labelRect = labelObject.GetComponent<RectTransform>();
+            labelRect.SetParent(rect, false);
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
+            var label = labelObject.AddComponent<TextMeshProUGUI>();
+            label.text = "CLOSE";
+            label.fontSize = 18f;
+            label.alignment = TextAlignmentOptions.Center;
+            label.color = UltraTheme.Fg;
+            label.raycastTarget = false;
+            if (Program.instance != null && Program.instance.ui_ != null && Program.instance.ui_.tmpFont != null)
+                label.font = Program.instance.ui_.tmpFont;
+        }
+
+        void RestyleChat()
+        {
+            if (Window != null)
+            {
+                var own = Window.GetComponent<Image>();
+                if (own != null) own.color = UltraTheme.PanelSolid;
+                foreach (Transform child in Window)
+                {
+                    if (child.name is not ("Base" or "BG" or "Background" or "Frame" or "Image")) continue;
+                    var image = child.GetComponent<Image>();
+                    if (image != null && image is not UltraChrome)
+                        image.color = UltraTheme.PanelSolid;
+                }
+            }
+            if (BG != null)
+            {
+                var dim = BG.GetComponent<Image>();
+                if (dim != null) dim.color = new Color(0.02f, 0.024f, 0.032f, 0.55f);
+            }
         }
 
         public void OnSend()

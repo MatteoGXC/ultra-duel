@@ -70,7 +70,10 @@ namespace MDPro3.Servant
         {
             base.ApplyShowArrangement(preDepth);
             CoreShowing = 0;
-            Program.instance.ui_.chatPanel.Show(false);
+            if (FromUltraHost)
+                Program.instance.ui_.chatPanel.Hide();
+            else
+                Program.instance.ui_.chatPanel.Show(false);
             OcgCore.handler = Handler;
             if(preDepth != Program.instance.deckSelector.Depth)
                 _ = Program.instance.appearance.LoadSettingAssets();

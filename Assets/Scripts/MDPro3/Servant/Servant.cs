@@ -173,6 +173,9 @@ namespace MDPro3.Servant
                 Program.instance.currentServant == this 
                 && preDepth == -1;
 
+            if (this is not MainMenu && Program.instance != null && Program.instance.ui_ != null)
+                UIManager.HideWallpaper(fromDuel ? 0f : TransitionTime);
+
             if (fromDuel)
             {
                 servantUI.ShowEvent();

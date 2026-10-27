@@ -212,6 +212,7 @@ namespace MDPro3.UI
                     await SetMaterialFloatAsync(normalMat, "_LoadingBlend", 0f, 0.1f, token);
                 else
                     await LoadMatAsync(0.1f, token);
+                RevealCardArt();
                 if (card == null || card.Id != targetCardId || loadId != currentLoadId)
                     return;
 
@@ -223,7 +224,19 @@ namespace MDPro3.UI
             catch (System.Exception e)
             {
                 Debug.LogError($"Load card picture failed: {e.Message}");
+                if (RawImage != null && RawImage.texture != null)
+                    RevealCardArt();
             }
+        }
+
+        void RevealCardArt()
+        {
+            if (RawImage == null || RawImage.texture == null || normalMat == null) return;
+            var current = RawImage.material;
+            if (current != null && current.HasProperty("_LoadingBlend") && current.GetFloat("_LoadingBlend") <= 0.05f)
+                return;
+            normalMat.SetFloat("_LoadingBlend", 0f);
+            RawImage.material = normalMat;
         }
 
         protected async UniTask LoadMatAsync(float fadeTime, CancellationToken token)
@@ -233,6 +246,11 @@ namespace MDPro3.UI
             try
             {
                 tempMat = MaterialLoader.GetCardMaterial(card.Id);
+                if (tempMat == null)
+                {
+                    RevealCardArt();
+                    return;
+                }
 
                 if (cts.Token.IsCancellationRequested || card == null)
                     return;
@@ -245,6 +263,11 @@ namespace MDPro3.UI
             catch (System.OperationCanceledException)
             {
                 // 任务被取消，不做处理
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Card finish material failed, showing the plain card: {e.Message}");
+                RevealCardArt();
             }
         }
 

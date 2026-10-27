@@ -5,6 +5,7 @@ using MDPro3.Net;
 using MDPro3.Servant;
 using Newtonsoft.Json.Linq;
 using TMPro;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 namespace MDPro3.UI.ServantUI
@@ -102,6 +103,7 @@ namespace MDPro3.UI.ServantUI
             }
             foreach(Transform child in Root)if(child!=friendRoom)child.gameObject.SetActive(false);
             friendRoom.gameObject.SetActive(true);friendRoom.SetAsLastSibling();
+            ParkGlobalBack();
             int count=0;string names="";bool allReady=true;
             for(int i=0;i<required;i++)
             {
@@ -109,7 +111,7 @@ namespace MDPro3.UI.ServantUI
                 else {names+="Open seat";if(required!=4)allReady=false;}
                 if(p!=null)allReady&=p.ready;
                 if(i<required-1)names+=required==4?(i==1?"   VS   ":" / "):"                 VS                 ";
-                if(i<roomPlayers.Count){tableAvatars[i].sprite=roomPlayers[i].GetAvatar().sprite;tableAvatars[i].preserveAspect=true;tableAvatars[i].color=p==null?new Color(.28f,.28f,.32f):Color.white;}
+                if(i<roomPlayers.Count){tableAvatars[i].sprite=roomPlayers[i].GetAvatar().sprite;tableAvatars[i].preserveAspect=true;tableAvatars[i].color=p==null?new Color(.28f,.28f,.32f):Color.white;if(i==RoomServant.SelfType && p!=null)LoadLocalFace(tableAvatars[i]).Forget();}
             }
             tableLabel.text=names;membersLabel.text=DuelFormat.DisplayName+" / "+(required==4?"DUOS / ":"")+count+" / "+required+" Members";
             deckLabel.text=Config.GetConfigDeckName();
@@ -118,6 +120,28 @@ namespace MDPro3.UI.ServantUI
             beginButton.GetComponentInChildren<TextMeshProUGUI>().text=uneven?"BEGIN 2v1":"BEGIN DUEL";
             readyButton.interactable=RoomServant.SelfType<required;
             readyButton.GetComponentInChildren<TextMeshProUGUI>().text=RoomServant.SelfType<required && RoomServant.players[RoomServant.SelfType]?.ready==true?"CANCEL":"ENTRY";
+        }
+        void LateUpdate()
+        {
+            if(!RoomServant.FromUltraHost) return;
+            bool live=(friendRoom!=null && friendRoom.gameObject.activeInHierarchy) || (matchRoom!=null && matchRoom.gameObject.activeInHierarchy);
+            if(live) ParkGlobalBack();
+        }
+        static void ParkGlobalBack()
+        {
+            var button=Program.instance!=null && Program.instance.ui_!=null ? Program.instance.ui_.btnExit : null;
+            if(button==null) return;
+            var rect=button.GetComponent<RectTransform>();
+            if(rect==null || rect.anchoredPosition.y>40f) return;
+            rect.DOKill();
+            UIManager.HideExitButton(0f);
+        }
+        async UniTask LoadLocalFace(Image image)
+        {
+            int id=1010001;
+            if(int.TryParse(Config.Get("DuelFace0","1010001"), out int parsed) && parsed>=1010000 && parsed<1030000) id=parsed;
+            var sprite=await Program.items.TryLoadItemIconAsync(id.ToString(), Items.ItemType.Face);
+            if(image!=null && sprite!=null){image.sprite=sprite;image.color=Color.white;}
         }
         void ShowRoomInfo(bool members)
         {
