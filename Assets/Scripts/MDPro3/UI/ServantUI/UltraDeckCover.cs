@@ -279,9 +279,9 @@ namespace MDPro3.UI.ServantUI
                 if (all[i].name == "Deck format badge") { badge = all[i]; break; }
             if (badge == null) return;
             var ray = badge.GetComponent<GraphicRaycaster>();
-            if (ray != null) Object.Destroy(ray);
+            if (ray != null) UnityEngine.Object.Destroy(ray);
             var canvas = badge.GetComponent<Canvas>();
-            if (canvas != null) Object.Destroy(canvas);
+            if (canvas != null) UnityEngine.Object.Destroy(canvas);
             Transform host = tile;
             for (int i = 0; i < all.Length; i++)
                 if (all[i].name == "Body") { host = all[i]; break; }
