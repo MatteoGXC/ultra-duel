@@ -97,7 +97,7 @@ namespace MDPro3.UI.ServantUI
             SmallButton(modal,"REFRESH",()=>OpenFriendTables(id),.69f,.31f,.27f,.09f,21);
             if((int?)room["hostId"]==(int?)UltraServices.State?["id"])
                 SmallButton(modal,"DISBAND ROOM",()=>Run(async()=>{await UltraServices.Request("/rooms/"+id,"DELETE");await UltraServices.Refresh();ShowRooms();}),.69f,.19f,.27f,.09f,21);
-            SmallButton(modal,"ALL FRIEND ROOMS",ShowRooms,.69f,.07f,.27f,.09f,21);
+            SmallButton(modal,"ALL FRIEND ROOMS",()=>ShowRooms(),.69f,.07f,.27f,.09f,21);
         }
         static int CountSeated(JObject room)
         {
