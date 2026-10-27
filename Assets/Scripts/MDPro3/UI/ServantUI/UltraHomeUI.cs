@@ -36,6 +36,7 @@ namespace MDPro3.UI.ServantUI
         TextMeshProUGUI profileLabel, gemLabel, passLabel, updateLabel, friendLabel, modalStatus;
         UltraCountPop gemCount;
         bool homeIntroPlayed;
+        bool launchGate;
         Image profileAccent;
         Button ownerAdminButton;
         readonly List<GameObject> hiddenHome = new List<GameObject>();
@@ -176,7 +177,7 @@ namespace MDPro3.UI.ServantUI
                 RefreshUltraHome();
                 UltraServices.CheckUpdates();
                 var keys = ultraHome.gameObject.AddComponent<UltraHomeKeyboard>(); keys.open = OpenAdmin;
-                if(!Array.Exists(Environment.GetCommandLineArgs(), x => x == "--format-smoke")) ShowGameStart();
+                if(!Array.Exists(Environment.GetCommandLineArgs(), x => x == "--format-smoke")) OpenLaunchLogin();
                 else PlayHomeIntro();
             });
         }
@@ -386,6 +387,8 @@ namespace MDPro3.UI.ServantUI
         {
             if(matchmakingActive)CancelMatchmaking().Forget();
             bool fromStart = modalPage=="start";
+            bool enterHome = launchGate && !replacingModal;
+            if(enterHome) launchGate=false;
             bool homeWasHidden = hiddenHome.Count>0;
             var dying = overlay;
             var page = modal;
@@ -401,7 +404,7 @@ namespace MDPro3.UI.ServantUI
                 rect.DOAnchorPos(rect.anchoredPosition+new Vector2(50f,0f),.25f).SetEase(UltraMotion.Ease).SetUpdate(true);
                 group.DOFade(0f,.25f).SetEase(UltraMotion.Ease).SetUpdate(true).OnComplete(()=>{ if(dying!=null) Destroy(dying.gameObject); });
             }
-            if(fromStart) PlayHomeIntro();
+            if(fromStart || enterHome) PlayHomeIntro();
             else if(homeWasHidden) SlideHome(-70f,.25f);
             RefreshNotificationsHome();
         }
@@ -558,18 +561,38 @@ namespace MDPro3.UI.ServantUI
             ShowFriends();
             Run(async()=>{await UltraServices.Refresh();if(modalPage=="friends")ShowFriends();});
         }
+        void OpenLaunchLogin()
+        {
+            launchGate=true;
+            OpenLogin();
+        }
         void OpenLogin()
         {
             OpenModal("DUELIST ACCESS","Sign in to connect with your friends and keep your account rewards.","login");WideModal();
             var card=HomeRect("Access terminal",modal,.18f,.16f,.64f,.66f);HomePanel(card,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.96f));
             HomeText(card,"ULTRA DUEL",39,Color.white,.08f,.78f,.84f,.14f).alignment=TextAlignmentOptions.Center;
             HomePanel(HomeRect("Access rule",card,.08f,.74f,.84f,.004f),Muted);
+            bool remembered=!string.IsNullOrEmpty(UltraServices.Token);
             var name=Input(card,"Username (3–24 characters)",.56f);
-            var password=Input(card,"Password (8 characters minimum)",.40f,true);
-            SmallButton(card,"SIGN IN",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();}),.08f,.22f,.40f,.12f,23,UltraTier.Primary);
-            SmallButton(card,"CREATE ACCOUNT",()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,true);password.text="";ShowFriends();}),.52f,.22f,.40f,.12f,23);
-            var blurb=HomeText(card,"Connect with friends, see who is online, and join private TCG or Genesys rooms.",18,Muted,.08f,.05f,.84f,.12f);
-            if(blurb!=null){blurb.alignment=TextAlignmentOptions.Center;blurb.textWrappingMode=TextWrappingModes.Normal;}
+            var password=Input(card,"Password (8 characters minimum)",remembered?.42f:.40f,true);
+            if(remembered && !string.IsNullOrEmpty(UltraServices.PlayerName)) name.text=UltraServices.PlayerName;
+            UnityAction signIn=()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();});
+            UnityAction create=()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,true);password.text="";ShowFriends();});
+            if(remembered)
+            {
+                var note=HomeText(card,"Saved session",16,Muted,.08f,.68f,.84f,.05f);
+                if(note!=null) note.alignment=TextAlignmentOptions.Center;
+                SmallButton(card,"CONTINUE",CloseModal,.08f,.28f,.84f,.12f,23,UltraTier.Primary);
+                SmallButton(card,"SIGN IN",signIn,.08f,.14f,.40f,.11f,20);
+                SmallButton(card,"CREATE ACCOUNT",create,.52f,.14f,.40f,.11f,18);
+            }
+            else
+            {
+                SmallButton(card,"SIGN IN",signIn,.08f,.22f,.40f,.12f,23,UltraTier.Primary);
+                SmallButton(card,"CREATE ACCOUNT",create,.52f,.22f,.40f,.12f,23);
+                var blurb=HomeText(card,"Connect with friends, see who is online, and join private TCG or Genesys rooms.",18,Muted,.08f,.05f,.84f,.12f);
+                if(blurb!=null){blurb.alignment=TextAlignmentOptions.Center;blurb.textWrappingMode=TextWrappingModes.Normal;}
+            }
         }
         RectTransform ScrollArea()
         {

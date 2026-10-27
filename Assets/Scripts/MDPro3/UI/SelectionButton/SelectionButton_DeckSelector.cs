@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using MDPro3.Duel.YGOSharp;
+using MDPro3.UI.ServantUI;
 using MDPro3.Utility;
 using System;
 using System.Collections;
@@ -164,6 +165,8 @@ namespace MDPro3.UI
 
                 ImageDeck.sprite = await Program.items.LoadDeckCaseIconAsync(deckCase, "_L_SD");
                 ImageDeck.color = Color.white;
+                ImageDeck.enabled = true;
+                UltraDeckBackdrop.Apply(transform as RectTransform, deck, deckName);
 
                 if (card0 == 0)
                 {

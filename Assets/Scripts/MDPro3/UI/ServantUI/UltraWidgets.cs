@@ -1095,49 +1095,78 @@ namespace MDPro3.UI.ServantUI
         public static void Mark(TMP_Text title, string subtitle)
         {
             if (title == null) return;
-            if (title.transform.Find("Title rule") == null)
+            if (string.IsNullOrEmpty(subtitle))
             {
-                var ruleObject = new GameObject("Title rule", typeof(RectTransform));
-                ruleObject.layer = title.gameObject.layer;
-                var rule = ruleObject.GetComponent<RectTransform>();
-                rule.SetParent(title.transform, false);
-                rule.anchorMin = rule.anchorMax = new Vector2(0f, 0f);
-                rule.pivot = new Vector2(0f, 1f);
-                rule.anchoredPosition = new Vector2(0f, -4f);
-                rule.sizeDelta = new Vector2(84f, 5f);
+                PlaceRule(EnsureRule(title.transform), new Vector2(0f, -6f));
+                return;
+            }
+            var label = EnsureSubtitle(title);
+            if (label == null) return;
+            label.text = subtitle;
+            UltraTheme.Style(label, true, 4f);
+            label.fontSize = 26f;
+            label.fontStyle = FontStyles.Normal;
+            label.color = UltraTheme.Fg;
+            label.outlineWidth = 0f;
+            label.enableAutoSizing = false;
+            var stale = title.transform.Find("Title rule");
+            if (stale != null && stale.parent != label.transform)
+                stale.SetParent(label.transform, false);
+            PlaceRule(EnsureRule(label.transform), new Vector2(0f, -6f));
+        }
+
+        static TextMeshProUGUI EnsureSubtitle(TMP_Text title)
+        {
+            var existing = title.transform.Find("Ultra subtitle");
+            if (existing != null) return existing.GetComponent<TextMeshProUGUI>();
+            var subtitleObject = new GameObject("Ultra subtitle", typeof(RectTransform));
+            subtitleObject.layer = title.gameObject.layer;
+            var rect = subtitleObject.GetComponent<RectTransform>();
+            rect.SetParent(title.transform, false);
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 0f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -8f);
+            rect.sizeDelta = new Vector2(720f, 34f);
+            UltraUi.EnsureRenderer(subtitleObject);
+            var label = subtitleObject.AddComponent<TextMeshProUGUI>();
+            label.fontSize = 26f;
+            label.alignment = TextAlignmentOptions.MidlineLeft;
+            label.raycastTarget = false;
+            label.overflowMode = TextOverflowModes.Overflow;
+            return label;
+        }
+
+        static RectTransform EnsureRule(Transform parent)
+        {
+            var existing = parent.Find("Title rule") as RectTransform;
+            GameObject ruleObject;
+            if (existing == null)
+            {
+                ruleObject = new GameObject("Title rule", typeof(RectTransform));
+                ruleObject.layer = parent.gameObject.layer;
+                existing = ruleObject.GetComponent<RectTransform>();
+                existing.SetParent(parent, false);
                 UltraUi.EnsureRenderer(ruleObject);
                 var ink = ruleObject.AddComponent<Image>();
                 ink.raycastTarget = false;
-                ink.color = UltraTheme.Highlight;
-                ruleObject.AddComponent<UltraHighlightFill>();
             }
-            if (string.IsNullOrEmpty(subtitle)) return;
-            var existing = title.transform.Find("Ultra subtitle");
-            TextMeshProUGUI label;
-            if (existing == null)
-            {
-                var subtitleObject = new GameObject("Ultra subtitle", typeof(RectTransform));
-                subtitleObject.layer = title.gameObject.layer;
-                var rect = subtitleObject.GetComponent<RectTransform>();
-                rect.SetParent(title.transform, false);
-                rect.anchorMin = rect.anchorMax = new Vector2(0f, 0f);
-                rect.pivot = new Vector2(0f, 1f);
-                rect.anchoredPosition = new Vector2(2f, -16f);
-                rect.sizeDelta = new Vector2(640f, 28f);
-                UltraUi.EnsureRenderer(subtitleObject);
-                label = subtitleObject.AddComponent<TextMeshProUGUI>();
-                label.fontSize = 18f;
-                label.alignment = TextAlignmentOptions.MidlineLeft;
-                label.raycastTarget = false;
-                label.overflowMode = TextOverflowModes.Overflow;
-            }
-            else label = existing.GetComponent<TextMeshProUGUI>();
-            if (label == null) return;
-            label.text = subtitle;
-            UltraTheme.Style(label, true, 1f);
-            label.fontSize = 22f;
-            label.fontStyle = FontStyles.Bold;
-            label.color = UltraTheme.Fg;
+            else ruleObject = existing.gameObject;
+            var image = ruleObject.GetComponent<Image>();
+            if (image != null) image.color = UltraTheme.Accent;
+            var highlight = ruleObject.GetComponent<UltraHighlightFill>();
+            if (highlight != null) UnityEngine.Object.Destroy(highlight);
+            if (ruleObject.GetComponent<UltraAccentFill>() == null)
+                ruleObject.AddComponent<UltraAccentFill>();
+            return existing;
+        }
+
+        static void PlaceRule(RectTransform rule, Vector2 position)
+        {
+            if (rule == null) return;
+            rule.anchorMin = rule.anchorMax = new Vector2(0f, 0f);
+            rule.pivot = new Vector2(0f, 1f);
+            rule.anchoredPosition = position;
+            rule.sizeDelta = new Vector2(84f, 5f);
         }
     }
 

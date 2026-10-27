@@ -315,6 +315,12 @@ namespace MDPro3.UI.ServantUI
             }
         }
 
+        public static void Fit(RawImage image, Texture texture)
+        {
+            if (image == null || texture == null) return;
+            Cover(image, texture);
+        }
+
         static void Cover(RawImage image, Texture texture)
         {
             var tile = image.rectTransform;
@@ -400,6 +406,154 @@ namespace MDPro3.UI.ServantUI
             vh.AddVert(new Vector3(x0, y1), top, Vector2.zero);
             vh.AddTriangle(i, i + 1, i + 2);
             vh.AddTriangle(i, i + 2, i + 3);
+        }
+    }
+
+    // Archetype art sits behind a chosen deck case. The case and the name stay in front.
+    public sealed class UltraDeckBackdrop : MonoBehaviour
+    {
+        RawImage art;
+        RectTransform artRect, shadeRect;
+        int loaded, requested, serial, misses;
+        Vector2 fitted;
+
+        public static void Apply(RectTransform plate, Deck deck, string deckName)
+        {
+            if (plate == null) return;
+            var backdrop = plate.GetComponent<UltraDeckBackdrop>();
+            if (backdrop == null) backdrop = plate.gameObject.AddComponent<UltraDeckBackdrop>();
+            backdrop.Show(deck, deckName);
+        }
+
+        public void Show(Deck deck, string deckName)
+        {
+            var choice = UltraDeckArchetype.Choose(deck, deckName);
+            if (choice.cardId <= 0)
+            {
+                bool pending = deck != null && ((deck.Main != null && deck.Main.Count > 0) || (deck.Extra != null && deck.Extra.Count > 0));
+                if (pending && misses < 8)
+                {
+                    misses++;
+                    Retry(deck, deckName).Forget();
+                }
+                else Hide();
+                return;
+            }
+            misses = 0;
+            if (shadeRect != null) shadeRect.gameObject.SetActive(true);
+            if (requested == choice.cardId && art != null && art.texture != null && art.enabled)
+            {
+                Stack();
+                return;
+            }
+            Load(choice.cardId, ++serial, destroyCancellationToken).Forget();
+        }
+
+        async UniTaskVoid Retry(Deck deck, string deckName)
+        {
+            try
+            {
+                await UniTask.Delay(300, cancellationToken: destroyCancellationToken);
+                if (this != null) Show(deck, deckName);
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        void Hide()
+        {
+            requested = 0;
+            if (art != null) art.enabled = false;
+            if (shadeRect != null) shadeRect.gameObject.SetActive(false);
+        }
+
+        async UniTaskVoid Load(int id, int ticket, CancellationToken token)
+        {
+            requested = id;
+            try
+            {
+                Texture2D texture = null;
+                for (int attempt = 0; attempt < 3 && texture == null; attempt++)
+                {
+                    if (attempt > 0) await UniTask.Delay(160, cancellationToken: token);
+                    texture = await CardImageLoader.LoadArtAsync(id, false, token);
+                }
+                if (this == null || ticket != serial)
+                {
+                    if (texture != null) CardImageLoader.ReleaseArt(id);
+                    return;
+                }
+                if (texture == null)
+                {
+                    if (requested == id) requested = 0;
+                    return;
+                }
+                if (loaded != 0 && loaded != id) CardImageLoader.ReleaseArt(loaded);
+                loaded = id;
+                Ensure();
+                art.color = Color.white;
+                art.texture = texture;
+                art.enabled = true;
+                fitted = Vector2.zero;
+                if (shadeRect != null) shadeRect.gameObject.SetActive(true);
+                Stack();
+            }
+            catch (OperationCanceledException)
+            {
+                if (ticket == serial && requested == id) requested = 0;
+            }
+            catch (Exception e)
+            {
+                if (ticket == serial && requested == id) requested = 0;
+                Debug.LogWarning("Deck backdrop: " + e.Message);
+            }
+        }
+
+        void Ensure()
+        {
+            if (art != null) return;
+            var host = new GameObject("Deck backdrop", typeof(RectTransform));
+            host.layer = gameObject.layer;
+            artRect = host.GetComponent<RectTransform>();
+            artRect.SetParent(transform, false);
+            artRect.anchorMin = Vector2.zero;
+            artRect.anchorMax = Vector2.one;
+            artRect.offsetMin = artRect.offsetMax = Vector2.zero;
+            UltraUi.EnsureRenderer(host);
+            art = host.AddComponent<RawImage>();
+            art.raycastTarget = false;
+            art.color = Color.white;
+            var shadeObject = new GameObject("Deck backdrop shade", typeof(RectTransform));
+            shadeObject.layer = gameObject.layer;
+            shadeRect = shadeObject.GetComponent<RectTransform>();
+            shadeRect.SetParent(transform, false);
+            shadeRect.anchorMin = Vector2.zero;
+            shadeRect.anchorMax = Vector2.one;
+            shadeRect.offsetMin = shadeRect.offsetMax = Vector2.zero;
+            UltraUi.EnsureRenderer(shadeObject);
+            var shade = shadeObject.AddComponent<UltraCoverShade>();
+            shade.raycastTarget = false;
+            Stack();
+        }
+
+        void LateUpdate()
+        {
+            Stack();
+            if (art == null || art.texture == null || !art.enabled) return;
+            var size = art.rectTransform.rect.size;
+            if (size.x < 8f || size.y < 8f || size == fitted) return;
+            UltraDeckCover.Fit(art, art.texture);
+            fitted = size;
+        }
+
+        void Stack()
+        {
+            if (artRect != null && artRect.GetSiblingIndex() != 0) artRect.SetSiblingIndex(0);
+            if (shadeRect != null && shadeRect.GetSiblingIndex() != 1) shadeRect.SetSiblingIndex(1);
+        }
+
+        void OnDestroy()
+        {
+            if (loaded != 0) CardImageLoader.ReleaseArt(loaded);
         }
     }
 }

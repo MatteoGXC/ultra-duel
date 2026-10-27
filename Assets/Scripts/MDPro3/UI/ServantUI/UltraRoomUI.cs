@@ -96,7 +96,7 @@ namespace MDPro3.UI.ServantUI
                 var deckPanel=R("Deck preview",friendRoom,.65f,.145f,.25f,.23f);
                 var deckChrome=deckPanel.gameObject.AddComponent<UltraChrome>();deckChrome.color=UltraTheme.Panel;deckChrome.cut=UltraCut.Panel;deckChrome.raycastTarget=true;
                 var deckHit=deckPanel.gameObject.AddComponent<Button>();deckPanel.GetComponent<Image>().raycastTarget=true;deckHit.targetGraphic=deckPanel.GetComponent<Image>();deckHit.onClick.AddListener(OnSelectDeck);deckPanel.gameObject.AddComponent<UltraButtonMotion>();
-                var deckCase=P(R("Deck case",deckPanel,.36f,.31f,.28f,.60f),Color.white);deckCase.preserveAspect=true;LoadFriendDeckCase(deckCase).Forget();
+                var deckCase=P(R("Deck case",deckPanel,.36f,.31f,.28f,.60f),Color.white);deckCase.preserveAspect=true;LoadFriendDeckCase(deckPanel,deckCase).Forget();
                 deckLabel=T(deckPanel,"",21,.04f,.025f,.92f,.22f);deckLabel.alignment=TextAlignmentOptions.Center;
                 T(friendRoom,required==4?"DUOS 2v2 / Seats 1–2 vs 3–4":"Choose ENTRY to ready your deck",20,.11f,.31f,.50f,.055f).alignment=TextAlignmentOptions.Center;
                 B(friendRoom,"CHAT",()=>Program.instance.ui_.chatPanel.Switch(),.11f,.145f,.20f,.065f);
@@ -151,9 +151,16 @@ namespace MDPro3.UI.ServantUI
             T(roomPopup,text,22,.04f,.23f,.92f,.69f);
             B(roomPopup,"CLOSE",()=>{Destroy(roomPopup.gameObject);roomPopup=null;},.30f,.035f,.40f,.17f);
         }
-        async UniTask LoadFriendDeckCase(Image image)
+        async UniTask LoadFriendDeckCase(RectTransform plate, Image image)
         {
-            try{var deck=new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK+Config.GetConfigDeckName()+Program.EXPANSION_YDK);var icon=await Program.items.TryLoadItemIconAsync(deck.Case.ToString(),Items.ItemType.Case);if(image!=null)image.sprite=icon;}
+            string deckName=Config.GetConfigDeckName();
+            try
+            {
+                var deck=new MDPro3.Duel.YGOSharp.Deck(Program.PATH_DECK+deckName+Program.EXPANSION_YDK);
+                var icon=await Program.items.TryLoadItemIconAsync(deck.Case.ToString(),Items.ItemType.Case);
+                if(image!=null){image.sprite=icon;image.enabled=true;image.color=Color.white;}
+                UltraDeckBackdrop.Apply(plate,deck,deckName);
+            }
             catch(Exception e){Debug.LogWarning(e.Message);}
         }
         async void InviteFromRoom()
