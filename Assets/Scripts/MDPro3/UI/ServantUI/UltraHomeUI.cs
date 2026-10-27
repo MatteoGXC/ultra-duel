@@ -37,6 +37,10 @@ namespace MDPro3.UI.ServantUI
         UltraCountPop gemCount;
         bool homeIntroPlayed;
         bool launchGate;
+        RectTransform accessCard, accessRule, accessWelcome;
+        Button accessContinue, accessSwitch, accessSignIn, accessCreate;
+        TMP_InputField accessUser, accessPass;
+        bool accessRemembered;
         Image profileAccent;
         Button ownerAdminButton;
         readonly List<GameObject> hiddenHome = new List<GameObject>();
@@ -563,35 +567,193 @@ namespace MDPro3.UI.ServantUI
         }
         void OpenLaunchLogin()
         {
-            launchGate=true;
-            OpenLogin();
+            ShowAccess(true);
         }
         void OpenLogin()
         {
-            OpenModal("DUELIST ACCESS","Sign in to connect with your friends and keep your account rewards.","login");WideModal();
-            var card=HomeRect("Access terminal",modal,.18f,.05f,.64f,.68f);HomePanel(card,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.96f));
-            HomeText(card,"ULTRA DUEL",39,Color.white,.08f,.78f,.84f,.14f).alignment=TextAlignmentOptions.Center;
-            bool remembered=!string.IsNullOrEmpty(UltraServices.Token);
-            var name=Input(card,"Username (3–24 characters)",.56f);
-            var password=Input(card,"Password (8 characters minimum)",remembered?.42f:.40f,true);
-            if(remembered && !string.IsNullOrEmpty(UltraServices.PlayerName)) name.text=UltraServices.PlayerName;
-            UnityAction signIn=()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,false);password.text="";ShowFriends();});
-            UnityAction create=()=>Run(async()=>{await UltraServices.SignIn(name.text,password.text,true);password.text="";ShowFriends();});
-            if(remembered)
+            ShowAccess(false);
+        }
+        void ShowAccess(bool launch)
+        {
+            replacingModal=true;
+            CloseModal();
+            replacingModal=false;
+            launchGate=launch;
+            modalPage="login";
+            overlay=HomeRect("Modal overlay",ultraHome,0,0,1,1);
+            var shade=overlay.gameObject.AddComponent<Image>();shade.color=Color.clear;shade.raycastTarget=true;
+            foreach(Transform child in ultraHome)if(child!=overlay && child.gameObject.activeSelf){hiddenHome.Add(child.gameObject);child.gameObject.SetActive(false);}
+            var scrim=HomeRect("Page scrim",overlay,0,0,1,1).gameObject.AddComponent<UltraScrim>();
+            scrim.strong=true;scrim.raycastTarget=false;
+            if(!launch) SquareBack(overlay,CloseModal,.028f,.90f,.05f,.08f);
+            accessCard=HomeRect("Access terminal",overlay,.5f,.5f,0f,0f);
+            accessCard.anchorMin=accessCard.anchorMax=new Vector2(.5f,.5f);
+            accessCard.pivot=new Vector2(.5f,.5f);
+            accessCard.anchoredPosition=Vector2.zero;
+            HomePanel(accessCard,new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.98f));
+            modal=accessCard;
+            var wordHost=Px("Wordmark",accessCard,32f,28f,456f,48f);
+            var word=HomeText(wordHost,"ULTRA DUEL",40,Color.white,0f,0f,1f,1f);
+            if(word!=null)
             {
-                var note=HomeText(card,"Saved session",16,Muted,.08f,.68f,.84f,.05f);
-                if(note!=null) note.alignment=TextAlignmentOptions.Center;
-                SmallButton(card,"CONTINUE",CloseModal,.08f,.28f,.84f,.12f,23,UltraTier.Primary);
-                SmallButton(card,"SIGN IN",signIn,.08f,.14f,.40f,.11f,20);
-                SmallButton(card,"CREATE ACCOUNT",create,.52f,.14f,.40f,.11f,18);
+                word.alignment=TextAlignmentOptions.Center;
+                word.enableAutoSizing=false;
+                word.fontSize=40f;
+                UltraTheme.Style(word,true,6f);
+                word.fontSize=40f;
+            }
+            accessRule=Px("Wordmark underline",accessCard,240f,84f,40f,4f);
+            accessRule.anchorMin=accessRule.anchorMax=new Vector2(.5f,1f);
+            accessRule.pivot=new Vector2(.5f,1f);
+            var ruleInk=accessRule.gameObject.AddComponent<Image>();ruleInk.color=UltraTheme.Accent;ruleInk.raycastTarget=false;
+            accessRule.gameObject.AddComponent<UltraAccentFill>();
+            accessRemembered=!string.IsNullOrEmpty(UltraServices.Token);
+            accessWelcome=null;
+            if(accessRemembered)
+            {
+                string who=string.IsNullOrEmpty(UltraServices.PlayerName)?"Duelist":UltraServices.PlayerName;
+                accessWelcome=Px("Welcome row",accessCard,32f,120f,456f,40f);
+                var disc=Px("Profile picture",accessWelcome,0f,2f,36f,36f);
+                UltraUi.EnsureRenderer(disc.gameObject);
+                var maskGraphic=disc.gameObject.AddComponent<UltraCircleGraphic>();
+                maskGraphic.color=UltraTheme.PanelSolid;maskGraphic.raycastTarget=false;
+                var mask=disc.gameObject.AddComponent<Mask>();mask.showMaskGraphic=true;
+                var face=Px("Face",disc,0f,0f,36f,36f);
+                face.anchorMin=Vector2.zero;face.anchorMax=Vector2.one;face.offsetMin=face.offsetMax=Vector2.zero;
+                var portrait=face.gameObject.AddComponent<Image>();portrait.preserveAspect=true;portrait.raycastTarget=false;
+                LoadProfileIcon(portrait,ProfileIconId()).Forget();
+                var hello=HomeText(accessWelcome,"Welcome back, "+who,18,UltraTheme.Fg,.12f,0f,.86f,1f);
+                if(hello!=null){hello.enableAutoSizing=false;hello.fontSize=18f;hello.alignment=TextAlignmentOptions.MidlineLeft;UltraTheme.Style(hello,false);}
+            }
+            accessUser=AccessField("Username (3–24 characters)",false);
+            accessPass=AccessField("Password (8 characters minimum)",true);
+            if(accessRemembered && accessUser!=null && !string.IsNullOrEmpty(UltraServices.PlayerName)) accessUser.text=UltraServices.PlayerName;
+            UnityAction signIn=()=>Run(async()=>{await UltraServices.SignIn(accessUser.text,accessPass.text,false);accessPass.text="";ShowFriends();});
+            UnityAction create=()=>Run(async()=>{await UltraServices.SignIn(accessUser.text,accessPass.text,true);accessPass.text="";ShowFriends();});
+            accessContinue=AccessButton("CONTINUE",CloseModal,UltraTier.Primary,22f);
+            accessSwitch=AccessLink("Use a different account",()=>LayoutAccess(true));
+            accessSignIn=AccessButton("SIGN IN",signIn,UltraTier.Primary,20f);
+            accessCreate=AccessButton("CREATE ACCOUNT",create,UltraTier.Secondary,18f);
+            var statusHost=Px("Access status",overlay,0f,0f,520f,28f);
+            statusHost.anchorMin=statusHost.anchorMax=new Vector2(.5f,.5f);
+            statusHost.pivot=new Vector2(.5f,1f);
+            modalStatus=HomeText(statusHost,"",16,Lime,0f,0f,1f,1f);
+            if(modalStatus!=null){modalStatus.alignment=TextAlignmentOptions.Center;modalStatus.gameObject.AddComponent<UltraAccentText>();}
+            if(accessCard.GetComponent<CanvasGroup>()==null)accessCard.gameObject.AddComponent<CanvasGroup>();
+            LayoutAccess(false);
+            ApplyWallpaper();
+        }
+        void LayoutAccess(bool credentials)
+        {
+            if(accessCard==null) return;
+            const float pad=32f, inner=456f;
+            float y=28f;
+            var word=accessCard.Find("Wordmark") as RectTransform;
+            if(word!=null) Place(word,pad,y,inner,48f);
+            y+=48f+8f;
+            if(accessRule!=null)
+            {
+                accessRule.anchorMin=accessRule.anchorMax=new Vector2(.5f,1f);
+                accessRule.pivot=new Vector2(.5f,1f);
+                accessRule.anchoredPosition=new Vector2(0f,-y);
+                accessRule.sizeDelta=new Vector2(40f,4f);
+            }
+            y+=4f+16f;
+            if(accessWelcome!=null)
+            {
+                accessWelcome.gameObject.SetActive(accessRemembered);
+                if(accessRemembered)
+                {
+                    string who=string.IsNullOrEmpty(UltraServices.PlayerName)?"Duelist":UltraServices.PlayerName;
+                    float textW=Mathf.Clamp(who.Length*10f+150f,180f,380f);
+                    float rowW=36f+12f+textW;
+                    Place(accessWelcome,(520f-rowW)*0.5f,y,rowW,40f);
+                    var hello=accessWelcome.Find("Label") as RectTransform;
+                    if(hello!=null) Place(hello,48f,0f,textW,40f);
+                    y+=40f+20f;
+                }
+            }
+            bool quick=accessRemembered && !credentials;
+            if(accessContinue!=null) accessContinue.gameObject.SetActive(quick);
+            if(accessSwitch!=null) accessSwitch.gameObject.SetActive(quick);
+            if(accessUser!=null) accessUser.gameObject.SetActive(!quick);
+            if(accessPass!=null) accessPass.gameObject.SetActive(!quick);
+            if(accessSignIn!=null) accessSignIn.gameObject.SetActive(!quick);
+            if(accessCreate!=null) accessCreate.gameObject.SetActive(!quick);
+            if(quick)
+            {
+                Place(accessContinue.transform as RectTransform,pad,y,inner,56f);
+                y+=56f+12f;
+                Place(accessSwitch.transform as RectTransform,pad,y,inner,28f);
+                y+=28f+20f;
             }
             else
             {
-                SmallButton(card,"SIGN IN",signIn,.08f,.22f,.40f,.12f,23,UltraTier.Primary);
-                SmallButton(card,"CREATE ACCOUNT",create,.52f,.22f,.40f,.12f,23);
-                var blurb=HomeText(card,"Connect with friends, see who is online, and join private TCG or Genesys rooms.",18,Muted,.08f,.05f,.84f,.12f);
-                if(blurb!=null){blurb.alignment=TextAlignmentOptions.Center;blurb.textWrappingMode=TextWrappingModes.Normal;}
+                Place(accessUser.transform as RectTransform,pad,y,inner,52f);
+                y+=52f+16f;
+                Place(accessPass.transform as RectTransform,pad,y,inner,52f);
+                y+=52f+16f;
+                Place(accessSignIn.transform as RectTransform,pad,y,inner,52f);
+                y+=52f+16f;
+                Place(accessCreate.transform as RectTransform,pad,y,inner,52f);
+                y+=52f+16f;
             }
+            accessCard.sizeDelta=new Vector2(520f,y);
+            if(modalStatus!=null)
+            {
+                var status=modalStatus.rectTransform.parent as RectTransform;
+                if(status!=null)
+                {
+                    status.anchorMin=status.anchorMax=new Vector2(.5f,.5f);
+                    status.pivot=new Vector2(.5f,1f);
+                    status.anchoredPosition=new Vector2(0f,-(y*0.5f+10f));
+                    status.sizeDelta=new Vector2(520f,28f);
+                }
+            }
+        }
+        static void Place(RectTransform rect,float left,float top,float width,float height)
+        {
+            if(rect==null) return;
+            rect.anchorMin=rect.anchorMax=new Vector2(0f,1f);
+            rect.pivot=new Vector2(0f,1f);
+            rect.anchoredPosition=new Vector2(left,-top);
+            rect.sizeDelta=new Vector2(width,height);
+        }
+        TMP_InputField AccessField(string placeholder,bool password)
+        {
+            var rect=Px(placeholder,accessCard,32f,0f,456f,52f);
+            HomePanel(rect,UltraTheme.PanelSolid);
+            rect.GetComponent<Image>().raycastTarget=true;
+            var field=rect.gameObject.AddComponent<TMP_InputField>();
+            var text=HomeText(rect,"",22,UltraTheme.Fg,.04f,.12f,.92f,.76f);UltraTheme.Style(text,false);
+            var hint=HomeText(rect,placeholder,20,Muted,.04f,.12f,.92f,.76f);UltraTheme.Style(hint,false);
+            if(text!=null) text.enableAutoSizing=false;
+            if(hint!=null) hint.enableAutoSizing=false;
+            field.textViewport=rect;field.textComponent=text;field.placeholder=hint;
+            field.characterLimit=password?128:24;
+            field.contentType=password?TMP_InputField.ContentType.Password:TMP_InputField.ContentType.Standard;
+            return field;
+        }
+        Button AccessButton(string text,UnityAction action,UltraTier tier,float size)
+        {
+            var rect=Px(text,accessCard,32f,0f,456f,52f);
+            var image=rect.gameObject.AddComponent<UltraChrome>();image.raycastTarget=true;
+            var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=image;
+            var label=HomeText(rect,text,size,UltraTheme.Fg,.06f,.08f,.88f,.84f);
+            if(label!=null){label.alignment=TextAlignmentOptions.Center;label.enableAutoSizing=false;label.fontSize=size;}
+            var themed=rect.gameObject.AddComponent<UltraThemedButton>();themed.Configure(tier);
+            button.onClick.AddListener(action);
+            return button;
+        }
+        Button AccessLink(string text,UnityAction action)
+        {
+            var rect=Px(text,accessCard,32f,0f,456f,28f);
+            var hit=rect.gameObject.AddComponent<Image>();hit.color=Color.clear;hit.raycastTarget=true;
+            var button=rect.gameObject.AddComponent<Button>();button.targetGraphic=hit;button.transition=Selectable.Transition.None;
+            var label=HomeText(rect,text,16,UltraTheme.Accent,0f,0f,1f,1f);
+            if(label!=null){label.alignment=TextAlignmentOptions.Center;label.enableAutoSizing=false;label.fontSize=16f;label.color=UltraTheme.Accent;UltraTheme.Style(label,false);}
+            button.onClick.AddListener(action);
+            return button;
         }
         RectTransform ScrollArea()
         {

@@ -166,7 +166,8 @@ namespace MDPro3.UI
                 ImageDeck.sprite = await Program.items.LoadDeckCaseIconAsync(deckCase, "_L_SD");
                 ImageDeck.color = Color.white;
                 ImageDeck.enabled = true;
-                UltraDeckBackdrop.Apply(transform as RectTransform, deck, deckName);
+                var body = transform.Find("Body") as RectTransform;
+                UltraDeckPlate.Compose(body != null ? body : transform as RectTransform, ImageDeck, TextDeckName, deck, deckName);
 
                 if (card0 == 0)
                 {
