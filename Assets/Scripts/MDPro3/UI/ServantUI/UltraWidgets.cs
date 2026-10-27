@@ -358,12 +358,24 @@ namespace MDPro3.UI.ServantUI
             var stripe = transform.Find("Hero stripe")?.GetComponent<Image>();
             if (blocked)
             {
+                if (underline != null) underline.gameObject.SetActive(false);
+                if (tier == UltraTier.Primary)
+                {
+                    chrome.cut = UltraCut.Small;
+                    chrome.color = Color.Lerp(UltraTheme.PanelSolid, UltraTheme.Accent, 0.62f);
+                    chrome.rim = 1.5f;
+                    chrome.rimColor = UltraTheme.Accent;
+                    chrome.followThemeRim = false;
+                    if (label != null) label.color = UltraTheme.AccentInk;
+                    if (stripe != null) stripe.color = UltraTheme.Accent;
+                    chrome.SetVerticesDirty();
+                    return;
+                }
                 chrome.color = UltraTheme.PanelSolid;
                 chrome.rim = 1f;
                 chrome.rimColor = UltraTheme.Line;
                 chrome.followThemeRim = false;
                 if (label != null) label.color = UltraTheme.Mute;
-                if (underline != null) underline.gameObject.SetActive(false);
                 if (stripe != null) stripe.color = UltraTheme.Mute;
                 chrome.SetVerticesDirty();
                 return;
@@ -388,9 +400,9 @@ namespace MDPro3.UI.ServantUI
                     break;
                 case UltraTier.Primary:
                     chrome.cut = UltraCut.Small;
-                    chrome.color = hot ? Color.white : UltraTheme.Fg;
+                    chrome.color = hot ? Color.Lerp(UltraTheme.Accent, Color.white, 0.22f) : UltraTheme.Accent;
                     chrome.rim = 0f;
-                    if (label != null) label.color = UltraTheme.Ink;
+                    if (label != null) label.color = UltraTheme.AccentInk;
                     break;
                 case UltraTier.Danger:
                     chrome.cut = UltraCut.Small;
@@ -1198,5 +1210,242 @@ namespace MDPro3.UI.ServantUI
         void OnEnable() { UltraTheme.Changed += Paint; Paint(); }
         void OnDisable() { UltraTheme.Changed -= Paint; }
         void Paint() { if (text != null) text.color = UltraTheme.AccentInk; }
+    }
+
+    public static class UltraSoloChrome
+    {
+        public static void Apply(SoloSelectorUI solo)
+        {
+            if (solo == null) return;
+            var settings = Find(solo.transform, "Settings");
+            if (settings != null)
+            {
+                for (int i = 0; i < settings.childCount; i++)
+                    Plate(settings.GetChild(i) as RectTransform, UltraCut.Small);
+            }
+            var overview = Find(solo.transform, "TextOverview");
+            if (overview != null && overview.parent is RectTransform box)
+                Plate(box, UltraCut.Panel);
+            var play = Find(solo.transform, "ButtonPlay");
+            if (play != null) PaintPlay(play);
+            foreach (var label in solo.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (label == null || label.font != null) continue;
+                UltraTheme.Repair(label, label.fontSize >= 28f);
+            }
+        }
+
+        static void PaintPlay(Transform play)
+        {
+            foreach (var graphic in play.GetComponentsInChildren<Graphic>(true))
+            {
+                string n = graphic.gameObject.name;
+                if (n is "Out" or "Hover" or "HoverOn" or "HoverOff" or "SelectCursor" or "Button")
+                    graphic.enabled = false;
+            }
+            var plate = play.Find("Ultra play plate") as RectTransform;
+            if (plate == null)
+            {
+                var host = new GameObject("Ultra play plate", typeof(RectTransform));
+                host.layer = play.gameObject.layer;
+                plate = host.GetComponent<RectTransform>();
+                plate.SetParent(play, false);
+                plate.anchorMin = Vector2.zero;
+                plate.anchorMax = Vector2.one;
+                plate.offsetMin = plate.offsetMax = Vector2.zero;
+                var ignore = host.AddComponent<LayoutElement>();
+                ignore.ignoreLayout = true;
+                UltraUi.EnsureRenderer(host);
+                var chrome = host.AddComponent<UltraChrome>();
+                chrome.cut = UltraCut.Panel;
+                chrome.raycastTarget = true;
+                chrome.rim = 0f;
+            }
+            plate.SetAsFirstSibling();
+            var fill = plate.GetComponent<UltraChrome>();
+            if (fill != null)
+            {
+                fill.color = UltraTheme.Accent;
+                fill.cut = UltraCut.Panel;
+                fill.raycastTarget = true;
+            }
+            TMP_Text caption = null;
+            foreach (var label in play.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (label.gameObject.name == "ButtonText" || label.text.Trim().Equals("PLAY", StringComparison.OrdinalIgnoreCase))
+                    caption = label;
+            }
+            if (caption == null) return;
+            caption.gameObject.SetActive(true);
+            caption.enabled = true;
+            caption.text = "PLAY";
+            caption.fontSize = 32f;
+            caption.alignment = TextAlignmentOptions.Center;
+            caption.color = UltraTheme.AccentInk;
+            UltraTheme.Style(caption, true, 8f);
+            caption.rectTransform.SetAsLastSibling();
+        }
+
+        public static void Plate(RectTransform row, UltraCut cut)
+        {
+            if (row == null || row.Find("Ultra row plate") != null) return;
+            var host = new GameObject("Ultra row plate", typeof(RectTransform));
+            host.layer = row.gameObject.layer;
+            var rect = host.GetComponent<RectTransform>();
+            rect.SetParent(row, false);
+            rect.SetAsFirstSibling();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(0f, 2f);
+            rect.offsetMax = new Vector2(0f, -2f);
+            var ignore = host.AddComponent<LayoutElement>();
+            ignore.ignoreLayout = true;
+            UltraUi.EnsureRenderer(host);
+            var chrome = host.AddComponent<UltraChrome>();
+            chrome.color = UltraTheme.PanelSolid;
+            chrome.cut = cut;
+            chrome.rim = 1.5f;
+            chrome.followThemeRim = true;
+            chrome.raycastTarget = false;
+        }
+
+        static Transform Find(Transform root, string name)
+        {
+            var all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+                if (all[i].name == name) return all[i];
+            return null;
+        }
+    }
+
+    public sealed class UltraSoloRepaint : MonoBehaviour
+    {
+        float next;
+        void OnEnable() { UltraTheme.Changed += Paint; Paint(); }
+        void OnDisable() { UltraTheme.Changed -= Paint; }
+        void LateUpdate()
+        {
+            if (Time.unscaledTime < next) return;
+            next = Time.unscaledTime + 0.35f;
+            Paint();
+        }
+        void Paint() { UltraSoloChrome.Apply(GetComponent<SoloSelectorUI>()); }
+    }
+
+    public static class UltraEditorChrome
+    {
+        static readonly string[] Panels = { "BG", "Background", "DeckView", "CardListArea", "CollectionAreaCenter", "TabArea", "Header", "CardCollectionView", "CardDetailView" };
+
+        public static void Apply(Component host)
+        {
+            if (host == null) return;
+            var root = host.transform;
+            foreach (string name in Panels)
+            {
+                var panel = Find(root, name);
+                if (panel == null) continue;
+                TintPanel(panel.GetComponent<Image>());
+                for (int i = 0; i < panel.childCount; i++)
+                {
+                    var child = panel.GetChild(i);
+                    if (child.name is "BG" or "Background" or "Base" or "Frame")
+                        TintPanel(child.GetComponent<Image>());
+                }
+            }
+            var tabs = Find(root, "TabArea");
+            if (tabs != null)
+            {
+                foreach (var toggle in tabs.GetComponentsInChildren<SelectionToggle>(true))
+                    PaintTab(toggle);
+            }
+            var header = Find(root, "Header");
+            if (header != null && header.Find("Ultra header rule") == null)
+            {
+                var rule = new GameObject("Ultra header rule", typeof(RectTransform));
+                rule.layer = header.gameObject.layer;
+                var rect = rule.GetComponent<RectTransform>();
+                rect.SetParent(header, false);
+                rect.anchorMin = new Vector2(0.02f, 0f);
+                rect.anchorMax = new Vector2(0.18f, 0f);
+                rect.pivot = new Vector2(0f, 0f);
+                rect.sizeDelta = new Vector2(0f, 4f);
+                rect.anchoredPosition = new Vector2(0f, 2f);
+                var ignore = rule.AddComponent<LayoutElement>();
+                ignore.ignoreLayout = true;
+                UltraUi.EnsureRenderer(rule);
+                var ink = rule.AddComponent<Image>();
+                ink.color = UltraTheme.Highlight;
+                ink.raycastTarget = false;
+                rule.AddComponent<UltraHighlightFill>();
+            }
+            foreach (var image in host.GetComponentsInChildren<Image>(true))
+            {
+                if (image is UltraChrome || image.GetComponentInParent<SelectionButton>() != null) continue;
+                var rect = image.rectTransform.rect;
+                if (rect.width < 200f || rect.height < 80f) continue;
+                var c = image.color;
+                if (c.a < 0.4f) continue;
+                if (c.b > c.r + 0.06f && c.b > 0.15f)
+                    image.color = new Color(UltraTheme.PanelSolid.r, UltraTheme.PanelSolid.g, UltraTheme.PanelSolid.b, c.a);
+            }
+            foreach (var button in host.GetComponentsInChildren<SelectionButton>(true))
+            {
+                if (button.GetType().Name.Contains("Card")) continue;
+                var caption = button.GetComponentInChildren<TMP_Text>(true);
+                if (caption == null || caption.gameObject.name != "ButtonText") continue;
+                UltraTheme.Style(caption, true, 8f);
+                caption.color = UltraTheme.IsDanger(caption.text) ? UltraTheme.Danger : UltraTheme.Fg;
+            }
+        }
+
+        static void TintPanel(Image image)
+        {
+            if (image == null || image is UltraChrome) return;
+            if (image.GetComponentInParent<SelectionButton>() != null) return;
+            image.color = image.gameObject.name is "BG" or "Background"
+                ? UltraTheme.Ink
+                : new Color(UltraTheme.PanelSolid.r, UltraTheme.PanelSolid.g, UltraTheme.PanelSolid.b, 0.96f);
+        }
+
+        static void PaintTab(SelectionToggle toggle)
+        {
+            bool on = toggle.isOn;
+            foreach (var image in toggle.GetComponentsInChildren<Image>(true))
+            {
+                if (image is UltraChrome) continue;
+                var rect = image.rectTransform.rect;
+                if (rect.width > 0f && rect.width < 28f && rect.height < 28f) continue;
+                string n = image.gameObject.name;
+                if (n.Contains("Icon") || n.Contains("Cursor")) continue;
+                image.color = on ? UltraTheme.Accent : UltraTheme.PanelSolid;
+            }
+            foreach (var label in toggle.GetComponentsInChildren<TMP_Text>(true))
+            {
+                UltraTheme.Style(label, true, 8f);
+                label.color = on ? UltraTheme.AccentInk : UltraTheme.Fg;
+            }
+        }
+
+        static Transform Find(Transform root, string name)
+        {
+            var all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+                if (all[i].name == name) return all[i];
+            return null;
+        }
+    }
+
+    public sealed class UltraEditorRepaint : MonoBehaviour
+    {
+        float next;
+        void OnEnable() { UltraTheme.Changed += Paint; }
+        void OnDisable() { UltraTheme.Changed -= Paint; }
+        void LateUpdate()
+        {
+            if (Time.unscaledTime < next) return;
+            next = Time.unscaledTime + 0.4f;
+            Paint();
+        }
+        void Paint() { UltraEditorChrome.Apply(this); }
     }
 }

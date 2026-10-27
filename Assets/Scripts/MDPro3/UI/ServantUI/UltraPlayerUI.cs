@@ -101,25 +101,25 @@ namespace MDPro3.UI.ServantUI
         {
             string name=string.IsNullOrEmpty(UltraServices.PlayerName)?Config.Get("DuelPlayerName0","Player"):UltraServices.PlayerName;
             OpenModal("PROFILE","Duelist profile", "profile");WideModal();
-            var card=HomeRect("Profile card",modal,.27f,.20f,.29f,.62f);HomePanel(card,UltraTheme.Panel);
+            var card=HomeRect("Profile card",modal,.24f,.16f,.34f,.68f);HomePanel(card,UltraTheme.Panel);
             var frame=card.GetComponent<UltraChrome>();frame.rim=2;frame.followThemeRim=false;frame.rimColor=UltraTheme.Accent;
-            var bannerClip=HomeRect("Profile banner",card,.015f,.72f,.97f,.265f);bannerClip.gameObject.AddComponent<RectMask2D>();
+            var bannerClip=HomeRect("Profile banner",card,.015f,.78f,.97f,.20f);bannerClip.gameObject.AddComponent<RectMask2D>();
             var banner=HomeRect("Banner art",bannerClip,0,0,1,1).gameObject.AddComponent<Image>();
             LoadBanner(banner).Forget();
-            HomePanel(HomeRect("Name band",card,.015f,.49f,.97f,.225f),new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.72f));
-            var avatar=HomeRect("Profile icon",card,.035f,.56f,.23f,.19f).gameObject.AddComponent<Image>();avatar.preserveAspect=true;LoadProfileIcon(avatar,ProfileIconId()).Forget();
-            HomeText(card,name,28,Color.white,.30f,.60f,.65f,.105f);
+            HomePanel(HomeRect("Name band",card,.015f,.62f,.97f,.15f),new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.72f));
+            var avatar=HomeRect("Profile icon",card,.04f,.63f,.16f,.12f).gameObject.AddComponent<Image>();avatar.preserveAspect=true;LoadProfileIcon(avatar,ProfileIconId()).Forget();
+            HomeText(card,name,28,Color.white,.24f,.66f,.72f,.09f);
             int uid=(int?)UltraServices.State?["id"]??0;
             string identity=uid==0?"OFFLINE":uid.ToString("D9");
             if(uid!=0)identity=identity.Substring(0,3)+"-"+identity.Substring(3,3)+"-"+identity.Substring(6,3);
-            HomeText(card,"LV "+UltraAccount.Level+"     ID: "+identity,20,Color.white,.05f,.48f,.90f,.08f);
-            HomePanel(HomeRect("Divider",card,.035f,.47f,.93f,.002f),Muted);
+            HomeText(card,"LV "+UltraAccount.Level+"     ID: "+identity,20,Color.white,.05f,.52f,.90f,.07f);
+            HomePanel(HomeRect("Divider",card,.035f,.50f,.93f,.002f),Muted);
             int friends=(UltraServices.State?["friends"] as JArray)?.Count??0;
-            HomeText(card,friends+" Friends     |     "+UltraAccount.Rank,18,Muted,.05f,.385f,.90f,.08f);
-            HomePanel(HomeRect("Divider",card,.035f,.375f,.93f,.002f),Muted);
-            SmallButton(card,UltraAccount.Rank,OpenPass,.055f,.25f,.89f,.09f,18);
-            HomeText(card,"PASS GRADE "+UltraAccount.Tier+" / 20",21,Color.white,.055f,.14f,.89f,.08f);
-            HomeText(card,"DUELIST PROFILE",15,Muted,.055f,.04f,.89f,.06f);
+            HomeText(card,friends+" Friends     |     "+UltraAccount.Rank,18,Muted,.05f,.40f,.90f,.07f);
+            HomePanel(HomeRect("Divider",card,.035f,.385f,.93f,.002f),Muted);
+            SmallButton(card,UltraAccount.Rank,OpenPass,.055f,.26f,.89f,.09f,18);
+            HomeText(card,"PASS GRADE "+UltraAccount.Tier+" / 20",21,Color.white,.055f,.15f,.89f,.08f);
+            HomeText(card,"DUELIST PROFILE",15,Muted,.055f,.05f,.89f,.07f);
             HomeRect("Animated mate",modal,.61f,.27f,.23f,.44f).gameObject.AddComponent<UltraMatePreview>().Load(UltraAccount.ProfileMate).Forget();
             SmallButton(modal,"EDIT",OpenProfileEdit,.10f,.055f,.18f,.08f,23);
             SmallButton(modal,"REPLAY",OpenHistory,.305f,.055f,.18f,.08f,23);
@@ -210,15 +210,16 @@ namespace MDPro3.UI.ServantUI
                 var trim=card.GetComponent<UltraChrome>();trim.rim=2;trim.rimColor=owned?Lime:new Color(.38f,.36f,.65f);
                 HomePanel(HomeRect("Banner",card,.02f,.90f,.96f,.09f),owned?new Color(.2f,.42f,.1f):new Color(.22f,.12f,.37f));
                 HomeText(card,owned?"OWNED":category=="Field"?"COMPLETE SET":"ACCESSORY",12,Color.white,.06f,.90f,.88f,.08f).alignment=TextAlignmentOptions.Center;
-                var preview=HomeRect("Preview",card,.055f,.35f,.89f,.53f).gameObject.AddComponent<Image>();preview.preserveAspect=true;preview.raycastTarget=false;
+                var preview=HomeRect("Preview",card,.055f,.42f,.89f,.46f).gameObject.AddComponent<Image>();preview.preserveAspect=true;preview.raycastTarget=false;
                 LoadProduct(preview,item).Forget();
-                HomeText(card,item.Name,17,Color.white,.055f,.17f,.89f,.17f).alignment=TextAlignmentOptions.Center;
-                SmallButton(card,owned?(item.kind=="Frame"?"EQUIP":"OWNED"):item.price+" GEMS",()=>Run(async()=>{await UltraAccount.Buy(item);ShowShop(category,page);modalStatus.text=item.Name+" unlocked.";}),.07f,.035f,.86f,.12f,18).interactable=!owned || item.kind=="Frame";
+                HomeText(card,item.Name,17,Color.white,.05f,.24f,.90f,.14f).alignment=TextAlignmentOptions.Center;
+                SmallButton(card,owned?(item.kind=="Frame"?"EQUIP":"OWNED"):item.price+" GEMS",()=>Run(async()=>{await UltraAccount.Buy(item);ShowShop(category,page);modalStatus.text=item.Name+" unlocked.";}),.06f,.045f,.88f,.16f,18).interactable=!owned || item.kind=="Frame";
             }
-            if(category=="Field")HomeText(modal,"Each set includes the duel field, mate base and field parts.",17,Muted,.25f,.125f,.70f,.04f);
-            SmallButton(modal,"<",()=>ShowShop(category,page-1),.25f,.025f,.10f,.07f,24).interactable=page>0;
-            HomeText(modal,(page+1)+" / "+pages,18,Muted,.39f,.025f,.14f,.07f);
-            SmallButton(modal,">",()=>ShowShop(category,page+1),.55f,.025f,.10f,.07f,24).interactable=page+1<pages;
+            if(category=="Field")HomeText(modal,"Each set includes the duel field, mate base and field parts.",17,Muted,.25f,.17f,.70f,.04f);
+            SmallButton(modal,"<",()=>ShowShop(category,page-1),.25f,.02f,.10f,.07f,24).interactable=page>0;
+            HomeText(modal,(page+1)+" / "+pages,18,Muted,.39f,.02f,.14f,.07f);
+            SmallButton(modal,">",()=>ShowShop(category,page+1),.55f,.02f,.10f,.07f,24).interactable=page+1<pages;
+            modalStatus.rectTransform.anchorMin=new Vector2(.25f,.105f);modalStatus.rectTransform.anchorMax=new Vector2(.95f,.155f);
             modalStatus.text="Earn gems in duels and the free pass. Starter accessories stay available.";
         }
         async UniTask LoadProduct(Image image,UltraAccount.Product item)

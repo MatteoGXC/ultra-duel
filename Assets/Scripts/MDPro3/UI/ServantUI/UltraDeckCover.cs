@@ -132,7 +132,7 @@ namespace MDPro3.UI.ServantUI
         RawImage art;
         RectTransform artRect, body;
         Tween zoom;
-        int loaded, requested;
+        int loaded, requested, loadSerial;
         string shownDeck;
         bool entered, hot, parkedReady;
         Vector2 artRest, parked;
@@ -150,11 +150,22 @@ namespace MDPro3.UI.ServantUI
                 entered = false;
             }
             if (!entered) Enter(tile.index);
-            if (CardId > 0 && requested != CardId)
-            {
-                requested = CardId;
-                Load(CardId, tile.destroyCancellationToken).Forget();
-            }
+            if (CardId > 0 && (requested != CardId || !HasArt))
+                BeginLoad(CardId, tile.destroyCancellationToken);
+            PlaceBadge(transform);
+        }
+
+        void OnEnable()
+        {
+            if (CardId > 0 && !HasArt)
+                BeginLoad(CardId, destroyCancellationToken);
+            PlaceBadge(transform);
+        }
+
+        void BeginLoad(int id, CancellationToken token)
+        {
+            requested = id;
+            Load(id, ++loadSerial, token).Forget();
         }
 
         void Enter(int index)
@@ -176,27 +187,46 @@ namespace MDPro3.UI.ServantUI
             group.DOFade(1f, 0.3f).SetDelay(delay).SetEase(UltraMotion.Ease).SetUpdate(true).SetLink(gameObject);
         }
 
-        async UniTaskVoid Load(int id, CancellationToken token)
+        async UniTaskVoid Load(int id, int serial, CancellationToken token)
         {
             try
             {
-                var texture = await CardImageLoader.LoadArtAsync(id, false, token);
-                if (this == null || texture == null || id != CardId) 
+                Texture2D texture = null;
+                for (int attempt = 0; attempt < 3 && texture == null; attempt++)
+                {
+                    if (attempt > 0)
+                        await UniTask.Delay(160, cancellationToken: token);
+                    texture = await CardImageLoader.LoadArtAsync(id, false, token);
+                }
+                if (this == null || id != CardId || serial != loadSerial)
                 {
                     if (texture != null) CardImageLoader.ReleaseArt(id);
+                    return;
+                }
+                if (texture == null)
+                {
+                    if (requested == id) requested = 0;
                     return;
                 }
                 if (loaded != 0 && loaded != id) CardImageLoader.ReleaseArt(loaded);
                 loaded = id;
                 EnsureArt();
                 if (art == null) return;
+                art.color = Color.white;
                 art.texture = texture;
                 art.enabled = true;
                 Cover(art, texture);
                 HideCase();
             }
-            catch (OperationCanceledException) { }
-            catch (Exception e) { Debug.LogWarning("Deck cover: " + e.Message); }
+            catch (OperationCanceledException)
+            {
+                if (serial == loadSerial && requested == id) requested = 0;
+            }
+            catch (Exception e)
+            {
+                if (serial == loadSerial && requested == id) requested = 0;
+                Debug.LogWarning("Deck cover: " + e.Message);
+            }
         }
 
         void EnsureArt()
@@ -236,8 +266,38 @@ namespace MDPro3.UI.ServantUI
                 var part = Find(name);
                 if (part != null && part.name != "Deck cover") part.gameObject.SetActive(false);
             }
-            var badge = transform.Find("Deck format badge");
-            if (badge != null) badge.SetAsLastSibling();
+            PlaceBadge(transform);
+        }
+
+        // The tag stays inside the card, over the art. A nested canvas was drawing it above the border.
+        public static void PlaceBadge(Transform tile)
+        {
+            if (tile == null) return;
+            Transform badge = null;
+            var all = tile.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+                if (all[i].name == "Deck format badge") { badge = all[i]; break; }
+            if (badge == null) return;
+            var ray = badge.GetComponent<GraphicRaycaster>();
+            if (ray != null) Object.Destroy(ray);
+            var canvas = badge.GetComponent<Canvas>();
+            if (canvas != null) Object.Destroy(canvas);
+            Transform host = tile;
+            for (int i = 0; i < all.Length; i++)
+                if (all[i].name == "Body") { host = all[i]; break; }
+            var rect = badge as RectTransform;
+            if (rect == null) return;
+            if (rect.parent != host) rect.SetParent(host, false);
+            rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(1f, 1f);
+            rect.anchoredPosition = new Vector2(-10f, -10f);
+            rect.localScale = Vector3.one;
+            rect.SetAsLastSibling();
+        }
+
+        void LateUpdate()
+        {
+            PlaceBadge(transform);
         }
 
         static void Cover(RawImage image, Texture texture)
@@ -323,13 +383,9 @@ namespace MDPro3.UI.ServantUI
         {
             vh.Clear();
             var r = rectTransform.rect;
-            float y1 = Mathf.Lerp(r.yMin, r.yMax, 0.15f);
-            float y2 = Mathf.Lerp(r.yMin, r.yMax, 0.55f);
-            float y3 = Mathf.Lerp(r.yMin, r.yMax, 0.75f);
-            Band(vh, r.xMin, r.xMax, y3, r.yMax, new Color(0f, 0f, 0f, 0.35f), new Color(0f, 0f, 0f, 0f));
-            Band(vh, r.xMin, r.xMax, y2, y3, new Color(0f, 0f, 0f, 0f), new Color(0f, 0f, 0f, 0f));
-            Band(vh, r.xMin, r.xMax, y1, y2, new Color(0.03f, 0.035f, 0.047f, 0.92f), new Color(0f, 0f, 0f, 0f));
-            Band(vh, r.xMin, r.xMax, r.yMin, y1, new Color(0.03f, 0.035f, 0.047f, 0.92f), new Color(0.03f, 0.035f, 0.047f, 0.92f));
+            // Only the name band. The artwork above it stays untinted.
+            float y1 = Mathf.Lerp(r.yMin, r.yMax, 0.26f);
+            Band(vh, r.xMin, r.xMax, r.yMin, y1, new Color(0.03f, 0.035f, 0.047f, 0.88f), new Color(0.03f, 0.035f, 0.047f, 0f));
         }
 
         static void Band(VertexHelper vh, float x0, float x1, float y0, float y1, Color bottom, Color top)

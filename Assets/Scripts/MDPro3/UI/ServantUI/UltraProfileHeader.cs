@@ -52,8 +52,17 @@ namespace MDPro3.UI.ServantUI
             vh.Clear();
             var r = rectTransform.rect;
             if (r.width < 4f || r.height < 2f) return;
+            if (r.height <= 8f)
+            {
+                Color thinTrack = new Color(0.10f, 0.11f, 0.13f, 1f);
+                Slash(vh, r.xMin, r.xMax, r.yMin, r.yMax, 0f, thinTrack, thinTrack);
+                if (amount <= 0.001f) return;
+                float fillEnd = Mathf.Lerp(r.xMin, r.xMax, Mathf.Clamp01(amount));
+                Slash(vh, r.xMin, fillEnd, r.yMin, r.yMax, 0f, UltraTheme.Accent, UltraTheme.Highlight);
+                return;
+            }
             float slash = Mathf.Min(r.height * 1.2f, r.width * 0.08f);
-            Color track = Color.Lerp(new Color(0.07f, 0.08f, 0.10f, 1f), UltraTheme.Accent, 0.28f);
+            Color track = new Color(0.28f, 0.30f, 0.34f, 1f);
             Slash(vh, r.xMin, r.xMax, r.yMin, r.yMax, slash, track, track);
             if (amount <= 0.001f) return;
             float end = Mathf.Lerp(r.xMin, r.xMax, Mathf.Clamp01(amount));
@@ -63,6 +72,17 @@ namespace MDPro3.UI.ServantUI
         static void Slash(VertexHelper vh, float x0, float x1, float y0, float y1, float slash, Color left, Color right)
         {
             if (x1 - x0 < 1f) return;
+            if (slash <= 0.01f)
+            {
+                int flat = vh.currentVertCount;
+                vh.AddVert(new Vector3(x0, y0), left, Vector2.zero);
+                vh.AddVert(new Vector3(x1, y0), right, Vector2.zero);
+                vh.AddVert(new Vector3(x1, y1), right, Vector2.zero);
+                vh.AddVert(new Vector3(x0, y1), left, Vector2.zero);
+                vh.AddTriangle(flat, flat + 1, flat + 2);
+                vh.AddTriangle(flat, flat + 2, flat + 3);
+                return;
+            }
             int i = vh.currentVertCount;
             vh.AddVert(new Vector3(x0 + slash, y0), left, Vector2.zero);
             vh.AddVert(new Vector3(x1, y0), right, Vector2.zero);
@@ -87,12 +107,15 @@ namespace MDPro3.UI.ServantUI
         }
         public void Initialize()
         {
-            var circle = R("Profile icon rim", transform, .04f, .10f, .0f, .80f);
-            circle.gameObject.AddComponent<AspectRatioFitter>().aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
+            var circle = R("Profile icon rim", transform, 0f, 0f, 0f, 0f);
+            circle.anchorMin = circle.anchorMax = new Vector2(0f, 0.5f);
+            circle.pivot = new Vector2(0f, 0.5f);
+            circle.anchoredPosition = new Vector2(12f, 0f);
+            circle.sizeDelta = new Vector2(92f, 92f);
             UltraUi.EnsureRenderer(circle.gameObject);
             ring = circle.gameObject.AddComponent<UltraCircleGraphic>();
             ring.raycastTarget = false;
-            var clip = R("Icon mask", circle, .16f, .16f, .68f, .68f);
+            var clip = R("Icon mask", circle, .055f, .055f, .89f, .89f);
             UltraUi.EnsureRenderer(clip.gameObject);
             clip.gameObject.AddComponent<UltraCircleGraphic>();
             clip.gameObject.AddComponent<Mask>().showMaskGraphic = false;
@@ -100,7 +123,7 @@ namespace MDPro3.UI.ServantUI
             UltraUi.EnsureRenderer(portraitObject);
             portrait = portraitObject.AddComponent<RawImage>();
             portrait.raycastTarget = false;
-            var label = R("Level", transform, .30f, .30f, .34f, .22f);
+            var label = R("Level", transform, .215f, .30f, .34f, .20f);
             level = UltraUi.Text(label.gameObject);
             if (level != null)
             {
@@ -111,7 +134,7 @@ namespace MDPro3.UI.ServantUI
                 level.richText = true;
                 UltraTheme.StyleEmphasis(level, 4f);
             }
-            var xpHost = R("XP", transform, .58f, .30f, .38f, .22f);
+            var xpHost = R("XP", transform, .50f, .30f, .46f, .20f);
             xp = UltraUi.Text(xpHost.gameObject);
             if (xp != null)
             {
@@ -121,7 +144,11 @@ namespace MDPro3.UI.ServantUI
                 xp.raycastTarget = false;
                 UltraTheme.StyleEmphasis(xp, 8f);
             }
-            var track = R("XP track", transform, .30f, .12f, .66f, .07f);
+            var track = R("XP track", transform, .215f, .16f, .74f, 0f);
+            track.anchorMin = new Vector2(.215f, .16f);
+            track.anchorMax = new Vector2(.955f, .16f);
+            track.pivot = new Vector2(0.5f, 0.5f);
+            track.sizeDelta = new Vector2(0f, 4f);
             UltraUi.EnsureRenderer(track.gameObject);
             bar = track.gameObject.AddComponent<UltraAngularBar>();
             bar.raycastTarget = false;

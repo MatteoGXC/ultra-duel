@@ -220,6 +220,8 @@ namespace MDPro3.UI.ServantUI
 
             UIManager.SetCanvasMatch(Program.instance.deckEditor.GetCanvasMatch(), 0.45f);
             SetCardInfoType(cardInfoType);
+            if (GetComponent<UltraEditorRepaint>() == null) gameObject.AddComponent<UltraEditorRepaint>();
+            UltraEditorChrome.Apply(this);
         }
 
         protected override void HideEvent()

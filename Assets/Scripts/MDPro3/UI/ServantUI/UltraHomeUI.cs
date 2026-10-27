@@ -85,11 +85,8 @@ namespace MDPro3.UI.ServantUI
             {
                 var profile = Px("Profile", ultraHome, 64, 36, 560, 132);
                 HomePanel(profile, UltraTheme.Panel);
-                profileAccent = Px("Profile frame", profile, 0, 28, 6, 56).gameObject.AddComponent<Image>();
-                profileAccent.raycastTarget = false;
-                profileAccent.gameObject.AddComponent<UltraAccentFill>();
                 var avatar = profile.gameObject.AddComponent<UltraProfileHeader>(); avatar.Initialize();
-                profileLabel = HomeText(profile, "", 40, UltraTheme.Fg, .30f, .58f, .66f, .32f);
+                profileLabel = HomeText(profile, "", 34, UltraTheme.Fg, .215f, .54f, .74f, .34f);
                 UltraTheme.Style(profileLabel, true, 1f);
                 var profileClick = profile.gameObject.AddComponent<Button>(); profileClick.onClick.AddListener(OpenProfile);
                 profileClick.targetGraphic = profile.GetComponent<Image>();
@@ -359,7 +356,7 @@ namespace MDPro3.UI.ServantUI
             string name=string.IsNullOrEmpty(UltraServices.PlayerName)?Config.Get("DuelPlayerName0","Player"):UltraServices.PlayerName;
             if (string.IsNullOrWhiteSpace(name)) name="Player";
             if (profileLabel!=null) profileLabel.text=name;
-            if (profileAccent!=null) profileAccent.enabled=true;
+            if (profileAccent!=null) profileAccent.enabled=false;
             if (gemCount!=null) gemCount.Set(UltraAccount.Gems, false);
             else if (gemLabel!=null) gemLabel.text=UltraAccount.Gems.ToString("N0");
             if (passLabel!=null) passLabel.text="DUEL PASS   "+UltraAccount.Tier+" / 20\n<size=65%>"+(UltraAccount.Tier>UltraAccount.Claimed?"Rewards ready to claim":"WIN DUELS · EARN REWARDS")+"</size>";
@@ -686,26 +683,29 @@ namespace MDPro3.UI.ServantUI
         void ShowRooms() { BuildRoomBrowser(); }
         void OpenPass()
         {
-            OpenModal("DUEL PASS","FREE PASS / Earn rewards by winning duels · No paid tier","pass");
+            OpenModal("DUEL PASS","Earn rewards by winning duels · No paid tier","pass");
             WideModal();int first=passPage*6+1;
-            var head=HomeRect("Pass header",modal,.045f,.70f,.91f,.15f);
+            var head=HomeRect("Pass header",modal,.045f,.60f,.91f,.16f);
             HomePanel(head,UltraTheme.Panel);
             var headStripe=HomeRect("Stripe",head,0f,.18f,.008f,.64f);
             var headBar=headStripe.gameObject.AddComponent<Image>();headBar.color=UltraTheme.Accent;headBar.raycastTarget=false;headStripe.gameObject.AddComponent<UltraAccentFill>();
-            var gradeKicker=HomeText(head,"GRADE",14,UltraTheme.Mute,.04f,.62f,.22f,.28f);UltraTheme.StyleEmphasis(gradeKicker,8f);
-            var gradeValue=HomeText(head,UltraAccount.Tier+" / 20",36,UltraTheme.Fg,.04f,.12f,.24f,.50f);UltraTheme.Style(gradeValue,true,2f);
-            var nextKicker=HomeText(head,"NEXT",14,UltraTheme.Mute,.74f,.62f,.22f,.28f);UltraTheme.StyleEmphasis(nextKicker,8f);if(nextKicker!=null)nextKicker.alignment=TextAlignmentOptions.MidlineRight;
-            var nextValue=HomeText(head,UltraAccount.Tier>=20?"COMPLETE":(200-UltraAccount.XP%200)+" XP",28,UltraTheme.Fg,.62f,.12f,.34f,.48f);UltraTheme.Style(nextValue,true,2f);if(nextValue!=null)nextValue.alignment=TextAlignmentOptions.MidlineRight;
-            var track=HomeRect("XP track",head,.30f,.38f,.40f,.10f);
+            var gradeKicker=HomeText(head,"GRADE",14,UltraTheme.Mute,.04f,.58f,.22f,.28f);UltraTheme.StyleEmphasis(gradeKicker,8f);
+            var gradeValue=HomeText(head,UltraAccount.Tier+" / 20",36,UltraTheme.Fg,.04f,.10f,.24f,.46f);UltraTheme.Style(gradeValue,true,2f);
+            var nextKicker=HomeText(head,"NEXT",14,UltraTheme.Mute,.74f,.58f,.22f,.28f);UltraTheme.StyleEmphasis(nextKicker,8f);if(nextKicker!=null)nextKicker.alignment=TextAlignmentOptions.MidlineRight;
+            var nextValue=HomeText(head,UltraAccount.Tier>=20?"COMPLETE":(200-UltraAccount.XP%200)+" XP",28,UltraTheme.Fg,.62f,.10f,.34f,.46f);UltraTheme.Style(nextValue,true,2f);if(nextValue!=null)nextValue.alignment=TextAlignmentOptions.MidlineRight;
+            var track=HomeRect("XP track",head,.30f,.22f,.40f,.28f);
             UltraUi.EnsureRenderer(track.gameObject);
             var passBar=track.gameObject.AddComponent<UltraAngularBar>();
             passBar.raycastTarget=false;
             passBar.amount=UltraAccount.Tier>=20?1f:(UltraAccount.XP%200)/200f;
-            HomeText(modal,"FREE\nPASS",18,Color.white,.045f,.56f,.12f,.10f);
+            var rail=HomeRect("Free pass track",modal,.045f,.18f,.11f,.38f);
+            HomePanel(rail,UltraTheme.PanelSolid);
+            var railLabel=HomeText(rail,"FREE\nPASS",20,Color.white,.08f,.22f,.84f,.56f);
+            if(railLabel!=null){railLabel.alignment=TextAlignmentOptions.Center;UltraTheme.Style(railLabel,true,4f);}
             for(int col=0;col<6 && first+col<=20;col++)
             {
-                int tier=first+col;float x=.17f+col*.128f;
-                var cell=HomeRect("Grade "+tier,modal,x,.20f,.12f,.34f);
+                int tier=first+col;float x=.175f+col*.125f;
+                var cell=HomeRect("Grade "+tier,modal,x,.18f,.115f,.38f);
                 bool claimed=tier<=UltraAccount.Claimed,available=tier<=UltraAccount.Tier;
                 HomePanel(cell,UltraTheme.PanelSolid);
                 var border=cell.GetComponent<UltraChrome>();border.rim=available && !claimed?2:1;border.followThemeRim=false;border.rimColor=available && !claimed?UltraTheme.Accent:UltraTheme.Line;
@@ -724,14 +724,14 @@ namespace MDPro3.UI.ServantUI
             }
             PassPager("<",0,()=>{passPage=Math.Max(0,passPage-1);OpenPass();},.045f);
             PassPager(">",1,()=>{passPage=Math.Min(3,passPage+1);OpenPass();},.16f);
-            HomeText(modal,(passPage+1)+" / 4",16,Muted,.24f,.105f,.12f,.06f).alignment=TextAlignmentOptions.MidlineLeft;
-            SmallButton(modal,"CLAIM REWARDS",()=>Run(async()=>{await UltraAccount.Claim();OpenPass();}),.55f,.09f,.40f,.09f,24,UltraTier.Secondary).interactable=UltraAccount.Tier>UltraAccount.Claimed;
-            modalStatus.rectTransform.anchorMin=new Vector2(.045f,.035f);modalStatus.rectTransform.anchorMax=new Vector2(.945f,.075f);
+            HomeText(modal,(passPage+1)+" / 4",16,Muted,.24f,.035f,.12f,.07f).alignment=TextAlignmentOptions.MidlineLeft;
+            SmallButton(modal,"CLAIM REWARDS",()=>Run(async()=>{await UltraAccount.Claim();OpenPass();}),.55f,.03f,.40f,.09f,24,UltraTier.Primary).interactable=UltraAccount.Tier>UltraAccount.Claimed;
+            modalStatus.rectTransform.anchorMin=new Vector2(.045f,.125f);modalStatus.rectTransform.anchorMax=new Vector2(.50f,.165f);
             modalStatus.text=UltraAccount.Profile==null?"Offline progress / Saved on this PC":"Account rewards / Saved on Ultra Duel";
         }
         void PassPager(string name, int facing, UnityAction action, float x)
         {
-            var rect = HomeRect(name, modal, x, .09f, .055f, .09f);
+            var rect = HomeRect(name, modal, x, .03f, .055f, .085f);
             var chrome = rect.gameObject.AddComponent<UltraChrome>();
             chrome.cut = UltraCut.Small;
             chrome.color = UltraTheme.PanelSolid;

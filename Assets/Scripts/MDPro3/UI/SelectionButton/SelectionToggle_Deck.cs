@@ -106,13 +106,15 @@ namespace MDPro3.UI
                 badgeObject.layer = gameObject.layer;
                 var rect = badgeObject.GetComponent<RectTransform>();
                 rect.SetParent(transform, false);
-                rect.anchorMin = rect.anchorMax = rect.pivot = Vector2.one;
-                rect.anchoredPosition = Vector2.zero;
+                rect.anchorMin = rect.anchorMax = new Vector2(1f, 1f);
+                rect.pivot = new Vector2(1f, 1f);
+                rect.anchoredPosition = new Vector2(-10f, -10f);
                 UltraUi.EnsureRenderer(badgeObject);
                 formatBadge = badgeObject.AddComponent<UltraChrome>();
                 formatBadge.cut = UltraCut.Tag;
                 formatBadge.rim = 0f;
                 formatBadge.raycastTarget = false;
+                formatBadge.followThemeRim = false;
 
                 var text = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
                 text.layer = gameObject.layer;
@@ -148,8 +150,8 @@ namespace MDPro3.UI
             cover.Apply(this, deck);
             formatBadgeLabel.fontSize = 20;
             formatBadge.rectTransform.sizeDelta = new Vector2(Mathf.Max(88f, 18f * label.Length + 28f), 38f);
-            formatBadge.transform.SetAsLastSibling();
             formatBadge.gameObject.SetActive(true);
+            UltraDeckCover.PlaceBadge(transform);
         }
 
         protected virtual void StartRefresh()

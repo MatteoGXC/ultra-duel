@@ -736,43 +736,63 @@ namespace MDPro3.Utility
 
         private static async UniTask InitializeArtFileListAsync()
         {
-            if (artFileListInitialized) return;
-            if (artFileListInitializing) { await UniTask.WaitUntil(() => artFileListInitialized); return; }
-            artFileListInitializing = true;
-            //await UniTask.SwitchToThreadPool();
-            await UniTask.Yield();
-
-            var path = Tools.GetPlatformPath(Program.PATH_ART);
-            if (Directory.Exists(path))
+            string artDir = Tools.GetPlatformPath(Program.PATH_ART);
+            bool artDirExists = Directory.Exists(artDir);
+            // A scan that ran before Picture was beside the build must not stick.
+            if (artFileListInitialized && artFileList.Count == 0 && artDirExists)
             {
-                foreach (var file in Directory.GetFiles(path))
+                artFileListInitialized = false;
+                artFileList.Clear();
+                artAltFileList.Clear();
+            }
+            if (artFileListInitialized) return;
+            if (artFileListInitializing)
+            {
+                await UniTask.WaitUntil(() => !artFileListInitializing);
+                if (artFileListInitialized) return;
+            }
+            artFileListInitializing = true;
+            try
+            {
+                await UniTask.Yield();
+                if (!artDirExists)
+                {
+                    // Leave the list uninitialized so the next load tries the build folder again.
+                    return;
+                }
+
+                foreach (var file in Directory.GetFiles(artDir))
                 {
                     var extension = Path.GetExtension(file).ToLowerInvariant();
                     if (extension != ".jpg" && extension != ".png" && extension != ".jpeg") continue;
                     if (int.TryParse(Path.GetFileNameWithoutExtension(file), out var code))
                         artFileList[code] = extension;
                 }
-            }
 
-            path = Tools.GetPlatformPath(Program.PATH_ALT_ART);
-            if (Directory.Exists(path))
+                var alt = Tools.GetPlatformPath(Program.PATH_ALT_ART);
+                if (Directory.Exists(alt))
+                {
+                    foreach (var file in Directory.GetFiles(alt, "*.jpg"))
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(file);
+                        if (int.TryParse(fileName, out var code) && !artAltFileList.ContainsKey(code))
+                            artAltFileList.Add(code, Program.EXPANSION_JPG);
+                    }
+                    foreach (var file in Directory.GetFiles(alt, "*.png"))
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(file);
+                        if (int.TryParse(fileName, out var code))
+                            if (!artAltFileList.ContainsKey(code))
+                                artAltFileList.Add(code, Program.EXPANSION_PNG);
+                    }
+                }
+
+                artFileListInitialized = true;
+            }
+            finally
             {
-                foreach (var file in Directory.GetFiles(path, "*.jpg"))
-                {
-                    var fileName = Path.GetFileNameWithoutExtension(file);
-                    if (int.TryParse(fileName, out var code))
-                        artAltFileList.Add(code, Program.EXPANSION_JPG);
-                }
-                foreach (var file in Directory.GetFiles(path, "*.png"))
-                {
-                    var fileName = Path.GetFileNameWithoutExtension(file);
-                    if (int.TryParse(fileName, out var code))
-                        if (!artAltFileList.ContainsKey(code))
-                            artAltFileList.Add(code, Program.EXPANSION_PNG);
-                }
+                artFileListInitializing = false;
             }
-
-            artFileListInitialized = true;
         }
 
         private static string GetArtFilePath(int code)

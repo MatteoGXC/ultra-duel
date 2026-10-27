@@ -362,9 +362,9 @@ namespace MDPro3
         {
 #if !UNITY_EDITOR && (UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX)
             // A bare Unix path is treated as an HTTPS localhost URL by UnityWebRequest.
-            return new Uri(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path))).AbsoluteUri;
+            return new Uri(ResolvePlatformPath(path, false)).AbsoluteUri;
 #elif UNITY_EDITOR || UNITY_STANDALONE_WIN
-            return Path.Combine(Environment.CurrentDirectory, path);
+            return ResolvePlatformPath(path, false);
 #elif UNITY_ANDROID || UNITY_IOS
             return Path.Combine("file://" + Application.persistentDataPath, path);
 #else
@@ -375,12 +375,27 @@ namespace MDPro3
         public static string GetPlatformPath(string path)
         {
 #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_STANDALONE_LINUX
-            return Path.Combine(Environment.CurrentDirectory, path);
+            return ResolvePlatformPath(path, true);
 #elif UNITY_ANDROID || UNITY_IOS
             return Path.Combine(Application.persistentDataPath, path);
 #else
             return path;
 #endif
+        }
+
+        // Picture lives beside the player (parent of Ultra-Duel_Data), even when the
+        // process current directory is not the build folder.
+        static string ResolvePlatformPath(string path, bool directory)
+        {
+            string relative = path ?? "";
+            string cwd = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, relative));
+            if (directory ? Directory.Exists(cwd) : File.Exists(cwd)) return cwd;
+            if (!string.IsNullOrEmpty(Application.dataPath))
+            {
+                string beside = Path.GetFullPath(Path.Combine(Application.dataPath, "..", relative));
+                if (directory ? Directory.Exists(beside) : File.Exists(beside)) return beside;
+            }
+            return cwd;
         }
 
         #endregion

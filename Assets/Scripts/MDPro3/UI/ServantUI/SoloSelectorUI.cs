@@ -117,19 +117,28 @@ namespace MDPro3.UI.ServantUI
             TextOverview.enableAutoSizing = false;
             TextOverview.fontSize = 25;
             TextOverview.textWrappingMode = TextWrappingModes.Normal;
+            if (GetComponent<UltraSoloRepaint>() == null) gameObject.AddComponent<UltraSoloRepaint>();
         }
 
         private TextMeshProUGUI AddSoloControl(string name, float x, float width, UnityEngine.Events.UnityAction action)
         {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+            var go = new GameObject(name, typeof(RectTransform), typeof(UltraChrome), typeof(Button));
             go.layer = gameObject.layer;
             var rect = go.GetComponent<RectTransform>();
             rect.SetParent(formatControls.transform, false);
             rect.anchorMin = new Vector2(x, .92f);
             rect.anchorMax = new Vector2(x + width, .985f);
             rect.offsetMin = rect.offsetMax = Vector2.zero;
-            go.GetComponent<Image>().color = new Color(.025f, .07f, .085f, .97f);
-            go.GetComponent<Button>().onClick.AddListener(action);
+            var plate = go.GetComponent<UltraChrome>();
+            plate.color = UltraTheme.PanelSolid;
+            plate.cut = UltraCut.Small;
+            plate.rim = 1.5f;
+            plate.followThemeRim = true;
+            plate.raycastTarget = true;
+            var button = go.GetComponent<Button>();
+            button.targetGraphic = plate;
+            button.transition = Selectable.Transition.None;
+            button.onClick.AddListener(action);
             var textObject = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
             textObject.layer = gameObject.layer;
             var textRect = textObject.GetComponent<RectTransform>();
@@ -145,8 +154,10 @@ namespace MDPro3.UI.ServantUI
             label.fontSizeMin = 17;
             label.fontSizeMax = 27;
             label.alignment = TextAlignmentOptions.Center;
-            label.color = new Color(.83f, .93f, .70f);
+            label.color = UltraTheme.Fg;
             label.raycastTarget = false;
+            UltraTheme.Style(label, true, 6f);
+            label.color = UltraTheme.Fg;
             return label;
         }
 
@@ -190,6 +201,7 @@ namespace MDPro3.UI.ServantUI
             }
 
             ButtonDeck.SetButtonText(Config.GetConfigDeckName());
+            UltraSoloChrome.Apply(this);
         }
 
         private int printRevision;

@@ -54,8 +54,8 @@ namespace MDPro3.UI.ServantUI
                 plate.SetVerticesDirty();
             }
             if (dash != null) dash.gameObject.SetActive(add);
-            var badge = transform.Find("Deck format badge");
-            if (badge != null && body != null && badge.parent != body) badge.SetParent(body, true);
+            // Keep the format tag inside the card. World-position reparenting left it above the border.
+            UltraDeckCover.PlaceBadge(transform);
             EnsureNewDeck(add);
             if (!add) PlaceCase();
         }
