@@ -53,23 +53,76 @@ namespace MDPro3
         public static TMP_FontAsset tmpFontJapanese;
         public static TMP_FontAsset tmpFontEnglish;
 
+        static bool fontsStarted;
+        static UniTask fontsTask;
+
+        public static UniTask FontsReady
+        {
+            get
+            {
+                if (!fontsStarted)
+                {
+                    fontsStarted = true;
+                    fontsTask = LoadFontsAsync();
+                }
+                return fontsTask;
+            }
+        }
+
         private static async UniTask LoadFontsAsync()
         {
             if (fontsLoaded)
                 return;
 
-            fontChineseSimplified = await Addressables.LoadAssetAsync<Font>("RenderFontChineseSimplified").ToUniTask();
-            tmpFontChineseSimplified = await Addressables.LoadAssetAsync<TMP_FontAsset>("RenderFontChineseSimplified").ToUniTask();
-            fontChineseTraditional = await Addressables.LoadAssetAsync<Font>("RenderFontChineseTraditional").ToUniTask();
-            tmpFontChineseTraditional = await Addressables.LoadAssetAsync<TMP_FontAsset>("RenderFontChineseTraditional").ToUniTask();
-            fontKorean = await Addressables.LoadAssetAsync<Font>("RenderFontKorean").ToUniTask();
-            tmpFontKorean = await Addressables.LoadAssetAsync<TMP_FontAsset>("RenderFontKorean").ToUniTask();
-            fontJapanese = await Addressables.LoadAssetAsync<Font>("RenderFontJapanese").ToUniTask();
-            tmpFontJapanese = await Addressables.LoadAssetAsync<TMP_FontAsset>("RenderFontJapanese").ToUniTask();
-            fontEnglish = await Addressables.LoadAssetAsync<Font>("RenderFontEnglish").ToUniTask();
-            tmpFontEnglish = await Addressables.LoadAssetAsync<TMP_FontAsset>("RenderFontEnglish").ToUniTask();
+            fontChineseSimplified = await LoadSourceFont("RenderFontChineseSimplified");
+            tmpFontChineseSimplified = await LoadFace("RenderFontChineseSimplified", fontChineseSimplified);
+            fontChineseTraditional = await LoadSourceFont("RenderFontChineseTraditional");
+            tmpFontChineseTraditional = await LoadFace("RenderFontChineseTraditional", fontChineseTraditional);
+            fontKorean = await LoadSourceFont("RenderFontKorean");
+            tmpFontKorean = await LoadFace("RenderFontKorean", fontKorean);
+            fontJapanese = await LoadSourceFont("RenderFontJapanese");
+            tmpFontJapanese = await LoadFace("RenderFontJapanese", fontJapanese);
+            fontEnglish = await LoadSourceFont("RenderFontEnglish");
+            tmpFontEnglish = await LoadFace("RenderFontEnglish", fontEnglish);
 
             fontsLoaded = true;
+        }
+
+        static async UniTask<Font> LoadSourceFont(string key)
+        {
+            try { return await Addressables.LoadAssetAsync<Font>(key).ToUniTask(); }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("Card source font " + key + " did not load. " + e.Message);
+                return null;
+            }
+        }
+
+        // The address exists as a Font, but the TMP asset was never committed. Build the face from that font.
+        static async UniTask<TMP_FontAsset> LoadFace(string key, Font source)
+        {
+            try
+            {
+                var asset = await Addressables.LoadAssetAsync<TMP_FontAsset>(key).ToUniTask();
+                if (asset != null) return asset;
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("Card face " + key + " has no TMP asset. " + e.Message);
+            }
+            if (source == null) return EnsureFace();
+            var created = TMP_FontAsset.CreateFontAsset(source);
+            return created != null ? created : EnsureFace();
+        }
+
+        public static TMP_FontAsset EnsureFace()
+        {
+            if (cardFace != null) return cardFace;
+            var font = Resources.Load<Font>("Ultra/Fonts/Inter-Regular");
+            if (font == null) return null;
+            cardFace = TMP_FontAsset.CreateFontAsset(font);
+            if (cardFace != null) cardFace.name = "Card face";
+            return cardFace;
         }
 
         #endregion
@@ -91,12 +144,20 @@ namespace MDPro3
             buildersLoaded = true;
         }
 
-        static void RepairBuilderFonts(CardBuilder builder)
+        static TMP_FontAsset cardFace;
+
+        static void FinishCardText(CardBuilder builder)
         {
             if (builder == null) return;
             var labels = builder.GetComponentsInChildren<TMP_Text>(true);
             for (int i = 0; i < labels.Length; i++)
-                UI.ServantUI.UltraTheme.Repair(labels[i], false);
+            {
+                var label = labels[i];
+                if (label == null) continue;
+                if (label.font == null) label.font = EnsureFace();
+                label.outlineWidth = 0f;
+                label.ForceMeshUpdate(true);
+            }
         }
 
         private CardBuilder ocgBuilder;
@@ -118,7 +179,6 @@ namespace MDPro3
                 if (rdBuilder != null)
                     rdBuilder.gameObject.SetActive(false);
                 ocgBuilder.gameObject.SetActive(true);
-                RepairBuilderFonts(ocgBuilder);
                 return ocgBuilder;
             }
             else
@@ -128,7 +188,6 @@ namespace MDPro3
                 if (ocgBuilder != null)
                     ocgBuilder.gameObject.SetActive(false);
                 rdBuilder.gameObject.SetActive(true);
-                RepairBuilderFonts(rdBuilder);
                 return rdBuilder;
             }
         }
@@ -160,7 +219,7 @@ namespace MDPro3
         #region Render Card 
         private void Awake()
         {
-            _ = LoadFontsAsync();
+            _ = FontsReady;
             _ = LoadBuildersAsync();
 
             prefabIndex++;
@@ -196,6 +255,7 @@ namespace MDPro3
 
             var builder = GetCardBuilder(GetCardStyleByCode(code));
             builder.SetCardName(data, language);
+            FinishCardText(builder);
             renderCamera.Render();
         }
 
@@ -210,6 +270,7 @@ namespace MDPro3
 
             var builder = GetCardBuilder(GetCardStyleByCode(code));
             builder.SetCard(data, language, art, overFrame);
+            FinishCardText(builder);
             renderCamera.Render();
             return true;
         }
@@ -254,6 +315,7 @@ namespace MDPro3
             var builder = GetCardBuilder(GetCardStyleByCode(code));
             builder.SetCard(data, language, null);
             builder.SetAllArtPartsOff();
+            FinishCardText(builder);
 
             renderCamera.Render();
             RenderTexture.active = renderTexture;

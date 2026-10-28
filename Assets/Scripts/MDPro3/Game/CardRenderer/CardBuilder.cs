@@ -91,10 +91,14 @@ namespace MDPro3
 
         protected virtual void SetFonts(Font font, TMP_FontAsset tmpFont)
         {
-            textDescription.font = font;
-            textDescriptionPendulum.font = font;
-            textAuther.font = font;
-
+            if (tmpFont == null) tmpFont = CardRenderer.EnsureFace();
+            if (font != null)
+            {
+                textDescription.font = font;
+                textDescriptionPendulum.font = font;
+                textAuther.font = font;
+            }
+            if (tmpFont == null) return;
             tmpCardName.font = tmpFont;
             tmpCardType.font = tmpFont;
             tmpAttrRuby.font = tmpFont;

@@ -1105,22 +1105,27 @@ namespace MDPro3.UI.ServantUI
             if (title == null) return;
             if (string.IsNullOrEmpty(subtitle))
             {
-                PlaceRule(EnsureRule(title.transform), new Vector2(0f, -6f));
+                PlaceRule(EnsureRule(title.transform), new Vector2(0f, -6f), 84f);
                 return;
             }
             var label = EnsureSubtitle(title);
             if (label == null) return;
             label.text = subtitle;
-            UltraTheme.Style(label, true, 4f);
-            label.fontSize = 26f;
+            UltraTheme.Style(label, true, 0f);
+            label.fontSize = 28f;
             label.fontStyle = FontStyles.Normal;
             label.color = UltraTheme.Fg;
             label.outlineWidth = 0f;
             label.enableAutoSizing = false;
+            if (label.font != null) label.fontSharedMaterial = label.font.material;
             var stale = title.transform.Find("Title rule");
             if (stale != null && stale.parent != label.transform)
                 stale.SetParent(label.transform, false);
-            PlaceRule(EnsureRule(label.transform), new Vector2(0f, -6f));
+            var rule = EnsureRule(label.transform);
+            float width = 84f;
+            label.ForceMeshUpdate();
+            if (label.preferredWidth > 8f) width = Mathf.Clamp(label.preferredWidth, 48f, 280f);
+            PlaceRule(rule, new Vector2(0f, -8f), width);
         }
 
         static TextMeshProUGUI EnsureSubtitle(TMP_Text title)
@@ -1168,13 +1173,13 @@ namespace MDPro3.UI.ServantUI
             return existing;
         }
 
-        static void PlaceRule(RectTransform rule, Vector2 position)
+        static void PlaceRule(RectTransform rule, Vector2 position, float width)
         {
             if (rule == null) return;
             rule.anchorMin = rule.anchorMax = new Vector2(0f, 0f);
             rule.pivot = new Vector2(0f, 1f);
             rule.anchoredPosition = position;
-            rule.sizeDelta = new Vector2(84f, 5f);
+            rule.sizeDelta = new Vector2(width, 4f);
         }
     }
 

@@ -412,12 +412,14 @@ namespace MDPro3.Utility
                 var path = GetArtFilePath(code);
                 if (string.IsNullOrEmpty(path))
                 {
+                    var closeup = await LoadFileTextureAsync(Program.PATH_CLOSEUP + code + Program.EXPANSION_PNG, token);
+                    if (closeup != null) return closeup;
                     bool needCrop = false;
                     var art = await LoadArtFromZipAsync("art", code, token);
                     if (art == null)
                     {
                         needCrop = true;
-                        art = await  LoadArtFromZipAsync("pics", code, token);
+                        art = await LoadArtFromZipAsync("pics", code, token);
                     }
                     if (art == null)
                     {
@@ -530,11 +532,12 @@ namespace MDPro3.Utility
                 if (art == null)
                 {
                     Debug.LogError($"Get null from ArtLoad for Card {data.Id}:");
-                    art = TextureManager.container.unknownArt.texture;
+                    art = NamedPlate(string.IsNullOrEmpty(data.Name) ? code.ToString() : data.Name);
                 }
 
                 Texture2D overFrame = await LoadOverFrameAsync(code, token).AttachExternalCancellation(token);
 
+                await CardRenderer.FontsReady;
                 if (!Program.instance.cardRenderer.RenderCard(code, art, overFrame))
                 {
                     lastCardRenderSucceed = false;
@@ -576,7 +579,7 @@ namespace MDPro3.Utility
                 if (art == null)
                 {
                     Debug.LogError($"Get null from ArtLoad for Card {data.Id}:");
-                    art = TextureManager.container.unknownArt.texture;
+                    art = NamedPlate(string.IsNullOrEmpty(data.Name) ? code.ToString() : data.Name);
                 }
 
                 var cardRenderer = (await Addressables.InstantiateAsync("Prefab/CardRenderer.prefab")).GetComponent<CardRenderer>();
@@ -598,6 +601,87 @@ namespace MDPro3.Utility
             result.Apply();
             result.wrapMode = TextureWrapMode.Clamp;
             return result;
+        }
+
+        static async UniTask<Texture2D> LoadFileTextureAsync(string relativePath, CancellationToken token)
+        {
+            string path = Tools.GetPlatformFilePath(relativePath);
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return null;
+            using var request = UnityWebRequestTexture.GetTexture(path);
+            try
+            {
+                await request.SendWebRequest().ToUniTask(cancellationToken: token);
+            }
+            catch (OperationCanceledException)
+            {
+                request.Abort();
+                throw;
+            }
+            if (request.result != UnityWebRequest.Result.Success) return null;
+            return DownloadHandlerTexture.GetContent(request);
+        }
+
+        // In-memory plate for a card with no art file and no closeup. Nothing is written into Picture.
+        static Texture2D NamedPlate(string title)
+        {
+            const int size = 512;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.name = "Missing art " + title;
+            var pixels = new Color32[size * size];
+            var top = new Color32(28, 58, 96, 255);
+            var bottom = new Color32(10, 14, 22, 255);
+            for (int y = 0; y < size; y++)
+            {
+                byte r = (byte)Mathf.Lerp(bottom.r, top.r, y / (float)size);
+                byte g = (byte)Mathf.Lerp(bottom.g, top.g, y / (float)size);
+                byte b = (byte)Mathf.Lerp(bottom.b, top.b, y / (float)size);
+                for (int x = 0; x < size; x++)
+                    pixels[y * size + x] = new Color32(r, g, b, 255);
+            }
+            Stamp(pixels, size, title);
+            tex.SetPixels32(pixels);
+            tex.Apply(false, false);
+            return tex;
+        }
+
+        static void Stamp(Color32[] pixels, int size, string title)
+        {
+            if (string.IsNullOrEmpty(title)) return;
+            var font = Resources.Load<Font>("Ultra/Fonts/Inter-Regular");
+            if (font == null) return;
+            try
+            {
+                font.RequestCharactersInTexture(title, 48, FontStyle.Bold);
+                var source = font.material != null ? font.material.mainTexture as Texture2D : null;
+                if (source == null || !source.isReadable) return;
+                int pen = 36;
+                int baseline = 64;
+                foreach (char c in title)
+                {
+                    if (!font.GetCharacterInfo(c, out var info, 48, FontStyle.Bold)) continue;
+                    if (pen + info.glyphWidth > size - 24) break;
+                    for (int y = 0; y < info.glyphHeight; y++)
+                    {
+                        int dy = baseline + info.minY + y;
+                        if (dy < 0 || dy >= size) continue;
+                        for (int x = 0; x < info.glyphWidth; x++)
+                        {
+                            int dx = pen + info.minX + x;
+                            if (dx < 0 || dx >= size) continue;
+                            int sx = Mathf.RoundToInt(Mathf.Lerp(info.uvBottomLeft.x, info.uvBottomRight.x, x / Mathf.Max(1f, info.glyphWidth)) * source.width);
+                            int sy = Mathf.RoundToInt(Mathf.Lerp(info.uvBottomLeft.y, info.uvTopLeft.y, y / Mathf.Max(1f, info.glyphHeight)) * source.height);
+                            sx = Mathf.Clamp(sx, 0, source.width - 1);
+                            sy = Mathf.Clamp(sy, 0, source.height - 1);
+                            if (source.GetPixel(sx, sy).a < 0.4f) continue;
+                            pixels[dy * size + dx] = new Color32(236, 230, 218, 255);
+                        }
+                    }
+                    pen += info.advance;
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private static async UniTask<Texture2D> LoadArtFromZipAsync(

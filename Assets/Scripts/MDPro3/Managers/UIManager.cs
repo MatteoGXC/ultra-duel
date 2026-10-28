@@ -64,10 +64,14 @@ namespace MDPro3
             {
                 foreach(var graphic in btnExit.GetComponentsInChildren<Graphic>(true))graphic.enabled=false;
                 var exitRect=btnExit.GetComponent<RectTransform>();
-                if(exitRect!=null && exitRect.rect.width<240f && exitRect.rect.height<240f)
+                if(exitRect!=null && (exitRect.rect.width>96f || exitRect.rect.height>96f || exitRect.anchorMin!=exitRect.anchorMax))
                 {
-                    exitRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,64f);
-                    exitRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,64f);
+                    bool stretch = exitRect.anchorMin != exitRect.anchorMax;
+                    var pos = exitRect.anchoredPosition;
+                    exitRect.anchorMin = exitRect.anchorMax = new Vector2(0f, 1f);
+                    exitRect.pivot = new Vector2(0f, 1f);
+                    exitRect.sizeDelta = new Vector2(64f, 64f);
+                    exitRect.anchoredPosition = stretch ? new Vector2(16f, -16f) : pos;
                 }
                 var backObject=new GameObject("Ultra square back");
                 backObject.transform.SetParent(btnExit.transform,false);backObject.layer=btnExit.gameObject.layer;
