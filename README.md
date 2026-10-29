@@ -19,7 +19,7 @@ Choose the download for your operating system and processor. Unity is not requir
 | **Windows 10 / 11** | Intel or AMD, 64-bit | [Windows installer](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Setup.exe) |
 | **macOS 11 or later — Intel** | Intel, 64-bit | [Intel Mac DMG](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.19) |
 | **macOS — Apple Silicon** | Apple M-series | [Previous Apple Silicon release, 0.1.10](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.10) |
-| **Linux** | Intel or AMD, 64-bit | Native build verification is in progress; no verified Linux download is published yet. |
+| **Linux** | Intel or AMD, 64-bit | No verified Linux player download for 0.1.19; experimental build support is available in the source. |
 
 **[View All Releases](https://github.com/MatteoGXC/ultra-duel/releases)** | **[Download Guide](DOWNLOADS.md)**
 
@@ -43,7 +43,7 @@ Mac saves, decks, settings, and local progression remain in `~/Library/Applicati
 
 ### Linux
 
-A native x86_64 build is being checked for this update. Linux downloads will be listed here only after the packaged game passes its runtime checks. The Windows `.exe` and Mac `.dmg` are not native Linux installers.
+Linux build support is experimental. Its engine and menu checks pass, but the packaged Solo-duel check has not passed, so 0.1.19 does not include a Linux player download. The Windows `.exe` and Mac `.dmg` are not native Linux installers.
 
 ### Updating Ultra Duel on Windows
 
