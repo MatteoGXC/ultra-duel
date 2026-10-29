@@ -33,6 +33,13 @@ namespace MDPro3
 #elif !UNITY_EDITOR && UNITY_STANDALONE_OSX
             Directory.SetCurrentDirectory(Environment.GetEnvironmentVariable("ULTRA_DUEL_DATA")
                 ?? Path.GetFullPath(Path.Combine(Application.dataPath,"../..")));
+#elif !UNITY_EDITOR && UNITY_STANDALONE_LINUX
+            Directory.SetCurrentDirectory(Environment.GetEnvironmentVariable("ULTRA_DUEL_DATA")
+                ?? Path.GetDirectoryName(Application.dataPath));
+            // Reuse the validated desktop font assets with Unix paths. The Linux
+            // player, graphics resources, native engine, and duel bundles stay native.
+            Addressables.InternalIdTransformFunc = location => location.InternalId
+                .Replace('\\', '/').Replace("StandaloneWindows64/", "StandaloneLinux64/");
 #endif
             UltraSaveSafety.Initialize();
             Application.targetFrameRate = 0;

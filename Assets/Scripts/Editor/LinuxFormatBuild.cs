@@ -8,7 +8,9 @@ using UnityEngine;
 
 public static class LinuxFormatBuild
 {
-    public static void Build()
+    public static void Build() => Compile(true);
+    public static void Recompile() => Compile(false);
+    static void Compile(bool buildContent)
     {
         string root = Directory.GetCurrentDirectory();
         string destination = Environment.GetEnvironmentVariable("ULTRA_LINUX_OUTPUT") ?? Path.Combine(root, "release", "Linux-x86_64");
@@ -19,6 +21,8 @@ public static class LinuxFormatBuild
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneLinux64, false);
         PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneLinux64, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore });
         PlayerSettings.runInBackground = true;
+        if (buildContent)
+        {
         AddressableAssetSettings.BuildPlayerContent(out var content);
         if (!string.IsNullOrEmpty(content.Error)) throw new Exception(content.Error);
         string bundles = Path.Combine(root, "Platforms/StandaloneLinux64/MasterDuel/Built-in");
@@ -29,6 +33,7 @@ public static class LinuxFormatBuild
             builds[i] = new AssetBundleBuild { assetBundleName = names[i], assetNames = AssetDatabase.GetAssetPathsFromAssetBundle(names[i]) };
         if (BuildPipeline.BuildAssetBundles(bundles, builds, BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneLinux64) == null)
             throw new Exception("Linux duel assets did not build.");
+        }
         UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings.BuildAddressablesWithPlayerBuild = AddressableAssetSettings.PlayerBuildOption.DoNotBuildWithPlayer;
         var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
             scenes = new[] { "Assets/Scenes/Boot.unity" },
