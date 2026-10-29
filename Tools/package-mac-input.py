@@ -49,6 +49,9 @@ def main():
     card_ids.update(row['id'] for row in json.loads((ROOT/'Data/beyond-the-brave-index.json').read_text(encoding='utf-8')))
     for code in card_ids:
         file = ROOT/'Picture/Art'/f"{code}.jpg"
+        if not file.is_file() and runtime.get('artwork'):
+            assert (ROOT/'Picture/FullCard'/f'{code}.jpg').is_file(), 'Missing verified card face: '+str(code)
+            continue
         assert file.is_file(), 'Missing normal artwork: '+str(code)
         add(file, 'Defaults/Picture/Art/'+file.name)
     add(ROOT/'Expansions/ultra-card-art.zip','Defaults/Expansions/ultra-card-art.zip')
