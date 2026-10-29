@@ -7,11 +7,11 @@ import argparse
 from pathlib import Path
 import zipfile
 import zlib
-from build_source import provenance
+from build_source import provenance, release_version
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / 'release/Ultra-Duel'
-VERSION = '0.1.15'
+SOURCE = Path(os.environ.get('ULTRA_PACKAGE_SOURCE', str(ROOT / 'release/Ultra-Duel')))
+VERSION = release_version(ROOT)
 OUTPUT = ROOT.parent / ('release-work/windows-v'+VERSION)
 LIMIT = 1400 * 1024 * 1024  # Below GitHub's per-asset limit, even without compression.
 
@@ -24,7 +24,7 @@ def main():
     entries = []
     roots = ['Ultra-Duel.exe', 'UnityPlayer.dll', 'UnityCrashHandler64.exe',
              'MonoBleedingEdge', 'D3D12', 'Ultra-Duel_Data', 'Data',
-             'Expansions', 'Picture/Art', 'Picture/Closeup', 'LICENSE', 'README.txt', 'build-info.json', 'Ultra-Duel-Migration.dll', 'Update-Ultra-Duel.ps1', 'Update-Ultra-Duel.cmd']
+             'Expansions', 'Picture/Art', 'Picture/FullCard', 'Picture/Closeup', 'LICENSE', 'README.txt', 'build-info.json', 'Ultra-Duel-Migration.dll', 'Update-Ultra-Duel.ps1', 'Update-Ultra-Duel.cmd']
     excluded = {'Data/config.conf','Data/mycard_apps.json','Data/Settings.json','Data/profile.json','Data/friends-session.json'}
     for name in roots:
         base = SOURCE / name

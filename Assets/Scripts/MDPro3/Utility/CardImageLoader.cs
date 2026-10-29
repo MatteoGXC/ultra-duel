@@ -79,6 +79,44 @@ namespace MDPro3.Utility
 
         #region API
 
+        private static bool? cardListImages;
+        private static HashSet<int> verifiedFullCards;
+        public static bool UsesCardListImages
+        {
+            get
+            {
+                if (!cardListImages.HasValue) cardListImages = ReadCardImageSource();
+                return cardListImages.Value;
+            }
+        }
+
+        private static bool ReadCardImageSource()
+        {
+            string path = Tools.GetPlatformPath("Data/card-image-source.json");
+            if (!File.Exists(path)) return false;
+            var source = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(path));
+            if ((string)source["provider"] != "yugiohcardlist" || (bool?)source["authoritative"] != true) return false;
+            verifiedFullCards = new HashSet<int>();
+            foreach (var row in source["cards"])
+                if ((string)row["status"] == "ok") verifiedFullCards.Add((int)row["id"]);
+            return true;
+        }
+
+        private static async UniTask<Texture2D> LoadFullCardImageAsync(int code, CancellationToken token)
+        {
+            if (verifiedFullCards == null || !verifiedFullCards.Contains(code)) return null;
+            string path = Tools.GetPlatformPath("Picture/FullCard/" + code + ".jpg");
+            if (!File.Exists(path)) return null;
+            using var request = UnityWebRequestTexture.GetTexture(new Uri(Path.GetFullPath(path)).AbsoluteUri);
+            await request.SendWebRequest().ToUniTask(cancellationToken: token);
+            if (request.result != UnityWebRequest.Result.Success)
+                throw new IOException("Card image did not load: " + code + ": " + request.error);
+            var texture = DownloadHandlerTexture.GetContent(request);
+            texture.name = "CardList_" + code;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            return texture;
+        }
+
         public static async UniTask<Texture2D> LoadArtAsync(
             int code,
             bool persistent = false,
@@ -203,7 +241,7 @@ namespace MDPro3.Utility
             await lockObj.WaitAsync(token);
             try
             {
-                if (!CardRenderer.CardHasVideoArt(code) || forceTexture)
+                if (UsesCardListImages || !CardRenderer.CardHasVideoArt(code) || forceTexture)
                 {
                     if (cachedCards.TryGetValue(code, out var entry) && entry.Texture == null && entry.LoadingTask == null)
                         cachedCards.TryRemove(code, out _);
@@ -408,12 +446,17 @@ namespace MDPro3.Utility
 
             try
             {
+                if (UsesCardListImages)
+                {
+                    var full = await LoadFullCardImageAsync(code, token);
+                    if (full == null) { lastCardFoundArt = false; return null; }
+                    try { return CropCardToArt(full, code); }
+                    finally { UnityEngine.Object.Destroy(full); }
+                }
                 await InitializeArtFileListAsync();
                 var path = GetArtFilePath(code);
                 if (string.IsNullOrEmpty(path))
                 {
-                    var closeup = await LoadFileTextureAsync(Program.PATH_CLOSEUP + code + Program.EXPANSION_PNG, token);
-                    if (closeup != null) return closeup;
                     bool needCrop = false;
                     var art = await LoadArtFromZipAsync("art", code, token);
                     if (art == null)
@@ -524,6 +567,18 @@ namespace MDPro3.Utility
                     return TextureManager.container.unknownCard.texture;
                 }
 
+                if (UsesCardListImages)
+                {
+                    var full = await LoadFullCardImageAsync(code, token);
+                    lastCardFoundArt = full != null;
+                    lastCardRenderSucceed = full != null;
+                    if (full != null) return full;
+                    // Cache entries own their textures; releasing a missing card must
+                    // not destroy the shared placeholder used by every other card.
+                    var missing = UnityEngine.Object.Instantiate(TextureManager.container.unknownCard.texture);
+                    missing.name = "MissingCard_" + code;
+                    return missing;
+                }
 
                 var art = await LoadArtAsync(code, false, token).AttachExternalCancellation(token);
                 if (token.IsCancellationRequested)

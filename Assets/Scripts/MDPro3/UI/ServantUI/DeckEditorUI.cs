@@ -366,6 +366,7 @@ namespace MDPro3.UI.ServantUI
             });
             var editConditon = DeckView.Condition.Editable;
             if (condition == Condition.OnlineDeck
+                || condition == Condition.PremadeDeck
                 || condition == Condition.ReplayDeck)
                 editConditon = DeckView.Condition.NonEditable;
             else if (condition == Condition.ChangeSide)
@@ -599,6 +600,7 @@ namespace MDPro3.UI.ServantUI
         public void OnDeckButtonClicked()
         {
             if (!DeckView.deckLoaded) return;
+            if (condition == Condition.PremadeDeck) { SavePremadeCopy(); return; }
 
             if (!DeckView.ButtonDeck.gameObject.activeSelf)
                 return;
@@ -632,6 +634,12 @@ namespace MDPro3.UI.ServantUI
 
         private void SetDeckButtonText()
         {
+            if (condition == Condition.PremadeDeck)
+            {
+                DeckView.ButtonDeck.SetButtonText("Save a Copy");
+                DeckView.ButtonDeck.gameObject.SetActive(true);
+                return;
+            }
             string text = string.Empty;
             if (DeckIsFromLocal)
             {
@@ -794,6 +802,12 @@ namespace MDPro3.UI.ServantUI
 
         public void OnRegulation()
         {
+            if (condition == Condition.PremadeDeck)
+            {
+                UIManager.ShowPopupConfirm(new List<string> { PremadeDeckLibrary.Current.DeckName,
+                    PremadeDeckLibrary.Current.Summary + "\n\n" + PremadeDeckLibrary.Current.description + "\n\nSave a copy to edit this recipe or change its format." });
+                return;
+            }
             if (condition == Condition.EditDeck)
             {
                 if (!DeckView.deckLoaded) return;
@@ -876,6 +890,7 @@ namespace MDPro3.UI.ServantUI
 
         public void OnSave()
         {
+            if (condition == Condition.PremadeDeck) { SavePremadeCopy(); return; }
             if (DeckIsFromLocal && !DeckView.GetDirty()) return;
 
             if (DeckIsFromLocal)
@@ -923,6 +938,20 @@ namespace MDPro3.UI.ServantUI
             }
             DeckIsFromLocal = true;
             SetDeckButtonText();
+        }
+
+        void SavePremadeCopy()
+        {
+            if (!DeckView.deckLoaded) return;
+            try
+            {
+                string name = PremadeDeckLibrary.SaveCopy(PremadeDeckLibrary.Current);
+                Config.SetConfigDeck(name);
+                DuelFormat.ApplyDeckFormat(name);
+                Program.instance.ShiftToServant(Program.instance.deckSelector);
+                MessageManager.Toast("Saved " + name + " to your decks.");
+            }
+            catch (Exception e) { UIManager.ShowPopupConfirm(new List<string> { "Could not save this recipe", e.Message }); }
         }
 
         public void OnReset()

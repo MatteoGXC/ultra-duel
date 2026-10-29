@@ -49,7 +49,9 @@ namespace MDPro3
             SetCommonShopButtonMaterial(commonShopButtonOverMat);
 
 #if UNITY_ANDROID || UNITY_STANDALONE_LINUX
-            var depens = Directory.GetFiles(Program.root + "CrossDuel/Dependency", "*.bundle");
+            var dependencyDirectory = Program.root + "CrossDuel/Dependency";
+            var depens = Directory.Exists(dependencyDirectory)
+                ? Directory.GetFiles(dependencyDirectory, "*.bundle") : Array.Empty<string>();
             foreach (var depen in depens)
                 await ABLoader.CacheFromFileAsync(Program.root + "CrossDuel/Dependency/" + Path.GetFileName(depen));
 #endif

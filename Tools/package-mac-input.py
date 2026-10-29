@@ -17,6 +17,7 @@ def main():
     parser.add_argument('--player', type=Path, default=ROOT/'release/Mac-arm64/Ultra-Duel-Player.app')
     parser.add_argument('--intel-textures', type=Path)
     args = parser.parse_args()
+    runtime=json.loads(args.runtime.read_text(encoding='utf-8'))
     player = args.player
     bundles = ROOT/'Platforms/StandaloneOSX/MasterDuel/Built-in'
     for name in ('shaders', 'sprites', 'materials', 'outduel', 'textures', 'duel'):
@@ -38,6 +39,11 @@ def main():
         add(ROOT/name, 'Defaults/'+name)
     for deck in (ROOT/'Deck').glob('Starter - *.ydk'):
         add(deck,'Defaults/Deck/'+deck.name)
+    if not runtime.get('artwork'):
+        for file in (ROOT/'Picture/FullCard').glob('*.jpg'):
+            add(file, 'Defaults/Picture/FullCard/'+file.name)
+    for name in ('card-image-source.json', 'card-image-missing.json'):
+        add(ROOT/'Data'/name, 'Defaults/Data/'+name)
     audit = json.loads((ROOT/'Data/card-update-audit.json').read_text(encoding='utf-8'))
     card_ids = {row['id'] for row in audit['art'] if (ROOT/'Picture/Art'/f"{row['id']}.jpg").is_file()}
     card_ids.update(row['id'] for row in json.loads((ROOT/'Data/beyond-the-brave-index.json').read_text(encoding='utf-8')))
@@ -61,6 +67,8 @@ def main():
             copied=set()
             for entry in baseline.infolist():
                 name=entry.filename
+                if runtime.get('artwork') and name.startswith('Defaults/Picture/FullCard/'):
+                    continue
                 if not name.startswith('Defaults/') or '/ExtendedArt/' in name or name.endswith('extended-art-audit.json') or name in files or name in copied or name in ('Defaults/build-info.json','Defaults/Data/installed-version.json','Defaults/README.txt','Defaults/README-FIRST.txt'):
                     continue
                 target.writestr(name,baseline.read(entry));copied.add(name)

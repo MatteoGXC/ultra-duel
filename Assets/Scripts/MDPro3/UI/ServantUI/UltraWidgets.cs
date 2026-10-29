@@ -1076,14 +1076,17 @@ namespace MDPro3.UI.ServantUI
             foreach (var label in GetComponentsInChildren<TMP_Text>(true))
             {
                 if (label.gameObject.name is not ("TextTitle" or "TitleText" or "Text_ServantTitle")) continue;
+                if (GetComponent<DeckSelectorUI>() != null)
+                {
+                    var previousSubtitle = label.transform.Find("Ultra subtitle");
+                    if (previousSubtitle != null) previousSubtitle.gameObject.SetActive(false);
+                }
                 UltraHeader.Mark(label, subtitle);
             }
         }
 
         string ServantSubtitle()
         {
-            if (GetComponent<DeckSelectorUI>() != null)
-                return MDPro3.Servant.DeckSelector.condition == MDPro3.Servant.DeckSelector.Condition.ForEdit ? "Deck builder" : "Choose a deck";
             if (GetComponent<SoloSelectorUI>() != null) return "Duel the AI";
             if (GetComponent<AppearanceUI>() != null) return "Appearance";
             if (GetComponent<SettingServantUI>() != null) return "Settings";
@@ -1110,6 +1113,7 @@ namespace MDPro3.UI.ServantUI
             }
             var label = EnsureSubtitle(title);
             if (label == null) return;
+            label.rectTransform.anchoredPosition = new Vector2(0f, -8f);
             label.text = subtitle;
             UltraTheme.Style(label, true, 0f);
             label.fontSize = 28f;

@@ -1,0 +1,50 @@
+name: Linux native engine
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /Server/
+            /Tools/YGO Classes/
+            /Data/
+            /Tests/
+      - name: Build Linux x86_64 libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libevent-dev
+          cmake -S Server -B build/linux -DCMAKE_BUILD_TYPE=Release -DULTRA_BUILD_EFFECT_TESTS=ON
+          cmake --build build/linux -j 3
+          cp -L /usr/lib/x86_64-linux-gnu/libevent-2.1.so.7 /usr/lib/x86_64-linux-gnu/libevent_core-2.1.so.7 /usr/lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.7 build/linux/
+          file build/linux/*.so*
+      - name: Verify both native formats
+        run: |
+          LD_LIBRARY_PATH="$PWD/build/linux" python3 - <<'PY'
+          import ctypes
+          ctypes.CDLL('build/linux/libocgcore.so',mode=ctypes.RTLD_GLOBAL)
+          server=ctypes.CDLL('build/linux/libygoserver.so')
+          assert server.get_server_format_capabilities() & 3 == 3
+          print('PASS Linux native TCG and Genesys capabilities')
+          PY
+      - name: Audit card initializers and engine behavior
+        env:
+          ULTRA_NATIVE_DIR: build/linux
+          LD_LIBRARY_PATH: build/linux
+        run: |
+          python3 Tests/NativeCardScriptTests.py --all --output build/linux/card-effects.json
+          python3 Tests/NativeEffectDescriptionsTests.py
+          python3 Tests/NativeBeyondTheBraveTests.py
+          python3 Tests/NativeAdminDuelTests.py build/linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ultra-duel-native-linux-x86_64
+          path: |
+            build/linux/*.so*
+            build/linux/card-effects.json
+          retention-days: 14

@@ -2,19 +2,20 @@
 import hashlib
 from datetime import datetime, timezone
 import json
+import os
 import subprocess
 import shutil
 import zipfile
 import zlib
 from runtime_layout import canonical_path
-from build_source import provenance
+from build_source import provenance, release_version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT.parent / 'release-work/windows-v0.1.0'
-VERSION = '0.1.15'
+VERSION = release_version(ROOT)
 OUT = ROOT.parent / ('release-work/windows-v'+VERSION)
-PLAYER = ROOT / 'release/Ultra-Duel'
+PLAYER = Path(os.environ.get('ULTRA_PACKAGE_SOURCE', str(ROOT / 'release/Ultra-Duel')))
 
 def sha(path):
     digest = hashlib.sha256()
@@ -53,6 +54,8 @@ def main():
     names += [p.relative_to(PLAYER).as_posix() for p in (PLAYER/'Data/locales').glob('*/strings.conf')]
     names += ['Data/locales/en-US/translation.conf']
     names += ['Data/betb-update-audit.json','Data/beyond-the-brave-index.json']
+    names += ['Data/premade-decks.json', 'Data/PremadeDecks', 'Data/MenuIcons-LICENSES.txt',
+              'Data/card-image-source.json', 'Data/card-image-missing.json', 'Picture/FullCard']
     if (ROOT/'Data/beyond-the-brave-index.json').exists():
         names += ['Picture/Art/'+str(row['id'])+'.jpg' for row in json.loads((ROOT/'Data/beyond-the-brave-index.json').read_text(encoding='utf-8')) if (PLAYER/'Picture/Art'/f"{row['id']}.jpg").exists()]
     audit = json.loads((ROOT/'Data/card-update-audit.json').read_text(encoding='utf-8'))
@@ -87,13 +90,31 @@ def main():
             # Always replace that launcher during the branding migration.
             if relative == 'Ultra-Duel.exe' or boot_runtime or baseline.get(relative) != (source.stat().st_size, crc):
                 changed.append((source, relative))
-    archive_path = OUT / 'Ultra-Duel-Update.zip'
-    with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
-        for source, relative in changed:
-            archive.write(source, relative)
+    # Verified full card faces exceed one GitHub asset's 2 GiB limit. Keep every
+    # update part below the limit and verify the complete payload before install.
+    changed.sort(key=lambda item: item[1])
+    groups = [[item for item in changed if not item[1].startswith('Picture/FullCard/')]]
+    art_groups = [[]]
+    group_bytes = 0
+    for item in (item for item in changed if item[1].startswith('Picture/FullCard/')):
+        size = item[0].stat().st_size
+        if art_groups[-1] and group_bytes + size > 1300 * 1024 * 1024:
+            art_groups.append([]); group_bytes = 0
+        art_groups[-1].append(item); group_bytes += size
+    groups += [group for group in art_groups if group]
+    packages = []
+    for index, group in enumerate(groups):
+        name = 'Ultra-Duel-Update.zip' if index == 0 else f'Ultra-Duel-Card-Faces-{index:02}.zip'
+        archive_path = OUT / name
+        with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=1) as archive:
+            for source, relative in group:
+                archive.write(source, relative)
+        assert archive_path.stat().st_size < 2 * 1024**3
+        packages.append(dict(asset=name, sha256=sha(archive_path), size=archive_path.stat().st_size))
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     manifest = dict(version=VERSION, runtimeLayout='ultra-v1', minimumVersion='0.1.0', sourceCommit=commit,
-                    asset=archive_path.name, sha256=sha(archive_path),
+                    asset=packages[0]['asset'], sha256=packages[0]['sha256'],
+                    additionalAssets=packages[1:],
                     files=[dict(path=relative, sha256=sha(source)) for source, relative in changed])
     manifest.update(provenance(ROOT))
     (OUT/'update-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
@@ -107,7 +128,7 @@ def main():
         for name in ('Update-Ultra-Duel.ps1','Update-Ultra-Duel.cmd','Ultra-Duel-Migration.dll'):
             archive.write(PLAYER/name, name)
         archive.writestr('README.txt', 'Ultra Duel updater\n\nExtract all files into your existing game folder. Older installations are migrated automatically.\nClose the game, then double-click Update-Ultra-Duel.cmd.\nOnly changed game files download. Your decks and settings are preserved.\n')
-    print('PATCH_READY', len(changed), 'files;', round(archive_path.stat().st_size/1048576, 1), 'MB')
+    print('PATCH_READY', len(changed), 'files;', len(packages), 'verified update parts')
 
 if __name__ == '__main__':
     main()

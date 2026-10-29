@@ -5,7 +5,14 @@ import re
 import subprocess
 
 SCOPES = ['Assets/Scripts/MDPro3', 'Assets/Scripts/Editor', 'Tools', 'Tests',
+          'Assets/Resources/Ultra/MenuIcons', 'Data/PremadeDecks',
+          'Data/premade-decks.json', 'Data/card-image-source.json',
+          'Data/card-image-missing.json', 'Data/MenuIcons-LICENSES.txt',
           'README.md', 'FORMAT-BUILD.md', 'BRANDING-MIGRATION.md']
+
+def release_version(root):
+    text = (root/'Assets/Scripts/MDPro3/Net/UltraServices.cs').read_text(encoding='utf-8-sig')
+    return re.search(r'public const string Version = "([0-9.]+)";', text).group(1)
 
 def provenance(root):
     def git(*args):

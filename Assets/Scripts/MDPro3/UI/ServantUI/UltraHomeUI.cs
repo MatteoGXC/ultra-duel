@@ -254,15 +254,15 @@ namespace MDPro3.UI.ServantUI
         }
         float MenuGroup(string text, float top)
         {
-            var host = Px(text + " label", modal, 48f, top, 420f, 22f);
-            var label = HomeText(host, text, 14, Muted, 0f, 0f, 1f, 1f);
+            var host = Px(text + " label", modal, 48f, top, 600f, 24f);
+            var label = HomeText(host, text, 16, Muted, 0f, 0f, 1f, 1f);
             if (label != null)
             {
                 label.enableAutoSizing = false;
                 label.fontSize = 14f;
                 label.alignment = TextAlignmentOptions.MidlineLeft;
-                UltraTheme.StyleEmphasis(label, 10f);
-                label.fontSize = 14f;
+                UltraTheme.StyleEmphasis(label, 4f);
+                label.fontSize = 16f;
                 label.color = Muted;
             }
             return top + 30f;
@@ -270,7 +270,7 @@ namespace MDPro3.UI.ServantUI
         Button MenuTile(string title, string description, UnityAction action, int icon, float x, float y, float width, UltraTier tier)
         {
             bool danger = tier == UltraTier.Danger;
-            var rect = Px(title, modal, x, y, width, 96f);
+            var rect = Px(title, modal, x, y, width, 112f);
             var chrome = rect.gameObject.AddComponent<UltraChrome>();
             chrome.cut = UltraCut.Small;
             chrome.color = UltraTheme.PanelSolid;
@@ -280,25 +280,27 @@ namespace MDPro3.UI.ServantUI
             chrome.raycastTarget = true;
             if (!danger)
             {
-                var edge = Px("Accent edge", rect, 0f, 20f, 3f, 56f);
+                var edge = Px("Accent edge", rect, 0f, 24f, 3f, 64f);
                 var edgeImage = edge.gameObject.AddComponent<Image>();
                 edgeImage.color = UltraTheme.Accent;
                 edgeImage.raycastTarget = false;
             }
             var tint = danger ? UltraTheme.Danger : UltraTheme.Accent;
-            var well = Px("Icon well", rect, 24f, 24f, 48f, 48f);
-            var wellImage = well.gameObject.AddComponent<Image>();
-            wellImage.color = new Color(tint.r, tint.g, tint.b, 0.18f);
+            var well = Px("Icon well", rect, 22f, 22f, 68f, 68f);
+            var wellImage = well.gameObject.AddComponent<UltraChrome>();
+            wellImage.cut = UltraCut.Small;
+            wellImage.rim = 1f;
+            wellImage.followThemeRim = false;
+            wellImage.rimColor = new Color(tint.r, tint.g, tint.b, 0.25f);
+            wellImage.color = new Color(tint.r, tint.g, tint.b, 0.08f);
             wellImage.raycastTarget = false;
-            var mark = Px("Icon", well, 10f, 10f, 28f, 28f);
-            var glyph = mark.gameObject.AddComponent<UltraLineIcon>();
-            glyph.kind = icon;
-            glyph.color = tint;
-            glyph.raycastTarget = false;
-            var titleHost = Px("Title", rect, 88f, 16f, width - 104f, 32f);
-            var titleLabel = HomeText(titleHost, title, 20, danger ? UltraTheme.Danger : UltraTheme.Fg, 0f, 0f, 1f, 1f);
-            var descHost = Px("Description", rect, 88f, 50f, width - 104f, 28f);
-            var descLabel = HomeText(descHost, description, 14, Muted, 0f, 0f, 1f, 1f);
+            string[] icons = { "settings", "image", "history", "clapperboard", "scaling", "puzzle", "download", "cloud-upload", "github", "log-out", "power" };
+            MenuIcon(well, icons[icon], 12f, 12f, 44f, tint);
+            MenuIcon(rect, "chevron-right", width - 38f, 44f, 24f, Muted);
+            var titleHost = Px("Title", rect, 108f, 22f, width - 156f, 34f);
+            var titleLabel = HomeText(titleHost, title, 24, danger ? UltraTheme.Danger : UltraTheme.Fg, 0f, 0f, 1f, 1f);
+            var descHost = Px("Description", rect, 108f, 60f, width - 156f, 28f);
+            var descLabel = HomeText(descHost, description, 16, Muted, 0f, 0f, 1f, 1f);
             var button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = chrome;
             button.transition = Selectable.Transition.None;
@@ -309,18 +311,29 @@ namespace MDPro3.UI.ServantUI
             if (titleLabel != null)
             {
                 titleLabel.enableAutoSizing = false;
-                titleLabel.fontSize = 20f;
+                titleLabel.fontSize = 24f;
+                titleLabel.textWrappingMode = TextWrappingModes.NoWrap;
                 titleLabel.alignment = TextAlignmentOptions.MidlineLeft;
                 titleLabel.color = danger ? UltraTheme.Danger : UltraTheme.Fg;
             }
             if (descLabel != null)
             {
                 descLabel.enableAutoSizing = false;
-                descLabel.fontSize = 14f;
+                descLabel.fontSize = 16f;
+                descLabel.textWrappingMode = TextWrappingModes.NoWrap;
                 descLabel.alignment = TextAlignmentOptions.MidlineLeft;
                 descLabel.color = Muted;
             }
             return button;
+        }
+        RawImage MenuIcon(Transform parent, string name, float x, float y, float size, Color tint)
+        {
+            var rect = Px("Menu icon " + name, parent, x, y, size, size);
+            var image = rect.gameObject.AddComponent<RawImage>();
+            image.texture = Resources.Load<Texture2D>("Ultra/MenuIcons/" + name);
+            image.color = tint;
+            image.raycastTarget = false;
+            return image;
         }
         Button PlusButton(Transform parent, UnityAction action, float anchorX, float anchorY)
         {
@@ -1034,40 +1047,31 @@ namespace MDPro3.UI.ServantUI
                 versionLabel.fontSize = 14f;
                 versionLabel.color = Muted;
             }
-            var perfHost = Px("Perf", modal, 1040f, 48f, 680f, 24f);
-            var perf = HomeText(perfHost, "FPS N/A    |    GPU N/A    |    CPU N/A    |    LAT N/A", 14, Muted, 0f, 0f, 1f, 1f);
-            if (perf != null)
-            {
-                perf.alignment = TextAlignmentOptions.MidlineRight;
-                perf.enableAutoSizing = false;
-                perf.fontSize = 14f;
-                UltraTheme.StyleEmphasis(perf, 4f);
-                perf.fontSize = 14f;
-                perf.gameObject.AddComponent<UltraPerfReadout>();
-            }
             const float left = 48f;
-            const float col = 546f;
             const float gap = 16f;
+            const float contentWidth = 1670f;
+            const float quarter = (contentWidth - gap * 3f) / 4f;
+            const float third = (contentWidth - gap * 2f) / 3f;
+            const float half = (contentWidth - gap) / 2f;
             float top = 168f;
-            top = MenuGroup("DISPLAY", top);
-            MenuTile("SETTINGS", "Audio, video, controls", () => { CloseModal(); OnSetting(); }, 0, left, top, col, UltraTier.Secondary);
-            MenuTile("WALLPAPER", "Duel background", OpenWallpaper, 1, left + col + gap, top, col, UltraTier.Secondary);
-            MenuTile("CUT-INS", "Match intro clips", () => { CloseModal(); OnCutin(); }, 3, left + (col + gap) * 2f, top, col, UltraTier.Secondary);
-            top += 108f;
-            MenuTile("GUI SCALE", "Interface size, " + UltraGuiScale.Percent + "%", OpenGuiScale, 4, left, top, col, UltraTier.Secondary);
-            top += 124f;
+            top = MenuGroup("DISPLAY & CONTROLS", top);
+            MenuTile("SETTINGS", "Audio, video & controls", () => { CloseModal(); OnSetting(); }, 0, left, top, quarter, UltraTier.Secondary);
+            MenuTile("WALLPAPER", "Duel background", OpenWallpaper, 1, left + quarter + gap, top, quarter, UltraTier.Secondary);
+            MenuTile("CUT-INS", "Match intro clips", () => { CloseModal(); OnCutin(); }, 3, left + (quarter + gap) * 2f, top, quarter, UltraTier.Secondary);
+            MenuTile("INTERFACE SIZE", "Current scale: " + UltraGuiScale.Percent + "%", OpenGuiScale, 4, left + (quarter + gap) * 3f, top, quarter, UltraTier.Secondary);
+            top += 150f;
             top = MenuGroup("PLAY", top);
-            MenuTile("MATCH HISTORY", "Recent duels", OpenHistory, 2, left, top, col, UltraTier.Secondary);
-            MenuTile("PUZZLES", "Solo challenges", () => { CloseModal(); OnPuzzle(); }, 5, left + col + gap, top, col, UltraTier.Secondary);
-            top += 124f;
+            MenuTile("MATCH HISTORY", "Recent duels & saved replays", OpenHistory, 2, left, top, half, UltraTier.Secondary);
+            MenuTile("PUZZLES", "Practice with solo challenges", () => { CloseModal(); OnPuzzle(); }, 5, left + half + gap, top, half, UltraTier.Secondary);
+            top += 150f;
             top = MenuGroup("SYSTEM", top);
-            MenuTile("CHECK UPDATES", "Look for a new build", OpenUpdates, 6, left, top, col, UltraTier.Secondary);
-            MenuTile("SAVE BACKUPS", "Cloud and local copies", OpenBackups, 7, left + col + gap, top, col, UltraTier.Secondary);
-            MenuTile("GITHUB", "Source and releases", () => Application.OpenURL(UltraServices.Repository), 8, left + (col + gap) * 2f, top, col, UltraTier.Secondary);
-            top += 124f;
+            MenuTile("CHECK UPDATES", "Get the latest version", OpenUpdates, 6, left, top, third, UltraTier.Secondary);
+            MenuTile("SAVE BACKUPS", "Cloud sync & local copies", OpenBackups, 7, left + third + gap, top, third, UltraTier.Secondary);
+            MenuTile("GITHUB", "Source code & releases", () => Application.OpenURL(UltraServices.Repository), 8, left + (third + gap) * 2f, top, third, UltraTier.Secondary);
+            top += 150f;
             top = MenuGroup("SESSION", top);
-            MenuTile("SIGN OUT", "Leave this account", () => Run(async () => { await UltraServices.SignOut(); OpenLogin(); }), 9, left, top, col, UltraTier.Danger);
-            MenuTile("EXIT", "Close Ultra Duel", () => { CloseModal(); OnExit(); }, 10, left + col + gap, top, col, UltraTier.Secondary);
+            MenuTile("SIGN OUT", "Leave this account", () => Run(async () => { await UltraServices.SignOut(); OpenLogin(); }), 9, left, top, half, UltraTier.Danger);
+            MenuTile("EXIT", "Close Ultra Duel", () => { CloseModal(); OnExit(); }, 10, left + half + gap, top, half, UltraTier.Secondary);
         }
     }
 }

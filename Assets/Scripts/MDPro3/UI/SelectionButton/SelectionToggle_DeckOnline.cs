@@ -9,6 +9,8 @@ using MDPro3.Servant;
 using MDPro3.UI.ServantUI;
 using MDPro3.Utility;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using DG.Tweening;
 
 namespace MDPro3.UI
 {
@@ -18,18 +20,51 @@ namespace MDPro3.UI
         [HideInInspector] public string deckId;
         [HideInInspector] public string lastDate;
         [HideInInspector] public int like;
+        readonly List<int> previewReferences = new();
+        int previewVersion;
+
+        void ReleasePreviews()
+        {
+            foreach (int id in previewReferences) CardImageLoader.ReleaseCard(id);
+            previewReferences.Clear();
+        }
+
+        protected override void OnDisable()
+        {
+            previewVersion++;
+            base.OnDisable();
+            ReleasePreviews();
+        }
+
+        public override void Dispose()
+        {
+            gameObject.SetActive(false);
+            foreach (var component in GetComponentsInChildren<Component>(true))
+                if (component != null) DOTween.Kill(component);
+            DOTween.Kill(gameObject);
+            base.Dispose();
+        }
 
         public override void Refresh()
         {
+            previewVersion++;
+            ReleasePreviews();
             Manager.GetElement("DeckCaseIcon").SetActive(true);
             Manager.GetElement("TextDeckName").SetActive(true);
             Manager.GetElement("IconAddDeck").SetActive(false);
             Manager.GetElement("SelectedStateToggle").SetActive(false);
 
             Manager.GetElement<TextMeshProUGUI>("TextDeckName").text = deckName;
-            Manager.GetElement<TextMeshProUGUI>("TextDeckAuthor").text = "by " + deckAuthor;
-            Manager.GetElement<TextMeshProUGUI>("TextDeckDate").text = lastDate;
-            Manager.GetElement<TextMeshProUGUI>("TextDeckLike").text = like.ToString();
+            Manager.GetElement<TextMeshProUGUI>("TextDeckAuthor").text = deckAuthor;
+            var summary = Manager.GetElement<TextMeshProUGUI>("TextDeckDate");
+            summary.text = lastDate;
+            summary.enableAutoSizing = true; summary.fontSizeMin = 10; summary.fontSizeMax = 15;
+            Manager.GetElement<TextMeshProUGUI>("TextDeckLike").gameObject.SetActive(false);
+            foreach (var part in GetComponentsInChildren<RectTransform>(true))
+                if (part.name == "LikeGroup") part.gameObject.SetActive(false);
+            var entry = PremadeDeckLibrary.Find(deckId);
+            var group = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
+            group.alpha = entry != null && entry.available ? 1f : .55f;
 
             _ = RefreshDeckCaseAsync();
 
@@ -40,49 +75,31 @@ namespace MDPro3.UI
 
         protected override async UniTask RefreshAsync()
         {
-            await UniTask.WaitWhile(() => Program.instance.onlineDeckViewer.inTransition);
-            Material pMat = null;
-            var cardImage0 = Manager.GetElement<RawImage>("CardImage0");
-            if (card0 != 0)
+            int version = previewVersion;
+            var token = cts != null ? cts.Token : destroyCancellationToken;
+            try
             {
-                cardImage0.texture = await CardImageLoader.LoadCardAsync(card0, true);
-                //cardImage0.material = await MaterialLoader.LoadCardMaterialAsync(card0, cts.Token);
+                await UniTask.WaitWhile(() => Program.instance.onlineDeckViewer.inTransition, cancellationToken: token);
+                int[] ids = { card0, card1, card2 };
+                for (int i = 0; i < ids.Length; i++)
+                {
+                    var image = Manager.GetElement<RawImage>("CardImage" + i);
+                    image.texture = null;
+                    if (ids[i] == 0) continue;
+                    var texture = await CardImageLoader.LoadCardAsync(ids[i], false, token);
+                    if (this == null || token.IsCancellationRequested || version != previewVersion)
+                    {
+                        if (texture != null) CardImageLoader.ReleaseCard(ids[i]);
+                        return;
+                    }
+                    if (texture != null) previewReferences.Add(ids[i]);
+                    image.material = null;
+                    image.texture = texture;
+                }
+                refreshed = true;
             }
-            else
-            {
-                if (pMat == null)
-                    pMat = await ABLoader.LoadProtectorMaterial(protector, cts.Token);
-                cardImage0.texture = null;
-                cardImage0.material = pMat;
-            }
-
-            var cardImage1 = Manager.GetElement<RawImage>("CardImage1");
-            if (card1 != 0)
-            {
-                cardImage1.texture = await CardImageLoader.LoadCardAsync(card1, true);
-                //cardImage1.material = await MaterialLoader.LoadCardMaterialAsync(card1, cts.Token);
-            }
-            else
-            {
-                if (pMat == null)
-                    pMat = await ABLoader.LoadProtectorMaterial(protector, cts.Token);
-                cardImage1.texture = null;
-                cardImage1.material = pMat;
-            }
-
-            var cardImage2 = Manager.GetElement<RawImage>("CardImage2");
-            if (card2 != 0)
-            {
-                cardImage2.texture = await CardImageLoader.LoadCardAsync(card2, true);
-                //cardImage2.material = await MaterialLoader.LoadCardMaterialAsync(card2, cts.Token);
-            }
-            else
-            {
-                if (pMat == null)
-                    pMat = await ABLoader.LoadProtectorMaterial(protector, cts.Token);
-                cardImage2.texture = null;
-                cardImage2.material = pMat;
-            }
+            catch (System.OperationCanceledException) { }
+            catch (System.Exception e) { Debug.LogWarning("Premade cover preview: " + e.Message); }
         }
 
         protected override async UniTask RefreshDeckCaseAsync()
@@ -117,13 +134,24 @@ namespace MDPro3.UI
         protected override void OnClick()
         {
             AudioManager.PlaySE(SoundLabelClick);
-            //Program.instance.editDeck.onlineDeckID = deckId;
-            //Program.instance.editDeck.SwitchCondition(EditDeck.Condition.OnlineDeck);
-            //Program.instance.ShiftToServant(Program.instance.editDeck);
+            OpenPremade();
+        }
 
-            DeckEditor.onlineDeckID = deckId;
-            Program.instance.deckEditor.SwitchCondition(DeckEditor.Condition.OnlineDeck, deckName);
-            Program.instance.ShiftToServant(Program.instance.deckEditor);
+        public void OpenPremade()
+        {
+            var entry = PremadeDeckLibrary.Find(deckId);
+            if (entry == null || !entry.available)
+            {
+                UIManager.ShowPopupConfirm(new List<string> { deckName + " · " + deckAuthor, entry?.reason ?? "This premade recipe is unavailable." });
+                return;
+            }
+            try
+            {
+                var deck = PremadeDeckLibrary.Prepare(entry);
+                Program.instance.deckEditor.SwitchCondition(DeckEditor.Condition.PremadeDeck, entry.DeckName, deck);
+                Program.instance.ShiftToServant(Program.instance.deckEditor);
+            }
+            catch (System.Exception e) { UIManager.ShowPopupConfirm(new List<string> { "Could not open this recipe", e.Message }); }
         }
 
         protected override void OnSelect(bool playSE)

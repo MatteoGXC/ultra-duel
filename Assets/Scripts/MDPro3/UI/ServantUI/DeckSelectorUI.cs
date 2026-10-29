@@ -106,7 +106,7 @@ namespace MDPro3.UI.ServantUI
             {
                 case Condition.ForEdit:
                     ButtonOnline.gameObject.SetActive(true);
-                    Title.text = InterString.Get("编辑卡组");
+                    Title.text = "Deck Builder";
                     break;
                 case Condition.ForDuel:
                     ButtonOnline.gameObject.SetActive(false);
@@ -784,6 +784,7 @@ namespace MDPro3.UI.ServantUI
 
         private void ShowDefaultButtons()
         {
+            ButtonOnline.SetButtonText("Premade Decks");
             ButtonDelete.gameObject.SetActive(true);
             ButtonCancel.gameObject.SetActive(false);
             ButtonOnline.gameObject.SetActive(true);
@@ -862,7 +863,7 @@ namespace MDPro3.UI.ServantUI
                         LayoutType.MoveToType => InterString.Get("移动到分组") + $" [{GetTypeName(selectedType)}]",
                         LayoutType.CopyToType => InterString.Get("复制到分组") + $" [{GetTypeName(selectedType)}]",
                         LayoutType.Delete => InterString.Get("删除卡组"),
-                        _ => InterString.Get("编辑卡组")
+                        _ => "Deck Builder"
                     };
                 }))
                 .Join(footer.DOAnchorPosY(PropertyOverrider.NeedMobileLayout() ? -186f : -140f, 0.2f))

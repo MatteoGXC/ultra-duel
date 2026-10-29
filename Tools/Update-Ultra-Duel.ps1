@@ -49,24 +49,31 @@ $taskManifest = Invoke-RestMethod -Uri $taskManifestAsset.browser_download_url -
 if ([version]$taskManifest.version -ne $taskAvailable -or [version]$taskManifest.minimumVersion -gt $taskInstalled) {
     throw "This update does not support your installed version. See $($taskRelease.html_url)"
 }
-$taskAsset = $taskRelease.assets | Where-Object name -eq $taskManifest.asset | Select-Object -First 1
-if (!$taskAsset -or !$taskAsset.digest -or $taskAsset.digest -ne ('sha256:' + $taskManifest.sha256)) {
-    throw 'The published update checksum is missing or inconsistent. No files were changed.'
-}
 [MDPro3.UltraInstallMigration]::AssertNotRunning($taskGame)
 if ($taskManifest.runtimeLayout -ne 'ultra-v1') { throw 'The published package does not support this runtime layout. The game was not changed.' }
-$taskZip = Join-Path $taskCache 'update.zip'
-Write-Host ('Downloading update only: {0:N1} MB' -f ($taskAsset.size / 1MB))
-Invoke-WebRequest -Uri $taskAsset.browser_download_url -Headers $taskHeaders -OutFile $taskZip -UseBasicParsing -TimeoutSec 1200
-if ((Get-FileHash -LiteralPath $taskZip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $taskManifest.sha256) {
-    throw 'Downloaded update failed checksum verification. No game files were changed.'
-}
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $taskStage = Join-Path $taskCache 'files'
-[IO.Compression.ZipFile]::ExtractToDirectory($taskZip, $taskStage)
+$taskPackages = @(@{ asset=$taskManifest.asset; sha256=$taskManifest.sha256 }) + @($taskManifest.additionalAssets | Where-Object { $_ })
+foreach ($taskPackage in $taskPackages) {
+    if ([IO.Path]::GetFileName([string]$taskPackage.asset) -ne $taskPackage.asset) { throw 'Invalid update package name.' }
+    $taskAsset = $taskRelease.assets | Where-Object name -eq $taskPackage.asset | Select-Object -First 1
+    if (!$taskAsset -or !$taskAsset.digest -or $taskAsset.digest -ne ('sha256:' + $taskPackage.sha256)) {
+        throw 'A published update checksum is missing or inconsistent. No game files were changed.'
+    }
+    $taskZip = Join-Path $taskCache $taskPackage.asset
+    Write-Host ('Downloading {0}: {1:N1} MB' -f $taskPackage.asset, ($taskAsset.size / 1MB))
+    Invoke-WebRequest -Uri $taskAsset.browser_download_url -Headers $taskHeaders -OutFile $taskZip -UseBasicParsing -TimeoutSec 1200
+    if ((Get-FileHash -LiteralPath $taskZip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $taskPackage.sha256) {
+        throw 'Downloaded update failed checksum verification. No game files were changed.'
+    }
+    [IO.Compression.ZipFile]::ExtractToDirectory($taskZip, $taskStage)
+}
 try {
+    $taskExpectedFiles = @{}
     foreach ($taskFile in $taskManifest.files) {
         $taskRelative = [string]$taskFile.path
+        if ($taskExpectedFiles.ContainsKey($taskRelative)) { throw 'Duplicate update path.' }
+        $taskExpectedFiles[$taskRelative] = $taskFile.sha256
         if ([MDPro3.UltraInstallMigration]::CanonicalArchivePath($taskRelative) -ne $taskRelative) { throw 'A new update contains obsolete runtime paths.' }
         $taskTarget = [IO.Path]::GetFullPath((Join-Path $taskGame $taskRelative))
         $taskSource = [IO.Path]::GetFullPath((Join-Path $taskStage $taskRelative))
@@ -89,7 +96,7 @@ try {
     $taskCopies = @($taskManifest.files | ForEach-Object { @{ source=[string]$_.path; destination=[string]$_.path } })
     foreach ($taskCopy in $taskCopies) {
         $taskExisting=Join-Path $taskGame $taskCopy.destination
-        $taskExpected=($taskManifest.files | Where-Object path -eq $taskCopy.source | Select-Object -First 1).sha256
+        $taskExpected=$taskExpectedFiles[$taskCopy.source]
         if((Test-Path -LiteralPath $taskExisting) -and (Get-FileHash -LiteralPath $taskExisting -Algorithm SHA256).Hash.ToLowerInvariant() -eq $taskExpected){continue}
         $taskTarget = $taskMigration.PrepareReplacement($taskCopy.destination)
         New-Item -ItemType Directory -Path (Split-Path $taskTarget -Parent) -Force | Out-Null

@@ -9,9 +9,10 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from build_source import release_version
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT.parent / 'release-work/windows-v0.1.15'
+OUTPUT = ROOT.parent / ('release-work/windows-v'+release_version(ROOT))
 REPO = '/repos/MatteoGXC/ultra-duel'
 
 def main():
@@ -61,6 +62,8 @@ def main():
     files = [OUTPUT/name for name in ('windows-manifest.json', 'Ultra-Duel-Setup.exe',
         'update-manifest.json', 'Ultra-Duel-Update.zip', 'Ultra-Duel-Updater.zip')]
     files += [OUTPUT/part['name'] for part in manifest['parts']]
+    update = json.loads((OUTPUT/'update-manifest.json').read_text())
+    files += [OUTPUT/part['asset'] for part in update.get('additionalAssets', [])]
     files=list(dict.fromkeys(files))
     def upload(path):
         size = path.stat().st_size

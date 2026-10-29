@@ -5,6 +5,7 @@ using System.Linq;
 using MDPro3.Duel.YGOSharp;
 using MDPro3.Servant;
 using MDPro3.UI;
+using MDPro3.Utility;
 using MDPro3.UI.ServantUI;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -202,6 +203,199 @@ namespace MDPro3
             Debug.Log("ULTRA_FEATURES_PASSED 300 cards, English Burst Protocol, artwork, pinned HTTPS, pass rewards, persistence and native account UI");
         }
 
+        private IEnumerator CheckAllCardArt()
+        {
+            var rows = new Newtonsoft.Json.Linq.JArray();
+            var cards = CardsManager._cards.Values.OrderBy(c => c.Id).ToArray();
+            var auditArgs = Environment.GetCommandLineArgs();
+            int idsIndex = Array.IndexOf(auditArgs, "--card-art-ids");
+            if (idsIndex >= 0 && idsIndex + 1 < auditArgs.Length)
+            {
+                var ids = Newtonsoft.Json.JsonConvert.DeserializeObject<int[]>(File.ReadAllText(auditArgs[idsIndex + 1]));
+                cards = cards.Where(c => ids.Contains(c.Id)).ToArray();
+                if (cards.Length != ids.Distinct().Count()) throw new Exception("Some requested artwork IDs are absent from the runtime database.");
+            }
+            var wanted = new System.Collections.Generic.HashSet<int> { 16387555, 89392810, 43904702, 16509007, 89631139 };
+            var styles = new System.Collections.Generic.HashSet<string>();
+            var contact = new Texture2D(880, 1280, TextureFormat.RGB24, false);
+            var thumbnail = new Texture2D(88, 128, TextureFormat.RGB24, false);
+            var smallTarget = new RenderTexture(88, 128, 0);
+            smallTarget.Create();
+            int index = 0;
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = -1;
+            foreach (var card in cards)
+            {
+                var row = new Newtonsoft.Json.Linq.JObject { ["id"] = card.Id, ["name"] = card.Name, ["token"] = card.HasType(CardType.Token) };
+                System.Threading.Tasks.Task<Texture2D> art = null;
+                float limit;
+                if (!CardImageLoader.UsesCardListImages)
+                {
+                    art = CardImageLoader.LoadArtAsync(card.Id).AsTask();
+                    limit = Time.realtimeSinceStartup + 30;
+                    while (!art.IsCompleted && Time.realtimeSinceStartup < limit) yield return null;
+                    if (!art.IsCompleted) throw new Exception("Artwork load timed out: " + card.Id);
+                    row["art"] = art.IsFaulted ? "error" : art.Result == null ? "missing" : "ok";
+                    if (art.IsFaulted) row["artError"] = art.Exception.ToString();
+                }
+                var load = CardImageLoader.LoadCardAsync(card.Id, false, default, true).AsTask();
+                limit = Time.realtimeSinceStartup + 30;
+                while (!load.IsCompleted && Time.realtimeSinceStartup < limit) yield return null;
+                if (!load.IsCompleted) throw new Exception("Card render timed out: " + card.Id);
+                var texture = load.IsFaulted ? null : load.Result as Texture2D;
+                row["sourceVerified"] = !CardImageLoader.UsesCardListImages || texture != null && texture.name == "CardList_" + card.Id;
+                if (CardImageLoader.UsesCardListImages) row["art"] = (bool)row["sourceVerified"] ? "ok" : "missing";
+                if (texture != null) { row["width"] = texture.width; row["height"] = texture.height; }
+                row["render"] = texture != null && texture.width >= 64 && CardImageLoader.lastCardRenderSucceed ? "ok" : "error";
+                if (load.IsFaulted) row["renderError"] = load.Exception.ToString();
+                if (texture != null)
+                {
+                    var previous = RenderTexture.active;
+                    Graphics.Blit(texture, smallTarget);
+                    RenderTexture.active = smallTarget;
+                    thumbnail.ReadPixels(new Rect(0, 0, 88, 128), 0, 0);
+                    thumbnail.Apply();
+                    RenderTexture.active = previous;
+                    int slot = index % 100;
+                    contact.SetPixels((slot % 10) * 88, (9 - slot / 10) * 128, 88, 128, thumbnail.GetPixels());
+                    string style = card.Type.ToString();
+                    if (wanted.Contains(card.Id) || styles.Add(style))
+                        File.WriteAllBytes(Path.Combine(output, "card-" + card.Id + ".png"), texture.EncodeToPNG());
+                    CardImageLoader.ReleaseCard(card.Id);
+                }
+                if (art != null && !art.IsFaulted && art.Result != null) CardImageLoader.ReleaseArt(card.Id);
+                rows.Add(row);
+                index++;
+                if (index % 100 == 0 || index == cards.Length)
+                {
+                    contact.Apply();
+                    File.WriteAllBytes(Path.Combine(output, "cards-" + ((index - 1) / 100).ToString("D3") + ".png"), contact.EncodeToPNG());
+                    var report = new Newtonsoft.Json.Linq.JObject { ["total"] = cards.Length, ["checked"] = index, ["cards"] = rows };
+                    File.WriteAllText(Path.Combine(output, "all-cards.json"), report.ToString());
+                    Debug.Log("ALL_CARD_ART_PROGRESS " + index + "/" + cards.Length);
+                    contact.SetPixels(new Color[880 * 1280]);
+                }
+                if (index % 500 == 0)
+                {
+                    yield return Resources.UnloadUnusedAssets();
+                    System.GC.Collect();
+                }
+            }
+            smallTarget.Release(); Destroy(smallTarget); Destroy(thumbnail); Destroy(contact);
+            int failed = rows.Count(r => (string)r["art"] != "ok" || (string)r["render"] != "ok" || (bool?)r["sourceVerified"] == false);
+            File.WriteAllText(Path.Combine(output, "completed.txt"), "Checked " + index + " database cards. Failures: " + failed);
+            Debug.Log("ALL_CARD_ART_COMPLETED " + index + " failures=" + failed);
+            Application.Quit(failed == 0 ? 0 : 1);
+        }
+
+        private IEnumerator CheckPremadeLibrary()
+        {
+            var failures = new System.Collections.Generic.List<string>();
+            int valid = 0;
+            foreach (var recipeEntry in PremadeDeckLibrary.Entries.Where(e => e.available))
+            {
+                try { PremadeDeckLibrary.Prepare(recipeEntry); valid++; }
+                catch (Exception e) { failures.Add(recipeEntry.id + ": " + e.Message); }
+            }
+            File.WriteAllText(Path.Combine(output, "catalog-validation.json"), Newtonsoft.Json.JsonConvert.SerializeObject(new { valid, failures }, Newtonsoft.Json.Formatting.Indented));
+            if (failures.Count > 0 || valid < 600) throw new Exception("Premade catalog validation failed: " + string.Join("; ", failures.Take(8)));
+            Debug.Log("PREMADE_CATALOG_VALIDATED " + valid);
+            if (!PremadeDeckLibrary.Search("kewl-tune", "TCG").Any(e => e.archetype == "Kewl Tune"))
+                throw new Exception("Archetype search did not normalize spaces and punctuation.");
+            var zeroEntry = PremadeDeckLibrary.Entries.First(e => e.available && e.format == "Genesys" && e.cap == 0);
+            var existingDeckPaths = Directory.GetFiles("Deck", "*.ydk").Select(Path.GetFullPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            string zeroName = PremadeDeckLibrary.SaveCopy(zeroEntry);
+            string zeroPath = Path.Combine("Deck", zeroName + ".ydk");
+            var zeroDeck = new Deck(zeroPath);
+            if (zeroDeck.Format != "Genesys" || zeroDeck.FormatPointCap != 0 || !PremadeDeckLibrary.Validate(zeroEntry, zeroDeck).Valid)
+                throw new Exception("The zero-point import lost its format metadata.");
+            if (!existingDeckPaths.Contains(Path.GetFullPath(zeroPath))) File.Delete(zeroPath);
+            string originalFormat = Config.Get("DuelFormat", "TCG"), originalCap = Config.Get("GenesysPointCap", "100");
+            Program.instance.deckSelector.SwitchCondition(DeckSelector.Condition.ForEdit);
+            Program.instance.ShiftToServant(Program.instance.deckSelector);
+            while (Program.instance.deckSelector.servantUI == null || Program.instance.deckSelector.inTransition) yield return null;
+            var selector = Program.instance.deckSelector.GetUI<DeckSelectorUI>();
+            if (selector.ButtonOnline.GetButtonText() != "Premade Decks") throw new Exception("The deck library button was not renamed.");
+            selector.OnOnlineDeckView();
+            while (Program.instance.onlineDeckViewer.servantUI == null || Program.instance.onlineDeckViewer.inTransition) yield return null;
+            var library = Program.instance.onlineDeckViewer.GetUI<OnlineDeckViewerUI>();
+            while (library.superScrollView == null || library.superScrollView.items.Count == 0) yield return null;
+            Canvas.ForceUpdateCanvases();
+            var browseControls = library.GetComponentsInChildren<RectTransform>().Where(r => r.name == "PremadeFormatFilter" || r.name == "PremadeSort" || r.name == "PremadeAvailability").ToArray();
+            if (browseControls.Length != 3 || browseControls.Any(r => r.rect.width < 200 || r.rect.height < 40))
+                throw new Exception("Premade browse controls have collapsed or are missing.");
+            yield return Capture("premade-library-tcg");
+            library.SetSortOrder("Z–A");
+            yield return null;
+            if (OnlineDeckViewer.premades.First().archetype != OnlineDeckViewer.premades.OrderByDescending(e => e.archetype, StringComparer.OrdinalIgnoreCase).First().archetype)
+                throw new Exception("Reverse name sorting did not reorder the recipes.");
+            yield return Capture("premade-sort-reverse");
+            OnlineDeckViewer.AvailableOnly = true;
+            library.SetFormatFilter("Genesys 100");
+            library.SetSortOrder("Lowest points");
+            yield return null;
+            if (OnlineDeckViewer.premades.Any(e => !e.available) || !OnlineDeckViewer.premades.Select(e => e.points).SequenceEqual(OnlineDeckViewer.premades.Select(e => e.points).OrderBy(p => p)))
+                throw new Exception("Available-only or Genesys-point sorting failed.");
+            yield return Capture("premade-sort-points");
+            OnlineDeckViewer.AvailableOnly = false;
+            library.SetSortOrder("A–Z");
+            library.SetFormatFilter("TCG");
+            library.ShowFormatPicker();
+            yield return Capture("premade-format-picker");
+            var option = FindObjectsByType<SelectionButton>(FindObjectsSortMode.None).First(b => b.isActiveAndEnabled && b.GetButtonText() == "Genesys 100");
+            EventSystem.current.SetSelectedGameObject(option.gameObject);
+            option.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+            yield return null;
+            library.InputDeckName.text = "Kewl Tune";
+            while (library.superScrollView.items.Count != 1) yield return null;
+            yield return Capture("premade-kewl-genesys");
+            library.SetFormatFilter("Genesys 0");
+            yield return new WaitForSecondsRealtime(.5f);
+            var unavailable = PremadeDeckLibrary.Find("kewl-tune-genesys-0");
+            if (unavailable.available || !unavailable.reason.Contains("point")) throw new Exception("Kewl Tune zero-point restrictions were not explained.");
+            yield return Capture("premade-kewl-zero");
+            library.InputDeckName.text = "No such archetype 1234567";
+            yield return new WaitForSecondsRealtime(.5f);
+            if (library.superScrollView.items.Count != 0) throw new Exception("Empty archetype search did not clear the list.");
+            Program.instance.onlineDeckViewer.Select();
+            yield return Capture("premade-empty-search");
+            library.InputDeckName.text = "Kewl Tune";
+            library.SetFormatFilter("Genesys 100");
+            yield return new WaitForSecondsRealtime(.5f);
+            var item = library.superScrollView.gameObjects.Select(o => o.GetComponent<SelectionToggle_DeckOnline>()).First(i => i != null && i.gameObject.activeInHierarchy && i.deckId == "kewl-tune-genesys-100");
+            item.OpenPremade();
+            while (Program.instance.deckEditor.servantUI == null || Program.instance.deckEditor.inTransition) yield return null;
+            var editor = Program.instance.deckEditor.GetUI<DeckEditorUI>();
+            while (!editor.DeckView.deckLoaded) yield return null;
+            if (DeckEditor.condition != DeckEditor.Condition.PremadeDeck || DeckEditor.DeckIsFromLocal || DeckEditor.Deck.Format != "Genesys" || DeckEditor.Deck.FormatPointCap != 100)
+                throw new Exception("Premade preview did not retain the source format.");
+            if (Config.Get("DuelFormat", "TCG") != originalFormat || Config.Get("GenesysPointCap", "100") != originalCap)
+                throw new Exception("Browsing the catalog changed the player's selected format.");
+            yield return Capture("premade-kewl-preview");
+            var entry = PremadeDeckLibrary.Current;
+            string name = PremadeDeckLibrary.SaveCopy(entry);
+            string path = Path.Combine("Deck", name + ".ydk");
+            byte[] recipe = File.ReadAllBytes(path);
+            if (PremadeDeckLibrary.SaveCopy(entry) != name) throw new Exception("Repeated import duplicated an unchanged premade.");
+            string edited = File.ReadAllText(path) + "# diagnostic user edit\n";
+            File.WriteAllText(path, edited);
+            string next = PremadeDeckLibrary.SaveCopy(entry);
+            if (next == name || File.ReadAllText(path) != edited) throw new Exception("Import overwrote the edited local deck.");
+            File.Delete(Path.Combine("Deck", next + ".ydk"));
+            File.WriteAllBytes(path, recipe);
+            editor.OnSave();
+            while (Program.instance.currentServant != Program.instance.deckSelector || Program.instance.deckSelector.inTransition) yield return null;
+            if (Config.GetConfigDeckName() != name || !DuelFormat.Genesys || DuelFormat.PointCap != 100)
+                throw new Exception("Saving the premade did not select its saved format.");
+            var saved = new Deck(path);
+            if (!PremadeDeckLibrary.Validate(entry, saved).Valid || saved.Format != "Genesys" || saved.FormatPointCap != 100)
+                throw new Exception("The saved premade does not preserve its cards and format metadata.");
+            yield return Capture("premade-saved-copy");
+            File.WriteAllText(Path.Combine(output, "passed.txt"), valid + " premade lists validated. Search, all three format filters, name and point sorting, available-only filter, zero-point explanation, read-only preview, save-copy, duplicate import and edited-deck protection passed.");
+            Debug.Log("PREMADE_LIBRARY_PASSED " + valid);
+            Application.Quit(0);
+        }
+
         private IEnumerator Run()
         {
             while (Program.instance == null || Program.instance.menu.servantUI == null || !TextureManager.loaded)
@@ -217,6 +411,81 @@ namespace MDPro3
             Debug.Log("FORMAT_SMOKE_MENU_READY");
             yield return Capture("menu");
             var commandLine = Environment.GetCommandLineArgs();
+            if (commandLine.Contains("--menu-layout-check"))
+            {
+                var home = Program.instance.menu.GetUI<MainMenuUI>();
+                typeof(MainMenuUI).GetMethod("OpenMenu", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(home, null);
+                yield return Capture("menu-redesign");
+                var icons = home.GetComponentsInChildren<UnityEngine.UI.RawImage>().Where(i => i.name.StartsWith("Menu icon ")).ToArray();
+                if (icons.Length != 22 || icons.Any(i => i.texture == null || i.texture.width < 128))
+                    throw new Exception("A menu action or navigation icon is missing its full-resolution asset.");
+                foreach (var label in home.GetComponentsInChildren<TMPro.TMP_Text>().Where(t => t.transform.parent.name is "Title" or "Description"))
+                {
+                    label.ForceMeshUpdate();
+                    if (label.preferredWidth > label.rectTransform.rect.width + 1f)
+                        throw new Exception("Menu caption overflows its tile: " + label.text);
+                }
+                foreach (string page in new[] { "OpenGuiScale", "OpenHistory", "OpenBackups" })
+                {
+                    typeof(MainMenuUI).GetMethod(page, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(home, null);
+                    yield return Capture(page);
+                }
+                typeof(MainMenuUI).GetMethod("OpenMenu", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(home, null);
+                yield return Capture("menu-return");
+                File.WriteAllText(Path.Combine(output, "passed.txt"), "All 11 menu actions have licensed high-resolution icons and readable captions. Interface size, history, backups, and menu return passed.");
+                Application.Quit(0);
+                yield break;
+            }
+            if (commandLine.Contains("--deck-header-check"))
+            {
+                foreach (var condition in new[] { DeckSelector.Condition.ForEdit, DeckSelector.Condition.ForSolo })
+                {
+                    Program.instance.deckSelector.SwitchCondition(condition);
+                    Program.instance.ShiftToServant(Program.instance.deckSelector);
+                    while (Program.instance.deckSelector.servantUI == null || Program.instance.deckSelector.inTransition) yield return null;
+                    var selector = Program.instance.deckSelector.GetUI<DeckSelectorUI>();
+                    UltraScreenSkin.Apply(selector.gameObject);
+                    yield return Capture("deck-header-" + condition);
+                    var header = selector.Manager.GetElement<RectTransform>("Header");
+                    var title = selector.Manager.GetElement<TMPro.TextMeshProUGUI>("TextTitle");
+                    if (condition == DeckSelector.Condition.ForEdit && title.text != "Deck Builder")
+                        throw new Exception("The deck heading is not Deck Builder.");
+                    if (selector.GetComponentsInChildren<TMPro.TMP_Text>().Any(t => t.name == "Ultra subtitle"))
+                        throw new Exception("The deck screen still has a duplicate subtitle.");
+                    var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(header, title.rectTransform);
+                    if (bounds.min.y < header.rect.yMin || bounds.max.y > header.rect.yMax)
+                        throw new Exception("Deck title or underline extends outside the header: " + bounds);
+                    Program.instance.ShiftToServant(Program.instance.menu);
+                    while (Program.instance.menu.inTransition || Program.instance.deckSelector.inTransition) yield return null;
+                }
+                Program.instance.deckSelector.SwitchCondition(DeckSelector.Condition.ForEdit);
+                Program.instance.ShiftToServant(Program.instance.deckSelector);
+                while (Program.instance.deckSelector.servantUI == null || Program.instance.deckSelector.inTransition) yield return null;
+                Program.instance.deckSelector.GetUI<DeckSelectorUI>().OnOnlineDeckView();
+                while (Program.instance.onlineDeckViewer.servantUI == null || Program.instance.onlineDeckViewer.inTransition) yield return null;
+                var viewer = Program.instance.onlineDeckViewer.GetUI<OnlineDeckViewerUI>();
+                yield return Capture("premade-browse-header");
+                var browse = viewer.GetComponentsInChildren<RectTransform>().First(t => t.name == "Premade browse controls");
+                var browseRoot = (RectTransform)browse.parent;
+                var browseBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(browseRoot, browse);
+                if (browseBounds.max.y > browseRoot.rect.yMax - 128f)
+                    throw new Exception("Premade search controls overlap the header divider.");
+                File.WriteAllText(Path.Combine(output, "passed.txt"), "Single Deck Builder heading, no duplicate subtitle, and premade search controls sit below the header divider.");
+                Application.Quit(0);
+                yield break;
+            }
+            if (commandLine.Contains("--premade-check"))
+            {
+                deadline = Time.realtimeSinceStartup + 300;
+                yield return CheckPremadeLibrary();
+                yield break;
+            }
+            if (commandLine.Contains("--all-card-art-check"))
+            {
+                deadline = Time.realtimeSinceStartup + 14400;
+                yield return CheckAllCardArt();
+                yield break;
+            }
             if(commandLine.Contains("--rps-art-check"))
             {
                 var request=UnityEngine.AddressableAssets.Addressables.InstantiateAsync("Popup/PopupRockPaperScissors.prefab");
@@ -446,11 +715,40 @@ namespace MDPro3
             if (DuelFormat.Genesys != (mode == "Genesys") || !DuelFormat.RequireNativeRules())
                 throw new Exception("Selected format/native capabilities did not match.");
             string deckName = mode == "Genesys" ? "Starter - Genesys" : "Starter - TCG";
+            if (commandLine.Contains("--card-art-check") && File.Exists("Deck/Kewl Tune.ydk"))
+                deckName = "Kewl Tune";
             Config.SetConfigDeck(deckName);
             if (!DuelFormat.ValidateSelectedDeck()) throw new Exception("Starter deck failed validation.");
             Program.instance.deckEditor.SwitchCondition(DeckEditor.Condition.EditDeck);
             Program.instance.ShiftToServant(Program.instance.deckEditor);
             while (Program.instance.deckEditor.servantUI == null) yield return null;
+            if (commandLine.Contains("--card-art-check"))
+            {
+                var view = Program.instance.deckEditor.GetUI<DeckEditorUI>().DeckView;
+                while (!view.deckLoaded) yield return null;
+                float timeout = Time.realtimeSinceStartup + 90;
+                CardRawImageHandler[] faces;
+                do
+                {
+                    yield return null;
+                    faces = view.GetComponentsInChildren<CardRawImageHandler>()
+                        .Where(f => f.card != null && f.card.Id > 0).ToArray();
+                } while ((faces.Length < 40 || faces.Any(f => !f.Refreshed)) && Time.realtimeSinceStartup < timeout);
+                if (faces.Length < 40 || faces.Any(f => !f.Refreshed || f.RawImage.texture == null))
+                    throw new Exception("Deck card faces did not finish loading: " + faces.Count(f => f.Refreshed) + "/" + faces.Length);
+                foreach (int id in faces.Select(f => f.card.Id).Distinct())
+                {
+                    var art = CardImageLoader.LoadArtAsync(id).AsTask();
+                    while (!art.IsCompleted) yield return null;
+                    if (art.IsFaulted || art.Result == null) throw new Exception("Missing deck artwork: " + id);
+                    CardImageLoader.ReleaseArt(id);
+                }
+                yield return Capture("card-art-deck");
+                File.WriteAllText(Path.Combine(output, "passed.txt"), "All " + faces.Length + " deck faces and their artwork loaded: " + deckName);
+                Debug.Log("CARD_ART_CHECK_PASSED " + faces.Length + " " + deckName);
+                Application.Quit(0);
+                yield break;
+            }
             yield return Capture("deck");
             Debug.Log("FORMAT_SMOKE_DECK_READY " + mode);
             if(commandLine.Contains("--deck-count-check"))

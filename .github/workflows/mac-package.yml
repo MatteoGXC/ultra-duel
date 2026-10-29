@@ -89,9 +89,29 @@ jobs:
           path: ${{ runner.temp }}/mac-runtime.tar.zst
           key: mac-runtime-${{ inputs.runtime_sha }}
       - name: Verify actual first-launch installation
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,hashlib
+          from pathlib import Path
+          root=Path(os.environ['RUNNER_TEMP'])
+          manifest=json.loads((root/'Applications/Ultra Duel.app/Contents/Resources/runtime.json').read_text())
+          folder=root/'card-faces';folder.mkdir(exist_ok=True)
+          class Redirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):
+                  request=super().redirect_request(*args,**kwargs)
+                  if request:request.remove_header('Authorization')
+                  return request
+          for part in manifest.get('artwork',[]):
+              request=urllib.request.Request(part.get('assetApi',part['url']),headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/octet-stream','User-Agent':'Ultra-Duel-art-verification'})
+              digest=hashlib.sha256()
+              with urllib.request.build_opener(Redirect()).open(request,timeout=120) as response,(folder/part['name']).open('wb') as stream:
+                  while block:=response.read(4*1024*1024):stream.write(block);digest.update(block)
+              assert digest.hexdigest()==part['sha256']
+          PY
           APP="$RUNNER_TEMP/Applications/Ultra Duel.app"
-          "$APP/Contents/MacOS/Ultra Duel" --prepare-only --runtime "$RUNNER_TEMP/ultra-runtime" --offline-archive "$RUNNER_TEMP/mac-runtime.tar.zst"
+          "$APP/Contents/MacOS/Ultra Duel" --prepare-only --runtime "$RUNNER_TEMP/ultra-runtime" --offline-archive "$RUNNER_TEMP/mac-runtime.tar.zst" --offline-artwork "$RUNNER_TEMP/card-faces"
           rm "$RUNNER_TEMP/mac-runtime.tar.zst"
       - name: Run installed native Unity player
         run: |
@@ -170,6 +190,18 @@ jobs:
           assert (root/'mac-duel-ui/passed.txt').exists(),(root/'mac-duel-ui.log').read_text()[-6000:]
           assert 'Failed to decompress' not in (root/'mac-duel-ui.log').read_text(), 'Unsupported compressed textures in installed duel'
           PY
+      - name: Verify premade decks and revised menu layouts
+        run: |
+          python3 - <<'PY'
+          import os,subprocess,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
+          env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
+          for name,flag in [('mac-premades','--premade-check'),('mac-headers','--deck-header-check'),('mac-menu','--menu-layout-check')]:
+              log=root/(name+'.log')
+              command=[str(player),'-screen-width','1600','-screen-height','900','--format-smoke',str(root/name),'TCG',flag,'-logFile',str(log)]
+              result=subprocess.run(command,env=env,timeout=300)
+              assert result.returncode==0 and (root/name/'passed.txt').exists(),log.read_text()[-6000:]
+          PY
       - name: Reject opaque white field overlays
         run: swift Tests/MacFieldVisualCheck.swift "$RUNNER_TEMP/mac-duel-ui/duel.png" "$RUNNER_TEMP/mac-duel-ui/damage-verified.png"
       - uses: actions/upload-artifact@v4
@@ -182,6 +214,9 @@ jobs:
             ${{ runner.temp }}/mac-card-effects.json
             ${{ runner.temp }}/mac-ui*
             ${{ runner.temp }}/mac-duel-ui*
+            ${{ runner.temp }}/mac-premades*
+            ${{ runner.temp }}/mac-headers*
+            ${{ runner.temp }}/mac-menu*
             ${{ runner.temp }}/ultra-runtime/installation.log
           retention-days: 7
       - uses: actions/upload-artifact@v4

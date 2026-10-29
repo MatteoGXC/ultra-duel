@@ -2,7 +2,7 @@ import Cocoa
 import CryptoKit
 
 struct RuntimePart: Codable { let name: String; let url: String; let size: Int64; let sha256: String }
-struct RuntimeManifest: Codable { let version: String; let url: String; let size: Int64; let sha256: String; let parts: [RuntimePart]? }
+struct RuntimeManifest: Codable { let version: String; let url: String; let size: Int64; let sha256: String; let parts: [RuntimePart]?; let artwork: [RuntimePart]? }
 enum InstallError: Error { case failed(String) }
 final class RuntimeInstaller {
     let resources: URL
@@ -92,7 +92,29 @@ final class RuntimeInstaller {
             try files.createDirectory(at:target.deletingLastPathComponent(),withIntermediateDirectories:true);try files.copyItem(at:file,to:target)
         }
     }
-    func prepare(offline: URL?=nil) throws {
+    func installArtwork(offline: URL?=nil) throws {
+        let cache=runtime.appendingPathComponent("DownloadCache")
+        try files.createDirectory(at:cache,withIntermediateDirectories:true)
+        for part in manifest.artwork ?? [] {
+            let marker=runtime.appendingPathComponent(".ultra-card-faces-"+part.sha256)
+            if files.fileExists(atPath:marker.path) { continue }
+            let archive=(offline ?? cache).appendingPathComponent(part.name)
+            report("Installing verified card images…",nil)
+            let size=((try? files.attributesOfItem(atPath:archive.path)[.size]) as? NSNumber)?.int64Value ?? 0
+            var verified=false
+            if size==part.size { verified=(try checksum(archive))==part.sha256 }
+            if !verified {
+                if offline != nil { throw InstallError.failed("The offline card-image archive failed verification.") }
+                if size>=part.size { try? files.removeItem(at:archive) }
+                try run(URL(fileURLWithPath:"/usr/bin/curl"),["--fail","--location","--silent","--show-error","--retry","5","--continue-at","-","--output",archive.path,part.url])
+                guard try checksum(archive)==part.sha256 else { try? files.removeItem(at:archive);throw InstallError.failed("Card-image download failed verification. Retry to resume.") }
+            }
+            try run(URL(fileURLWithPath:"/usr/bin/ditto"),["-xk",archive.path,runtime.path])
+            try part.sha256.write(to:marker,atomically:true,encoding:.utf8)
+            if offline == nil { try? files.removeItem(at:archive) }
+        }
+    }
+    func prepare(offline: URL?=nil,offlineArtwork: URL?=nil) throws {
         try files.createDirectory(at:runtime,withIntermediateDirectories:true)
         // The upstream art archive omits the six bundles built from our project.
         if !files.fileExists(atPath:runtime.appendingPathComponent("StandaloneOSX/MasterDuel/Built-in/sprites").path) { try copyDefaults() }
@@ -138,6 +160,7 @@ final class RuntimeInstaller {
             try expected.write(to:marker,atomically:true,encoding:.utf8)
             if offline == nil { try? files.removeItem(at:archive) }
         }
+        try installArtwork(offline:offlineArtwork)
         let version=runtime.appendingPathComponent(".ultra-mac-version")
         if (try? String(contentsOf:version,encoding:.utf8)) != manifest.version { report("Installing current game data…",nil);try copyDefaults();try manifest.version.write(to:version,atomically:true,encoding:.utf8) }
         report("Ready to duel",1)
@@ -177,7 +200,7 @@ if CommandLine.arguments.contains("--prepare-only") {
         func value(_ flag:String)->String?{guard let i=CommandLine.arguments.firstIndex(of:flag),i+1<CommandLine.arguments.count else{return nil};return CommandLine.arguments[i+1]}
         guard let root=value("--runtime") else{throw InstallError.failed("Missing --runtime")}
         let resources=Bundle.main.resourceURL!;let installer=try RuntimeInstaller(resources:resources,runtime:URL(fileURLWithPath:root));installer.report={text,_ in print(text)}
-        try installer.prepare(offline:value("--offline-archive").map{URL(fileURLWithPath:$0)});print("ULTRA_MAC_INSTALL_PASSED")
+        try installer.prepare(offline:value("--offline-archive").map{URL(fileURLWithPath:$0)},offlineArtwork:value("--offline-artwork").map{URL(fileURLWithPath:$0)});print("ULTRA_MAC_INSTALL_PASSED")
     } catch { fputs("\(error)\n",stderr);exit(2) }
 } else {
     let app=NSApplication.shared;let delegate=App();app.delegate=delegate;app.setActivationPolicy(.regular);app.run()

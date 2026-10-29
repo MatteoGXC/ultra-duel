@@ -5,6 +5,7 @@ using MDPro3.Net;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
@@ -19,6 +20,10 @@ namespace MDPro3.Servant
     {
 
         public static OnlineDeck.OnlineDeckData[] decks;
+        public static string FormatFilter = "TCG";
+        public static string SortOrder = "A–Z";
+        public static bool AvailableOnly;
+        public static PremadeDeckLibrary.Entry[] premades = Array.Empty<PremadeDeckLibrary.Entry>();
         [HideInInspector] public SelectionToggle_DeckOnline lastSelectedDeckItem;
 
         public override int Depth => 5;
@@ -42,7 +47,7 @@ namespace MDPro3.Servant
             if (!forced && !UserInput.NeedDefaultSelect())
                 return;
 
-            lastSelectedDeckItem.GetSelectable().Select();
+            if (lastSelectedDeckItem != null) lastSelectedDeckItem.GetSelectable().Select();
         }
 
         public override void PerFrameFunction()
@@ -59,7 +64,7 @@ namespace MDPro3.Servant
                 if (UserInput.WasGamepadButtonNorthPressed)
                 {
                     AudioManager.PlaySE("SE_MENU_SELECT_01");
-                    GetUI<OnlineDeckViewerUI>().InputDeckAuthor.ActivateInputField();
+                    GetUI<OnlineDeckViewerUI>().ShowFormatPicker();
                 }
             }
         }
@@ -68,29 +73,20 @@ namespace MDPro3.Servant
 
         public void RefreshList()
         {
-            decks = null;
-            StartCoroutine(RefreshAsync());
-        }
-
-        private IEnumerator RefreshAsync()
-        {
-            var task = OnlineDeck.FetchSimpleDeckList(10000
-                , GetUI<OnlineDeckViewerUI>().InputDeckName.text
-                , GetUI<OnlineDeckViewerUI>().InputDeckAuthor.text);
-            yield return new WaitUntil(() => task.IsCompleted);
-
-            if (task.Status == System.Threading.Tasks.TaskStatus.RanToCompletion)
+            try
             {
-                decks = task.Result;
-                if (decks == null)
-                {
-                    MessageManager.Cast(InterString.Get("网络异常，获取在线卡组列表失败。"));
-                    yield break;
-                }
+                premades = PremadeDeckLibrary.Search(GetUI<OnlineDeckViewerUI>().InputDeckName.text, FormatFilter);
+                if (AvailableOnly) premades = premades.Where(e => e.available).ToArray();
+                if (SortOrder == "Z–A") premades = premades.OrderByDescending(e => e.archetype, StringComparer.OrdinalIgnoreCase).ToArray();
+                else if (SortOrder == "Lowest points") premades = premades.OrderBy(e => !e.available).ThenBy(e => e.points).ThenBy(e => e.archetype, StringComparer.OrdinalIgnoreCase).ToArray();
+                else if (SortOrder == "Highest points") premades = premades.OrderBy(e => !e.available).ThenByDescending(e => e.points).ThenBy(e => e.archetype, StringComparer.OrdinalIgnoreCase).ToArray();
                 GetUI<OnlineDeckViewerUI>().Print();
             }
-            else
-                MessageManager.Cast(InterString.Get("网络异常，获取在线卡组列表失败。"));
+            catch (Exception e)
+            {
+                MessageManager.Cast(e.Message);
+            }
         }
+
     }
 }

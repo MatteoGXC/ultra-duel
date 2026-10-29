@@ -191,7 +191,7 @@ namespace MDPro3.UI
                 if (card == null || card.Id != targetCardId || loadId != currentLoadId)
                 {
                     if (cardTex != null)
-                        CardImageLoader.ReleaseCard(card.Id);
+                        CardImageLoader.ReleaseCard(targetCardId);
                     return;
                 }
 

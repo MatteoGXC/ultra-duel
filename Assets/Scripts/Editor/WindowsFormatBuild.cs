@@ -35,7 +35,7 @@ public static class WindowsFormatBuild
 
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64);
         PlayerSettings.productName = "Ultra Duel";
-        PlayerSettings.bundleVersion = "0.1.18";
+        PlayerSettings.bundleVersion = MDPro3.Net.UltraServices.Version;
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
         PlayerSettings.defaultScreenWidth = 1600;
         PlayerSettings.defaultScreenHeight = 900;
@@ -71,6 +71,9 @@ public static class WindowsFormatBuild
     {
         string root = Directory.GetCurrentDirectory();
         string destination = Environment.GetEnvironmentVariable("ULTRA_BUILD_OUTPUT") ?? Path.Combine(root, "release", "Ultra-Duel");
+        foreach (string archive in new[] { "Current-TCG-Card-Images.zip", "ultra-card-art.zip" })
+            if (!File.Exists(Path.Combine(root, "Expansions", archive)))
+                throw new Exception("Required card artwork archive is missing from Expansions: " + archive);
         if (!Directory.Exists("Platforms/StandaloneWindows64/MasterDuel"))
             throw new Exception("The original Windows runtime asset bundles have not finished downloading.");
         if (!MDPro3.Net.YgoServer.SupportsTcgAndGenesys())

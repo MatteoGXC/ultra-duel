@@ -12,13 +12,14 @@ Practice your favorite strategies, experiment with different formats, or challen
 
 ## Download Ultra Duel
 
-Choose the version compatible with your system.
+Choose the download for your operating system and processor. Unity is not required to play.
 
-| Platform | Download |
-|---|---|
-| **Windows** | [Download Ultra Duel](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Setup.exe) |
-| **macOS — Intel** | [Download for Intel Mac](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.12) |
-| **macOS — Apple Silicon** | [Download for Apple Silicon](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.10) |
+| Platform | Processor | Download |
+|---|---|---|
+| **Windows 10 / 11** | Intel or AMD, 64-bit | [Windows installer](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Setup.exe) |
+| **macOS 11 or later — Intel** | Intel, 64-bit | [Intel Mac DMG](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.19) |
+| **macOS — Apple Silicon** | Apple M-series | [Previous Apple Silicon release, 0.1.10](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.10) |
+| **Linux** | Intel or AMD, 64-bit | Native build verification is in progress; no verified Linux download is published yet. |
 
 **[View All Releases](https://github.com/MatteoGXC/ultra-duel/releases)** | **[Download Guide](DOWNLOADS.md)**
 
@@ -29,15 +30,28 @@ Choose the version compatible with your system.
 3. Allow the installer to download and verify the required files.
 4. Launch Ultra Duel using the desktop shortcut.
 
-Unity is not required to play.
+Keep the game and its content folders together. The first installation downloads verified game content, including full card images. Allow space for both the installed files and temporary downloads.
 
-### Updating Ultra Duel
+### macOS Installation
+
+1. Open **Apple menu > About This Mac** to check your processor. Use the Intel DMG for Intel Macs; the Apple Silicon link currently provides the older 0.1.10 release.
+2. Open the DMG and drag **Ultra Duel** into **Applications**.
+3. Open Ultra Duel and let the first-launch installer download and verify the game content. Interrupted downloads can resume.
+4. If macOS blocks this independent build, open **System Settings > Privacy & Security > Open Anyway** after attempting to launch it. The app is ad-hoc signed and is not Apple notarized.
+
+Mac saves, decks, settings, and local progression remain in `~/Library/Application Support/Ultra Duel/Runtime`. To update, quit the game and replace the app in Applications with the new DMG's app. Keep the Application Support folder.
+
+### Linux
+
+A native x86_64 build is being checked for this update. Linux downloads will be listed here only after the packaged game passes its runtime checks. The Windows `.exe` and Mac `.dmg` are not native Linux installers.
+
+### Updating Ultra Duel on Windows
 
 Already have Ultra Duel installed?
 
 Download the [Ultra Duel Updater](https://github.com/MatteoGXC/ultra-duel/releases/latest/download/Ultra-Duel-Updater.zip), extract all its files (including the migration DLL) into your game directory, close the game, and run `Update-Ultra-Duel.cmd`.
 
-The updater downloads changed files while preserving your decks, settings, and local progress.
+Use the complete updater ZIP from the latest release: this update verifies multiple content archives before changing the installation. It preserves your decks, accounts, settings, and local progress. Older copies of the updater may need to be replaced with the latest ZIP.
 
 The compiled `Ultra-Duel.exe` runs directly beside `Ultra-Duel_Data`, `UnityPlayer.dll`, native plug-ins and content folders. Keep those dependencies together.
 
@@ -67,6 +81,9 @@ Ultra Duel includes a deck editor for creating, organizing, and testing decks.
 - Assign a format to each deck.
 - View format badges for your saved decks.
 - Use your decks in Solo and Multiplayer.
+- Open **Premade Decks** for 779 basic starting lists across 350 archetype/strategy entries.
+- Search by archetype; filter TCG, Genesys 100, or Genesys 0; sort by name or points.
+- Use **Save a Copy** to customize a premade without overwriting an edited deck. Unavailable variants explain why a compatible recipe is not provided.
 
 ### Solo Practice
 

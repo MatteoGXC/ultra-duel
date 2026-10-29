@@ -54,7 +54,7 @@ namespace MDPro3
         public static TMP_FontAsset tmpFontEnglish;
 
         static bool fontsStarted;
-        static UniTask fontsTask;
+        static Task fontsTask;
 
         public static UniTask FontsReady
         {
@@ -63,9 +63,10 @@ namespace MDPro3
                 if (!fontsStarted)
                 {
                     fontsStarted = true;
-                    fontsTask = LoadFontsAsync();
+                    // Every card awaits this shared initialization, including after it completes.
+                    fontsTask = LoadFontsAsync().AsTask();
                 }
-                return fontsTask;
+                return fontsTask.AsUniTask();
             }
         }
 
