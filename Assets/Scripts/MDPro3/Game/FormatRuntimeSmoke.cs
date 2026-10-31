@@ -1002,6 +1002,18 @@ namespace MDPro3
             if(launcher.gameObject.layer!=launcher.GetComponentInChildren<TMPro.TextMeshProUGUI>().gameObject.layer)
                 throw new Exception("Admin launcher text is on a different render layer.");
             yield return Capture("owner-lp-clear-hand");
+            // Keep this ATK fixture deterministic when the AI went first:
+            // Cybernetic Overflow can otherwise destroy the summoned test
+            // monster before the owner gets another free command prompt.
+            controls.Open();yield return null;
+            controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="CLEAR OPPONENT FIELD → GY").onClick.Invoke();
+            changedDeadline=Time.realtimeSinceStartup+20;
+            while((core.GetLocationCardCount(CardLocation.MonsterZone,1)>0
+                || core.GetLocationCardCount(CardLocation.SpellZone,1)>0
+                || OcgCore.currentMessage!=GameMessage.SelectIdleCmd) && Time.realtimeSinceStartup<changedDeadline)yield return null;
+            if(core.GetLocationCardCount(CardLocation.MonsterZone,1)>0 || core.GetLocationCardCount(CardLocation.SpellZone,1)>0)
+                throw new Exception("CLEAR OPPONENT FIELD did not clear monsters and spells/traps.");
+            controls.SendMessage("Close");yield return new WaitForSecondsRealtime(.5f);
             var ownMonster=OcgCore.cards.FirstOrDefault(c=>c.p.controller==0 && c.p.location==(uint)CardLocation.MonsterZone && c.p.InPosition(CardPosition.FaceUp));
             if(ownMonster==null)
             {
