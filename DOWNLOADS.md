@@ -4,17 +4,17 @@
 
 | Platform | Processor | Version | Download |
 | --- | --- | --- | --- |
-| Windows | Intel or AMD, 64-bit | 0.1.19 | [Installer](https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.19/Ultra-Duel-Setup.exe) / [Updater](https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.19/Ultra-Duel-Updater.zip) |
-| macOS | Intel, 64-bit | 0.1.19 | [Intel DMG](https://github.com/MatteoGXC/ultra-duel/releases/download/macos-v0.1.19/Ultra-Duel-Intel.dmg) |
+| Windows | Intel or AMD, 64-bit | 0.1.20 | [Installer](https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.20/Ultra-Duel-Setup.exe) / [Updater](https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.20/Ultra-Duel-Updater.zip) |
+| macOS | Intel, 64-bit | 0.1.20 | [Intel DMG](https://github.com/MatteoGXC/ultra-duel/releases/download/macos-v0.1.20/Ultra-Duel-Intel.dmg) |
 | macOS | Apple Silicon (M-series) | 0.1.10 | [Apple Silicon DMG](https://github.com/MatteoGXC/ultra-duel/releases/download/macos-v0.1.10/Ultra-Duel-Apple-Silicon.dmg) |
 
 On a Mac, open **Apple menu > About This Mac**. Choose Apple Silicon if it shows an Apple M-series chip; choose Intel if it shows an Intel processor.
 
 Open the Mac DMG and drag Ultra Duel into Applications. Keep `~/Library/Application Support/Ultra Duel/Runtime` to preserve local data. Mac updates are installed manually from a new DMG. The app is ad-hoc signed and may require **Privacy & Security > Open Anyway** after the first launch attempt.
 
-Windows players updating to 0.1.19 should download and extract the latest complete updater ZIP before running it. This update uses multiple verified content archives and preserves decks, account sessions, settings, and progress.
+Windows players updating to 0.1.20 should download and extract the latest complete updater ZIP before running it. This update uses multiple verified content archives and preserves decks, account sessions, settings, and progress.
 
-Linux build support is experimental. A Linux player is not published for 0.1.19 because its Solo-duel verification has not passed. The source includes the build tooling and native-engine checks.
+Linux build support is experimental. A Linux player is not published for 0.1.20 because its Solo-duel verification has not passed. The source includes the build tooling and native-engine checks.
 
 The installer downloads the content files automatically. Download the installer for your platform; the content ZIP/BIN files, update data, and automatic Source code archives are not standalone game installers.
 
@@ -22,8 +22,10 @@ The installer downloads the content files automatically. Download the installer 
 
 | Version | Platform | Processor | Status | Release notes and files |
 | --- | --- | --- | --- | --- |
-| 0.1.19 | Windows | Intel / AMD x64 | Current Windows | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/v0.1.19) |
-| 0.1.19 | macOS | Intel | Current Intel Mac | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.19) |
+| 0.1.20 | Windows | Intel / AMD x64 | Current Windows | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/v0.1.20) |
+| 0.1.20 | macOS | Intel | Current Intel Mac | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.20) |
+| 0.1.19 | Windows | Intel / AMD x64 | Previous version | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/v0.1.19) |
+| 0.1.19 | macOS | Intel | Previous version | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.19) |
 | 0.1.15 | Windows | Intel / AMD x64 | Previous version | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/v0.1.15) |
 | 0.1.15 | macOS | Intel | Previous version | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/macos-v0.1.15) |
 | 0.1.14 | Windows | Intel / AMD x64 | Previous version | [Download / release notes](https://github.com/MatteoGXC/ultra-duel/releases/tag/v0.1.14) |
