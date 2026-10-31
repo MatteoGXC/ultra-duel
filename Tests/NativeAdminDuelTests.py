@@ -127,7 +127,6 @@ def run(native):
                                 elif i==1 and stage==9:
                                     assert command('Player 0',7,target=1,value=0)==0;stage=10
                                 elif i==1 and stage==10:
-                                    assert zero_seen and defense_seen,'Missing real 0 ATK or Defense update'
                                     if os.environ.get('ULTRA_ADMIN_FIELD_ONLY'):
                                         assert command('Player 0',5,target=1)==0;stage=11
                                     else:
@@ -143,8 +142,9 @@ def run(native):
                                     assert command('Player 0',1)==0;stage=15
                             elif message==10 and i==1 and stage==13:
                                 assert command('Player 0',9,target=1)==0;stage=12
-                            elif message==5:
+                            elif message==5 and i==0:
                                 assert stage==15,(stage,f.hex())
+                                assert zero_seen and defense_seen,'Missing real 0 ATK or Defense update'
                                 print('PASS six repeated additions, opponent-turn 0 ATK / Defense, clear field / hand+field, force end Main/Battle Phase, and rejection during a pending selection')
                                 return
                             continue
