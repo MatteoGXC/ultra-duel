@@ -30,41 +30,89 @@ extern "C" DECL_DLLEXPORT int32_t ocg_admin_command(intptr_t handle, int32_t act
         pd->write_buffer8(MSG_WIN); pd->write_buffer8(actor); pd->write_buffer8(0);
         return 0;
     }
-    // Hand changes rebuild the Main Phase choices. Never alter a resolving
-    // chain, another player's pending selection, or a battle calculation.
+    // Only replace free Main/Battle Phase command prompts. Never invalidate
+    // an effect selection, resolving chain, or damage calculation.
     auto& units = f->core.units;
-    if(f->infos.turn_player != actor || !f->core.current_chain.empty() || !f->core.subunits.empty()
-        || units.size() < 2 || units.front().type != PROCESSOR_SELECT_IDLECMD
-        || std::next(units.begin())->type != PROCESSOR_IDLE_COMMAND) return 2;
+    if(!f->core.current_chain.empty() || !f->core.subunits.empty() || units.size() < 2) return 2;
+    bool idle = units.front().type == PROCESSOR_SELECT_IDLECMD
+        && std::next(units.begin())->type == PROCESSOR_IDLE_COMMAND;
+    bool battle = units.front().type == PROCESSOR_SELECT_BATTLECMD
+        && std::next(units.begin())->type == PROCESSOR_BATTLE_COMMAND;
+    if(!idle && !battle) return 2;
+    if(operation < 2 || operation > 9) return 3;
+    if((operation == 2 || operation == 3) && (!idle || f->infos.turn_player != actor)) return 2;
+    if(operation >= 4 && target == actor) return 3;
     if(operation == 2 && (value < 1 || value > 99999999)) return 3;
     if(operation == 3) {
         card_data data{}; creader(static_cast<uint32_t>(value), &data);
         if(!data.code || (data.type & TYPE_TOKEN) || target != actor || f->player[actor].list_hand.size() >= 60) return 3;
     }
-    if(operation < 2 || operation > 4) return 3;
+    card* selected = nullptr;
+    if(operation == 7 || operation == 8) {
+        if(operation == 7 && value == -1) {
+            bool found = false;
+            for(auto* c : f->player[target].list_mzone)
+                if(c && !(c->data.type & TYPE_LINK)) found = true;
+            if(!found) return 3;
+        } else {
+            if(value < 0 || value >= 7) return 3;
+            selected = f->player[target].list_mzone[value];
+            if(!selected || (operation == 7 && (selected->data.type & TYPE_LINK))
+                || (operation == 8 && !selected->is_position(POS_FACEUP))) return 3;
+        }
+    }
+    if(operation == 9 && f->infos.turn_player != target) return 2;
+    if(operation == 9) {
+        auto turn = units.begin();
+        while(turn != units.end() && turn->type != PROCESSOR_TURN) ++turn;
+        if(turn == units.end()) return 2;
+        // Preserve the ordinary End Phase and turn cleanup instead of swapping
+        // the turn-player variable or fabricating an opponent response.
+        f->reset_phase(f->infos.phase);
+        units.erase(units.begin(),turn);
+        turn->step = 15;
+        f->core.select_chains.clear();
+        f->adjust_all();
+        return 0;
+    }
+    units.pop_front(); units.front().step=0;
     if(operation == 2) {
         f->player[target].lp = value;
         pd->write_buffer8(MSG_LPUPDATE); pd->write_buffer8(target); pd->write_buffer32(value);
     } else if(operation == 3) {
         new_card(handle, static_cast<uint32_t>(value), actor, actor, LOCATION_HAND, 0, POS_FACEDOWN_DEFENSE);
         auto* c = f->player[actor].list_hand.back();
+        c->current.reason = REASON_RULE;
+        c->current.reason_player = actor;
         pd->write_buffer8(MSG_MOVE); pd->write_buffer32(c->data.code); pd->write_buffer32(0);
         pd->write_buffer32(c->get_info_location()); pd->write_buffer32(REASON_RULE);
-    } else {
-        if(target == actor) return 3;
-        while(!f->player[target].list_hand.empty()) {
-            auto* c = f->player[target].list_hand.back();
-            auto previous = c->get_info_location();
-            c->previous = c->current;
-            c->enable_field_effect(false);
-            f->remove_card(c); f->add_card(target,c,LOCATION_GRAVE,0);
-            c->current.position=POS_FACEUP_ATTACK; c->current.reason=REASON_RULE;
-            c->current.reason_player=actor; c->enable_field_effect(true);
-            pd->write_buffer8(MSG_MOVE); pd->write_buffer32(c->data.code); pd->write_buffer32(previous);
-            pd->write_buffer32(c->get_info_location()); pd->write_buffer32(REASON_RULE);
+    } else if(operation <= 6) {
+        card_set cards;
+        if(operation == 4 || operation == 6)
+            cards.insert(f->player[target].list_hand.begin(),f->player[target].list_hand.end());
+        if(operation == 5 || operation == 6) {
+            for(auto* c : f->player[target].list_mzone) if(c) cards.insert(c);
+            for(auto* c : f->player[target].list_szone) if(c) cards.insert(c);
         }
+        // The normal rule-move processor handles tokens, Xyz materials,
+        // borrowed cards returning to their owner's GY, and equipment cleanup.
+        if(!cards.empty()) f->send_to(cards,nullptr,REASON_RULE,actor,PLAYER_NONE,LOCATION_GRAVE,0,POS_FACEUP_ATTACK);
+    } else if(operation == 7) {
+        card_set cards;
+        if(selected) cards.insert(selected);
+        else for(auto* c : f->player[target].list_mzone)
+            if(c && !(c->data.type & TYPE_LINK)) cards.insert(c);
+        f->change_position(cards,nullptr,actor,POS_FACEUP_DEFENSE,POS_FACEDOWN_DEFENSE,
+            POS_FACEUP_DEFENSE,POS_FACEDOWN_DEFENSE,0);
+    } else if(operation == 8) {
+        auto* e = pd->new_effect();
+        e->owner = selected; e->type = EFFECT_TYPE_SINGLE;
+        e->code = EFFECT_SET_ATTACK_FINAL; e->value = 0;
+        e->flag[0] = EFFECT_FLAG_CANNOT_DISABLE;
+        e->reset_flag = RESET_EVENT | RESETS_STANDARD;
+        selected->add_effect(e);
+        f->adjust_instant();
     }
-    units.pop_front(); units.front().step=0;
     return 0;
 }
 

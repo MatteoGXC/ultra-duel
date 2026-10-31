@@ -29,7 +29,7 @@ int NetServer::AdminAction(const std::wstring& name, int operation, int target, 
         }
     }
     if(!actor) return 4;
-    if(operation != 1 && actor->state != CTOS_RESPONSE && actor->state != CTOS_TIME_CONFIRM) return 2;
+    if((operation == 2 || operation == 3) && actor->state != CTOS_RESPONSE && actor->state != CTOS_TIME_CONFIRM) return 2;
     int side=duel_mode->host_info.mode == MODE_TAG ? actor->type/2 : actor->type;
     int result=ocg_admin_command(duel_mode->pduel,side,operation,target ? 1-side : side,value);
     if(result) return result;
@@ -42,7 +42,14 @@ int NetServer::AdminAction(const std::wstring& name, int operation, int target, 
             for(auto& entry : users) SendPacketToPlayer(&entry.second,STOC_DUEL_END);
             StopServer();
         }
-    } else duel_mode->Process();
+    } else {
+        // A replaced command prompt must no longer accept the old seat's
+        // response while Process advances or issues the refreshed prompt.
+        for(auto& entry : users)
+            if(entry.second.game == duel_mode && entry.second.type < 4) entry.second.state = 0xff;
+        if(duel_mode->etimer) event_del(duel_mode->etimer);
+        duel_mode->Process();
+    }
     return 0;
 }
 

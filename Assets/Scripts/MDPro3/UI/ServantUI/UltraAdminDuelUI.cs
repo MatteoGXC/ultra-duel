@@ -23,6 +23,8 @@ namespace MDPro3.UI.ServantUI
         RectTransform overlay;
         TextMeshProUGUI status;
         TMP_InputField lifePoints,card;
+        TextMeshProUGUI monsterLabel;
+        int monsterZone;
         bool busy;
 
         void Start()
@@ -46,19 +48,44 @@ namespace MDPro3.UI.ServantUI
             Close();
             overlay=Rect("Owner duel controls",transform,0,0,1,1);
             var shade=overlay.gameObject.AddComponent<Image>();shade.color=new Color(0,0,0,.76f);
-            var panel=Rect("Admin panel",overlay,.23f,.18f,.54f,.64f);
+            var panel=Rect("Admin panel",overlay,.12f,.08f,.76f,.84f);
             var background=panel.gameObject.AddComponent<UltraChrome>();background.color=new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.98f);background.cut=UltraCut.Panel;background.rim=1.5f;
-            Text(panel,"ADMIN / CURRENT DUEL",30,.05f,.85f,.75f,.09f);
-            Button(panel,"CLOSE",Close,.80f,.86f,.15f,.08f);
-            Text(panel,"Actions run only when you press a button. Hand and LP controls require your Main Phase.",18,.05f,.72f,.9f,.12f);
-            lifePoints=Input(panel,"Life points",.59f);lifePoints.contentType=TMP_InputField.ContentType.IntegerNumber;lifePoints.text="8000";
-            Button(panel,"SET MY LP",()=>SetLife(false),.42f,.59f,.24f,.09f);
-            Button(panel,"SET OPPONENT LP",()=>SetLife(true),.68f,.59f,.27f,.09f);
-            card=Input(panel,"Exact card name or ID",.45f);
-            Button(panel,"ADD TO MY HAND",GiveCard,.56f,.45f,.39f,.09f);
-            Button(panel,"CLEAR OPPONENT HAND → GY",()=>Apply("clear-hand",1,0).Forget(),.05f,.30f,.56f,.10f);
-            Button(panel,"WIN THIS DUEL",()=>Apply("win",0,0).Forget(),.64f,.30f,.31f,.10f,UltraTier.Danger);
-            status=Text(panel,"No changes made.",18,.05f,.055f,.9f,.18f);
+            Text(panel,"ADMIN / CURRENT DUEL",30,.05f,.89f,.75f,.07f);
+            Button(panel,"CLOSE",Close,.80f,.89f,.15f,.065f);
+            Text(panel,"Use a free Main/Battle Phase prompt, after effects resolve. Add cards / LP: your Main Phase.",18,.05f,.81f,.9f,.06f);
+            lifePoints=Input(panel,"Life points",.70f);lifePoints.contentType=TMP_InputField.ContentType.IntegerNumber;lifePoints.text="8000";
+            Button(panel,"SET MY LP",()=>SetLife(false),.42f,.70f,.24f,.08f);
+            Button(panel,"SET OPPONENT LP",()=>SetLife(true),.68f,.70f,.27f,.08f);
+            card=Input(panel,"Exact card name or ID",.59f);
+            Button(panel,"ADD TO MY HAND",GiveCard,.56f,.59f,.39f,.08f);
+            var select=Button(panel,"",CycleMonster,.05f,.47f,.9f,.08f);
+            monsterLabel=select.GetComponentInChildren<TextMeshProUGUI>();
+            RefreshMonster();
+            Button(panel,"SELECTED → DEFENSE",()=>Apply("defense",1,monsterZone).Forget(),.05f,.36f,.29f,.08f);
+            Button(panel,"ALL → DEFENSE",()=>Apply("defense",1,-1).Forget(),.355f,.36f,.29f,.08f);
+            Button(panel,"SELECTED → 0 ATK",()=>Apply("zero-atk",1,monsterZone).Forget(),.66f,.36f,.29f,.08f);
+            Button(panel,"CLEAR OPPONENT HAND → GY",()=>Apply("clear-hand",1,0).Forget(),.05f,.25f,.29f,.08f);
+            Button(panel,"CLEAR OPPONENT FIELD → GY",()=>Apply("clear-field",1,0).Forget(),.355f,.25f,.29f,.08f);
+            Button(panel,"CLEAR HAND + FIELD → GY",()=>Apply("clear-hand-field",1,0).Forget(),.66f,.25f,.29f,.08f,UltraTier.Danger);
+            Button(panel,"END OPPONENT TURN",()=>Apply("skip-turn",1,0).Forget(),.05f,.14f,.44f,.08f,UltraTier.Danger);
+            Button(panel,"WIN THIS DUEL",()=>Apply("win",0,0).Forget(),.51f,.14f,.44f,.08f,UltraTier.Danger);
+            status=Text(panel,"0 ATK lasts while face-up on the field. Link monsters cannot enter Defense.",17,.05f,.025f,.9f,.09f);
+        }
+
+        void CycleMonster()
+        {
+            monsterZone=(monsterZone+1)%7;
+            RefreshMonster();
+        }
+
+        void RefreshMonster()
+        {
+            if(monsterLabel==null)return;
+            var selected=OcgCore.cards.FirstOrDefault(c=>c.p.controller==1
+                && c.p.location==(uint)CardLocation.MonsterZone && c.p.sequence==monsterZone);
+            string zone=monsterZone<5?"Monster zone "+(monsterZone+1):"Extra monster zone "+(monsterZone-4);
+            string name=selected==null?"Empty":selected.p.InPosition(CardPosition.FaceDown)?"Face-down monster":selected.GetData().Name;
+            monsterLabel.text="OPPONENT: "+zone+" — "+name+"   [NEXT >]";
         }
 
         void Close(){if(overlay!=null)Destroy(overlay.gameObject);overlay=null;status=null;}
@@ -92,12 +119,16 @@ namespace MDPro3.UI.ServantUI
                 else if(YgoServer.ServerRunning())
                 {
                     string actor=Config.Get("DuelPlayerName0",Config.EMPTY_STRING);
-                    int operation=action=="win"?1:action=="set-lp"?2:action=="give-card"?3:4;
+                    int operation=action switch {
+                        "win"=>1,"set-lp"=>2,"give-card"=>3,"clear-hand"=>4,"clear-field"=>5,
+                        "clear-hand-field"=>6,"defense"=>7,"zero-atk"=>8,"skip-turn"=>9,
+                        _=>throw new Exception("Unknown admin action.")};
                     int result=await UniTask.RunOnThreadPool(()=>Dll.admin_duel_action(actor,operation,target,value));
-                    if(result!=0)throw new Exception(result==2?"Wait for your Main Phase and finish resolving effects.":result==3?"Invalid value or card, or your hand is full.":"You must be seated in an active supported duel.");
+                    if(result!=0)throw new Exception(result==2?"Wait for a free command prompt. Add/LP: your Main Phase. End turn: their turn.":result==3?"Invalid card/value, full hand, or no eligible monster. Links cannot defend; 0 ATK needs a face-up monster.":"You must be seated in an active supported duel.");
                 }
                 else throw new Exception("These controls require an Ultra Duel friend room or a local Solo duel.");
                 if(status!=null)status.text="Applied: "+action+".";
+                RefreshMonster();
             }
             catch(Exception error){if(status!=null)status.text=error.Message;}
             finally{busy=false;}

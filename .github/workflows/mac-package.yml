@@ -136,6 +136,8 @@ jobs:
           python3 Tests/NativeBeyondTheBraveTests.py --database "$ULTRA_TEST_CONTENT/Data/locales/en-US/cards.cdb" --scripts "$ULTRA_TEST_CONTENT/Data/script.zip"
           python3 Tests/NativeEffectDescriptionsTests.py
           python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
+          ULTRA_ADMIN_EXTENDED=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
+          ULTRA_ADMIN_EXTENDED=1 ULTRA_ADMIN_FIELD_ONLY=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
           ULTRA_TIMER_TEST=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
           ULTRA_SPECTATOR_TEST=1 python3 Tests/NativeAdminDuelTests.py "$ULTRA_NATIVE_DIR"
       - name: Verify graphical game launch
@@ -178,7 +180,7 @@ jobs:
           config=root/'ultra-runtime/Data/config.conf'
           lines=[line for line in config.read_text(encoding='utf-8-sig').splitlines() if not line.startswith('Background->')]
           config.write_text('\n'.join(lines+['Background->0'])+'\n',encoding='utf-8')
-          process=subprocess.Popen([str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','--ultra-result-check','-logFile',str(root/'mac-duel-ui.log')],env=env)
+          process=subprocess.Popen([str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','--ultra-result-check','--owner-admin-actions','-logFile',str(root/'mac-duel-ui.log')],env=env)
           def desktop_capture():
               for _ in range(1200):
                   if (root/'mac-duel-ui/duel.png').exists():

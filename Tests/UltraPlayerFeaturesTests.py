@@ -79,6 +79,25 @@ class PlayerFeatures(unittest.TestCase):
             other['members'].add(1)
             self.assertTrue(call(1,body)['ok'])
             command.assert_called_with(other,'owner',2,0,12345)
+    def test_opponent_duel_actions_validate_target_values_and_owner(self):
+        self.db.execute('create table sessions(token text,user integer,expires integer)')
+        for uid in (1,2):self.db.execute('insert into sessions values(?,?,?)',(hashlib.sha256(str(uid).encode()).hexdigest(),uid,int(time.time())+1000))
+        room={'members':{1,2}}
+        def call(uid,body):
+            request=SimpleNamespace(headers={'Authorization':'Bearer '+str(uid)})
+            return service.Handler.route(request,self.db,'POST','/admin/duel',body,int(time.time()))
+        with patch.object(service,'STATE',self.state),patch.object(service,'ROOMS',{'duel':room}),patch.object(service,'send_duel_command',return_value=0) as command:
+            for action,op,value in [('clear-field',5,0),('clear-hand-field',6,0),('defense',7,-1),('defense',7,6),('zero-atk',8,4),('skip-turn',9,0)]:
+                body=dict(room='duel',action=action,target=0,value=value)
+                with self.assertRaises(service.Problem) as denied:call(2,body)
+                self.assertEqual(denied.exception.status,403)
+                self.assertTrue(call(1,body)['ok'])
+                command.assert_called_with(room,'owner',op,1,value)
+            for action,value in [('defense',-2),('defense',7),('zero-atk',-1),('zero-atk',7),('unknown',0)]:
+                command.reset_mock()
+                with self.assertRaises(service.Problem):call(1,dict(room='duel',action=action,value=value))
+                command.assert_not_called()
+
     def test_spectating_uses_friend_authorization_and_marks_observer_role(self):
         self.db.executescript('create table sessions(token text,user integer,expires integer);create table friends(sender integer,recipient integer,accepted integer);insert into friends values(1,2,1);')
         for uid in (1,2,3):self.db.execute('insert into sessions values(?,?,?)',(hashlib.sha256(str(uid).encode()).hexdigest(),uid,int(time.time())+1000))

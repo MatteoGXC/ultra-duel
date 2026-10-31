@@ -941,6 +941,12 @@ namespace MDPro3
             var field=controls.GetComponentsInChildren<TMPro.TMP_InputField>().First(i=>i.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text=="Exact card name or ID");
             field.text="13068112";
             var add=controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.GetComponentsInChildren<TMPro.TextMeshProUGUI>().Any(t=>t.text=="ADD TO MY HAND"));
+            yield return Capture("owner-admin-expanded-menu");
+            foreach(var label in controls.GetComponentsInChildren<TMPro.TextMeshProUGUI>())
+            {
+                label.ForceMeshUpdate();
+                if(label.isTextOverflowing)throw new Exception("Admin menu label is clipped: "+label.text);
+            }
             add.onClick.Invoke();
             float changedDeadline=Time.realtimeSinceStartup+20;
             while((core.GetLocationCardCount(CardLocation.Hand,0)!=mine+1
@@ -957,6 +963,25 @@ namespace MDPro3
             if(FindObjectsByType<UnityEngine.Playables.PlayableDirector>(FindObjectsSortMode.None).Any(d=>d.name.Contains("CardCheat")))
                 throw new Exception("Owner addition left the legacy card-cheat cinematic active.");
             yield return Capture("owner-added-card");
+            // A single addition missed the reported blue-screen regression.
+            // Reopen the real panel and add five more cards, waiting for each
+            // refreshed command prompt and rendered model before continuing.
+            for(int n=2;n<=6;n++)
+            {
+                controls.Open();yield return null;
+                field=controls.GetComponentsInChildren<TMPro.TMP_InputField>().First(i=>i.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text=="Exact card name or ID");
+                field.text="13068112";
+                controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="ADD TO MY HAND").onClick.Invoke();
+                changedDeadline=Time.realtimeSinceStartup+15;
+                while((core.GetLocationCardCount(CardLocation.Hand,0)!=mine+n || OcgCore.currentMessage!=GameMessage.SelectIdleCmd)
+                    && Time.realtimeSinceStartup<changedDeadline)yield return null;
+                controls.SendMessage("Close");yield return new WaitForSecondsRealtime(.5f);
+                if(core.GetLocationCardCount(CardLocation.Hand,0)!=mine+n
+                    || OcgCore.currentMessage!=GameMessage.SelectIdleCmd
+                    || FindObjectsByType<UnityEngine.Playables.PlayableDirector>(FindObjectsSortMode.None).Any(d=>d.name.Contains("CardCheat")))
+                    throw new Exception("Repeated hand addition failed or left the card-cheat overlay active: "+n);
+            }
+            yield return Capture("owner-six-added-cards");
             controls.Open();
             yield return null;
             var lpInput=controls.GetComponentsInChildren<TMPro.TMP_InputField>().First(i=>i.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text=="Life points");
@@ -976,7 +1001,7 @@ namespace MDPro3
             if(launcher.gameObject.layer!=launcher.GetComponentInChildren<TMPro.TextMeshProUGUI>().gameObject.layer)
                 throw new Exception("Admin launcher text is on a different render layer.");
             yield return Capture("owner-lp-clear-hand");
-            Debug.Log("OWNER_ADMIN_ACTIONS_PASSED real GUI card addition, LP change, clear-hand and refreshed Main Phase choices");
+            Debug.Log("OWNER_ADMIN_ACTIONS_PASSED six real GUI card additions without blue cinematic, expanded menu, LP change, clear-hand and refreshed Main Phase choices");
         }
 
         private void CheckDeckProfiles()

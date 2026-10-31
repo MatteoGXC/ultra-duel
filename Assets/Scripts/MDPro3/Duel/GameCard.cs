@@ -1330,8 +1330,11 @@ namespace MDPro3
             // Owner hand additions use normal hand movement. The legacy
             // CardCheatAppear cinematic assumes a scripted cutscene and can
             // leave a full-screen effect covering an ordinary network duel.
+            // Query updates can replace the move reason before the animation
+            // finishes. Network hand additions never need a cutscene, regardless
+            // of that mutable reason (including repeated additions and replays).
             bool ownerHandAddition = cacheP.location == 0
-                && p.InLocation(CardLocation.Hand) && p.IsReason(CardReason.RULE);
+                && p.InLocation(CardLocation.Hand) && !data.HasType(CardType.Token);
             if(ownerHandAddition)
                 ModelAt(p);
             //from unknown

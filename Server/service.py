@@ -203,7 +203,7 @@ class Handler(BaseHTTPRequestHandler):
             print('API_ERROR',type(e).__name__,flush=True)
             self.reply({'error':'Service temporarily unavailable. Please try again.'},503)
     def route(self, db, method, path, body, now):
-        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.13','ownerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300,'matchmaking':True,'dailyResetUtc':'00:00','cloudDecks':True,'notifications':True}
+        if path=='/health' and method=='GET': return {'ok':True,'version':'0.1.20','ownerDuelControls':True,'expandedOwnerDuelControls':True,'friendTables':3,'spectating':True,'duelTimerSeconds':300,'matchmaking':True,'dailyResetUtc':'00:00','cloudDecks':True,'notifications':True}
         if path in ('/register','/login') and method=='POST':
             name=str(body.get('name','')).strip(); password=str(body.get('password',''))
             if not re.fullmatch(r'[A-Za-z0-9_-]{3,24}',name): raise Problem('Use 3–24 letters, numbers, underscores or hyphens for your username.')
@@ -231,20 +231,22 @@ class Handler(BaseHTTPRequestHandler):
         if feature is not None: return feature
         if path=='/admin/duel' and method=='POST':
             if not player_features.is_owner(STATE,user['name']):raise Problem('Owner permission required.',403)
-            actions={'win':1,'set-lp':2,'give-card':3,'clear-hand':4}
+            actions={'win':1,'set-lp':2,'give-card':3,'clear-hand':4,'clear-field':5,'clear-hand-field':6,'defense':7,'zero-atk':8,'skip-turn':9}
             action=str(body.get('action','')); target=int(body.get('target',0));value=int(body.get('value',0))
             if action not in actions or target not in (0,1):raise Problem('Invalid duel action.')
             if action=='set-lp' and not 1<=value<=99999999:raise Problem('Enter life points from 1 to 99,999,999.')
             if action=='give-card' and not 1<=value<=999999999:raise Problem('Invalid card ID.')
-            if action=='clear-hand':target=1
+            if action in ('clear-hand','clear-field','clear-hand-field','defense','zero-atk','skip-turn'):target=1
+            if action=='defense' and not -1<=value<=6:raise Problem('Choose an opponent monster zone, or all monsters.')
+            if action=='zero-atk' and not 0<=value<=6:raise Problem('Choose a face-up opponent monster.')
             rid=str(body.get('room',''))
             with LOCK:
                 room=ROOMS.get(rid)
                 if not room or uid not in room.get('members',set()):raise Problem('Join your current duel before using admin controls.',403)
                 table=room_tables(room).get(int(body.get('table',1)))
                 if not table or uid not in table.get('members',set()):raise Problem('Join this table before using admin controls.',403)
-                result=send_duel_command(table,user['name'],actions[action],1 if action=='clear-hand' else target,value)
-            messages={1:'No active duel.',2:'Use this action during your own Main Phase, after effects finish resolving.',3:'Invalid value or card, or your hand is full.',4:'Your player is not seated in this duel.',5:'The duel did not answer. Check its state before retrying.'}
+                result=send_duel_command(table,user['name'],actions[action],target,value)
+            messages={1:'No active duel.',2:'Wait for a free Main/Battle Phase command prompt. Adding cards and LP require your Main Phase; end turn requires their turn.',3:'Invalid value, full hand, or no eligible monster in that zone. Link monsters cannot enter Defense; 0 ATK requires a face-up monster.',4:'Your player is not seated in this duel.',5:'The duel did not answer. Check its state before retrying.'}
             if result:raise Problem(messages.get(result,'Duel action failed.'),409)
             db.execute('insert into admin_actions(actor,room,action,details,created) values(?,?,?,?,?)',(uid,rid,action,json.dumps(dict(target=target,value=value)),now))
             return {'ok':True}

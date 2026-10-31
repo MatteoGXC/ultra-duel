@@ -55,6 +55,16 @@ Every admin request checks the authenticated account on the server; the keyboard
 sequence itself grants no permissions. Gem grants are recorded in the `grants`
 table with actor, recipient, amount, reason and timestamp.
 
+The primary owner can open ADMIN during a duel to clear the opponent's hand,
+field, or both into the GY; switch a selected monster or all eligible monsters
+to Defense; set a selected face-up monster's ATK to 0; and end the opponent's
+current turn. These actions require a free Main/Battle Phase command prompt,
+and do not interrupt resolving chains or card selections. End turn enters the
+normal End Phase. Link monsters keep their legal position, and the ATK override
+resets when the monster leaves the field or turns face-down. Added cards and
+LP changes still require the owner's Main Phase. The service checks owner
+permission and duel membership for every request and records each action.
+
 Accepted friends can receive five-minute duel invitations, and presence records
 Home, In duel, In room, Solo or Deck editing. Rooms remain two-player games with
 the complete bundled card engine. A four-player free-for-all is not implemented;

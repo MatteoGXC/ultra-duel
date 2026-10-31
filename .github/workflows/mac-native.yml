@@ -53,7 +53,10 @@ jobs:
       - name: Play three-player and four-player tag turns
         run: python3 Tests/NativeUnevenTagTests.py --native build/mac
       - name: Verify explicit owner duel controls
-        run: python3 Tests/NativeAdminDuelTests.py build/mac
+        run: |
+          python3 Tests/NativeAdminDuelTests.py build/mac
+          ULTRA_ADMIN_EXTENDED=1 python3 Tests/NativeAdminDuelTests.py build/mac
+          ULTRA_ADMIN_EXTENDED=1 ULTRA_ADMIN_FIELD_ONLY=1 python3 Tests/NativeAdminDuelTests.py build/mac
       - name: Verify Branded spells and Aluber search
         run: python3 Tests/NativeFriendEffectsTests.py build/mac
       - name: Verify Beyond the Brave native effects
