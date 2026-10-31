@@ -1001,6 +1001,45 @@ namespace MDPro3
             if(launcher.gameObject.layer!=launcher.GetComponentInChildren<TMPro.TextMeshProUGUI>().gameObject.layer)
                 throw new Exception("Admin launcher text is on a different render layer.");
             yield return Capture("owner-lp-clear-hand");
+            var ownMonster=OcgCore.cards.FirstOrDefault(c=>c.p.controller==0 && c.p.location==(uint)CardLocation.MonsterZone && c.p.InPosition(CardPosition.FaceUp));
+            if(ownMonster==null)
+            {
+                controls.Open();yield return null;
+                controls.GetComponentsInChildren<TMPro.TMP_InputField>().First(i=>i.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text=="Exact card name or ID").text="69247929";
+                controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="ADD TO MY HAND").onClick.Invoke();
+                changedDeadline=Time.realtimeSinceStartup+15;
+                GameCard summoned=null;
+                while(Time.realtimeSinceStartup<changedDeadline)
+                {
+                    summoned=OcgCore.cards.FirstOrDefault(c=>c.p.controller==0 && c.p.InLocation(CardLocation.Hand) && c.GetData().Id==69247929 && c.buttons.Any(b=>b.type==ButtonType.Summon));
+                    if(summoned!=null && OcgCore.currentMessage==GameMessage.SelectIdleCmd)break;
+                    yield return null;
+                }
+                if(summoned==null)throw new Exception("Own ATK test monster was not summonable.");
+                controls.SendMessage("Close");
+                core.SendReturn(BitConverter.GetBytes(summoned.buttons.First(b=>b.type==ButtonType.Summon).response[0]));
+                changedDeadline=Time.realtimeSinceStartup+20;
+                bool placed=false;
+                while(Time.realtimeSinceStartup<changedDeadline)
+                {
+                    if(OcgCore.currentMessage==GameMessage.SelectPlace && !placed)
+                    {core.SendReturn(new byte[]{(byte)OcgCore.LocalPlayer(0),(byte)CardLocation.MonsterZone,0});placed=true;}
+                    if(summoned.p.location==(uint)CardLocation.MonsterZone && OcgCore.currentMessage==GameMessage.SelectIdleCmd){ownMonster=summoned;break;}
+                    yield return null;
+                }
+                if(ownMonster==null)throw new Exception("Own ATK test monster did not reach the field.");
+            }
+            controls.Open();yield return null;
+            typeof(UltraAdminDuelUI).GetField("myMonsterZone",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(controls,(int)ownMonster.p.sequence);
+            controls.SendMessage("RefreshMonster");
+            var attackInput=controls.GetComponentsInChildren<TMPro.TMP_InputField>().First(i=>i.placeholder.GetComponent<TMPro.TextMeshProUGUI>().text=="Attack points");
+            attackInput.text="4500";
+            controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.name=="SET MY ATK").onClick.Invoke();
+            changedDeadline=Time.realtimeSinceStartup+15;
+            while((ownMonster.GetData().Attack!=4500 || OcgCore.currentMessage!=GameMessage.SelectIdleCmd) && Time.realtimeSinceStartup<changedDeadline)yield return null;
+            if(ownMonster.GetData().Attack!=4500)throw new Exception("SET MY ATK did not update the real monster to 4500.");
+            controls.SendMessage("Close");
+            yield return Capture("owner-own-monster-4500-atk");
             Debug.Log("OWNER_ADMIN_ACTIONS_PASSED six real GUI card additions without blue cinematic, expanded menu, LP change, clear-hand and refreshed Main Phase choices");
         }
 

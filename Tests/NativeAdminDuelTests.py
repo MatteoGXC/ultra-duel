@@ -49,7 +49,7 @@ def run(native):
                 clients.append(client);buffers.append(bytearray())
                 send(i,0x10,('Player '+str(i)).encode('utf-16-le').ljust(40,b'\0'))
                 send(i,0x12,struct.pack('<HBBI',0x1362,204,204,0)+bytes(40))
-            ready=set();confirmed=set();started=False;stage=0;lp=[];moves=[];timer_seen=False;observer_seen=False;zero_seen=False;defense_seen=False
+            ready=set();confirmed=set();started=False;stage=0;lp=[];moves=[];timer_seen=False;observer_seen=False;zero_seen=False;defense_seen=False;custom_atk_seen=False
             deadline=time.monotonic()+35
             while time.monotonic()<deadline:
                 for client in select.select(clients,[],[],.2)[0]:
@@ -96,7 +96,9 @@ def run(native):
                                 size,flags=struct.unpack_from('<II',f,4)
                                 if size>8 and flags&0x100:
                                     offset=12+4*(flags&0xff).bit_count()
-                                    if struct.unpack_from('<i',f,offset)[0]==0:zero_seen=True
+                                    attack=struct.unpack_from('<i',f,offset)[0]
+                                    if attack==0:zero_seen=True
+                                    if attack==4500:custom_atk_seen=True
                             if message==53 and i==0:
                                 assert f[10]==4,('Monster did not enter face-up Defense',f.hex())
                                 defense_seen=True
@@ -123,6 +125,8 @@ def run(native):
                                     assert f[3]>0,'No summonable monster'
                                     send(i,1,struct.pack('<I',0));stage=8
                                 elif i==1 and stage==8:
+                                    assert command('Player 1',10,target=0,value=4500*8)==0;stage=17
+                                elif i==1 and stage==17:
                                     assert command('Player 0',8,target=1,value=0)==0;stage=9
                                 elif i==1 and stage==9:
                                     assert command('Player 0',7,target=1,value=0)==0;stage=10
@@ -144,8 +148,8 @@ def run(native):
                                 assert command('Player 0',9,target=1)==0;stage=12
                             elif message==5 and i==0:
                                 assert stage==15,(stage,f.hex())
-                                assert zero_seen and defense_seen,'Missing real 0 ATK or Defense update'
-                                print('PASS six repeated additions, opponent-turn 0 ATK / Defense, clear field / hand+field, force end Main/Battle Phase, and rejection during a pending selection')
+                                assert zero_seen and defense_seen and custom_atk_seen,'Missing real custom ATK, 0 ATK or Defense update'
+                                print('PASS six repeated additions, own custom ATK, opponent-turn 0 ATK / Defense, clear field / hand+field, force end Main/Battle Phase, and rejection during a pending selection')
                                 return
                             continue
                         if message==94 and i==0:lp.append((f[2],struct.unpack_from('<i',f,3)[0]))

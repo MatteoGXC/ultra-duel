@@ -22,9 +22,9 @@ namespace MDPro3.UI.ServantUI
         Button launcher;
         RectTransform overlay;
         TextMeshProUGUI status;
-        TMP_InputField lifePoints,card;
-        TextMeshProUGUI monsterLabel;
-        int monsterZone;
+        TMP_InputField lifePoints,card,attackPoints;
+        TextMeshProUGUI monsterLabel,myMonsterLabel;
+        int monsterZone,myMonsterZone;
         bool busy;
 
         void Start()
@@ -48,28 +48,33 @@ namespace MDPro3.UI.ServantUI
             Close();
             overlay=Rect("Owner duel controls",transform,0,0,1,1);
             var shade=overlay.gameObject.AddComponent<Image>();shade.color=new Color(0,0,0,.76f);
-            var panel=Rect("Admin panel",overlay,.12f,.08f,.76f,.84f);
+            var panel=Rect("Admin panel",overlay,.12f,.04f,.76f,.92f);
             var background=panel.gameObject.AddComponent<UltraChrome>();background.color=new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.98f);background.cut=UltraCut.Panel;background.rim=1.5f;
-            Text(panel,"ADMIN / CURRENT DUEL",30,.05f,.89f,.75f,.07f);
-            Button(panel,"CLOSE",Close,.80f,.89f,.15f,.065f);
-            Text(panel,"Use a free Main/Battle Phase prompt, after effects resolve. Add cards / LP: your Main Phase.",18,.05f,.81f,.9f,.06f);
-            lifePoints=Input(panel,"Life points",.70f);lifePoints.contentType=TMP_InputField.ContentType.IntegerNumber;lifePoints.text="8000";
-            Button(panel,"SET MY LP",()=>SetLife(false),.42f,.70f,.24f,.08f);
-            Button(panel,"SET OPPONENT LP",()=>SetLife(true),.68f,.70f,.27f,.08f);
-            card=Input(panel,"Exact card name or ID",.59f);
-            Button(panel,"ADD TO MY HAND",GiveCard,.56f,.59f,.39f,.08f);
-            var select=Button(panel,"",CycleMonster,.05f,.47f,.9f,.08f);
+            Text(panel,"ADMIN / CURRENT DUEL",30,.05f,.91f,.75f,.07f);
+            Button(panel,"CLOSE",Close,.80f,.91f,.15f,.065f);
+            Text(panel,"Use a free Main/Battle Phase prompt, after effects resolve. Add cards / LP: your Main Phase.",18,.05f,.84f,.9f,.06f);
+            lifePoints=Input(panel,"Life points",.75f);lifePoints.contentType=TMP_InputField.ContentType.IntegerNumber;lifePoints.text="8000";
+            Button(panel,"SET MY LP",()=>SetLife(false),.42f,.75f,.24f,.08f);
+            Button(panel,"SET OPPONENT LP",()=>SetLife(true),.68f,.75f,.27f,.08f);
+            card=Input(panel,"Exact card name or ID",.66f);
+            Button(panel,"ADD TO MY HAND",GiveCard,.56f,.66f,.39f,.08f);
+            var select=Button(panel,"",CycleMonster,.05f,.57f,.9f,.08f);
             monsterLabel=select.GetComponentInChildren<TextMeshProUGUI>();
+            var mySelect=Button(panel,"",()=>{myMonsterZone=(myMonsterZone+1)%7;RefreshMonster();},.05f,.48f,.9f,.08f);
+            myMonsterLabel=mySelect.GetComponentInChildren<TextMeshProUGUI>();
             RefreshMonster();
-            Button(panel,"SELECTED → DEFENSE",()=>Apply("defense",1,monsterZone).Forget(),.05f,.36f,.29f,.08f);
-            Button(panel,"ALL → DEFENSE",()=>Apply("defense",1,-1).Forget(),.355f,.36f,.29f,.08f);
-            Button(panel,"SELECTED → 0 ATK",()=>Apply("zero-atk",1,monsterZone).Forget(),.66f,.36f,.29f,.08f);
-            Button(panel,"CLEAR OPPONENT HAND → GY",()=>Apply("clear-hand",1,0).Forget(),.05f,.25f,.29f,.08f);
-            Button(panel,"CLEAR OPPONENT FIELD → GY",()=>Apply("clear-field",1,0).Forget(),.355f,.25f,.29f,.08f);
-            Button(panel,"CLEAR HAND + FIELD → GY",()=>Apply("clear-hand-field",1,0).Forget(),.66f,.25f,.29f,.08f,UltraTier.Danger);
-            Button(panel,"END OPPONENT TURN",()=>Apply("skip-turn",1,0).Forget(),.05f,.14f,.44f,.08f,UltraTier.Danger);
-            Button(panel,"WIN THIS DUEL",()=>Apply("win",0,0).Forget(),.51f,.14f,.44f,.08f,UltraTier.Danger);
-            status=Text(panel,"0 ATK lasts while face-up on the field. Link monsters cannot enter Defense.",17,.05f,.025f,.9f,.09f);
+            attackPoints=Input(panel,"Attack points",.39f);attackPoints.contentType=TMP_InputField.ContentType.IntegerNumber;attackPoints.text="0";
+            Button(panel,"SET MY ATK",()=>SetAttack(false),.42f,.39f,.24f,.08f);
+            Button(panel,"SET OPPONENT ATK",()=>SetAttack(true),.68f,.39f,.27f,.08f);
+            Button(panel,"OPPONENT → DEFENSE",()=>Apply("defense",1,monsterZone).Forget(),.05f,.30f,.29f,.08f);
+            Button(panel,"ALL OPPONENT → DEFENSE",()=>Apply("defense",1,-1).Forget(),.355f,.30f,.29f,.08f);
+            Button(panel,"OPPONENT → 0 ATK",()=>Apply("zero-atk",1,monsterZone).Forget(),.66f,.30f,.29f,.08f);
+            Button(panel,"CLEAR OPPONENT HAND → GY",()=>Apply("clear-hand",1,0).Forget(),.05f,.21f,.29f,.08f);
+            Button(panel,"CLEAR OPPONENT FIELD → GY",()=>Apply("clear-field",1,0).Forget(),.355f,.21f,.29f,.08f);
+            Button(panel,"CLEAR HAND + FIELD → GY",()=>Apply("clear-hand-field",1,0).Forget(),.66f,.21f,.29f,.08f,UltraTier.Danger);
+            Button(panel,"END OPPONENT TURN",()=>Apply("skip-turn",1,0).Forget(),.05f,.12f,.44f,.08f,UltraTier.Danger);
+            Button(panel,"WIN THIS DUEL",()=>Apply("win",0,0).Forget(),.51f,.12f,.44f,.08f,UltraTier.Danger);
+            status=Text(panel,"ATK changes last while face-up on the field. Link monsters cannot enter Defense.",17,.05f,.025f,.9f,.08f);
         }
 
         void CycleMonster()
@@ -80,12 +85,25 @@ namespace MDPro3.UI.ServantUI
 
         void RefreshMonster()
         {
-            if(monsterLabel==null)return;
-            var selected=OcgCore.cards.FirstOrDefault(c=>c.p.controller==1
-                && c.p.location==(uint)CardLocation.MonsterZone && c.p.sequence==monsterZone);
-            string zone=monsterZone<5?"Monster zone "+(monsterZone+1):"Extra monster zone "+(monsterZone-4);
+            SetMonsterLabel(monsterLabel,1,monsterZone,"OPPONENT");
+            SetMonsterLabel(myMonsterLabel,0,myMonsterZone,"MY CARD");
+        }
+
+        void SetMonsterLabel(TextMeshProUGUI label,int side,int slot,string heading)
+        {
+            if(label==null)return;
+            var selected=OcgCore.cards.FirstOrDefault(c=>c.p.controller==side
+                && c.p.location==(uint)CardLocation.MonsterZone && c.p.sequence==slot);
+            string zone=slot<5?"Monster zone "+(slot+1):"Extra monster zone "+(slot-4);
             string name=selected==null?"Empty":selected.p.InPosition(CardPosition.FaceDown)?"Face-down monster":selected.GetData().Name;
-            monsterLabel.text="OPPONENT: "+zone+" — "+name+"   [NEXT >]";
+            label.text=heading+": "+zone+" — "+name+"   [NEXT >]";
+        }
+
+        void SetAttack(bool opponent)
+        {
+            if(!int.TryParse(attackPoints.text,out int value) || value<0 || value>99999999)
+            {status.text="Enter ATK from 0 to 99,999,999.";return;}
+            Apply("set-atk",opponent?1:0,value).Forget();
         }
 
         void Close(){if(overlay!=null)Destroy(overlay.gameObject);overlay=null;status=null;}
@@ -115,15 +133,17 @@ namespace MDPro3.UI.ServantUI
             try
             {
                 if(RoomServant.FromUltraHost && !string.IsNullOrEmpty(UltraServices.CurrentRoomId))
-                    await UltraServices.Request("/admin/duel","POST",new{room=UltraServices.CurrentRoomId,table=UltraServices.CurrentTable,action,target,value});
+                    await UltraServices.Request("/admin/duel","POST",new{room=UltraServices.CurrentRoomId,table=UltraServices.CurrentTable,action,target,value,zone=target==0?myMonsterZone:monsterZone});
                 else if(YgoServer.ServerRunning())
                 {
                     string actor=Config.Get("DuelPlayerName0",Config.EMPTY_STRING);
                     int operation=action switch {
                         "win"=>1,"set-lp"=>2,"give-card"=>3,"clear-hand"=>4,"clear-field"=>5,
                         "clear-hand-field"=>6,"defense"=>7,"zero-atk"=>8,"skip-turn"=>9,
+                        "set-atk"=>10,
                         _=>throw new Exception("Unknown admin action.")};
-                    int result=await UniTask.RunOnThreadPool(()=>Dll.admin_duel_action(actor,operation,target,value));
+                    int nativeValue=action=="set-atk"?checked(value*8+(target==0?myMonsterZone:monsterZone)):value;
+                    int result=await UniTask.RunOnThreadPool(()=>Dll.admin_duel_action(actor,operation,target,nativeValue));
                     if(result!=0)throw new Exception(result==2?"Wait for a free command prompt. Add/LP: your Main Phase. End turn: their turn.":result==3?"Invalid card/value, full hand, or no eligible monster. Links cannot defend; 0 ATK needs a face-up monster.":"You must be seated in an active supported duel.");
                 }
                 else throw new Exception("These controls require an Ultra Duel friend room or a local Solo duel.");
@@ -157,7 +177,7 @@ namespace MDPro3.UI.ServantUI
         }
         static TMP_InputField Input(Transform parent,string hint,float y)
         {
-            var r=Rect("Input",parent,.05f,y,hint=="Life points"?.34f:.48f,.09f);
+            var r=Rect("Input",parent,.05f,y,hint=="Exact card name or ID"?.48f:.34f,.08f);
             var image=r.gameObject.AddComponent<UltraChrome>();image.color=UltraTheme.PanelSolid;image.cut=UltraCut.Small;image.raycastTarget=true;
             var input=r.gameObject.AddComponent<TMP_InputField>();input.targetGraphic=image;input.characterLimit=120;
             input.textViewport=Rect("Viewport",r,.035f,.05f,.93f,.9f);

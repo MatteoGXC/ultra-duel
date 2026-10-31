@@ -43,7 +43,18 @@ static void admin_rule_checks() {
     auto* normal = spawn(1,1,LOCATION_MZONE,0,TYPE_MONSTER|TYPE_NORMAL,POS_FACEUP_ATTACK);
     auto* link = spawn(1,1,LOCATION_MZONE,1,TYPE_MONSTER|TYPE_LINK,POS_FACEUP_ATTACK);
     auto* hidden = spawn(1,1,LOCATION_MZONE,2,TYPE_MONSTER|TYPE_NORMAL,POS_FACEDOWN_DEFENSE);
+    auto* mine = spawn(0,0,LOCATION_MZONE,0,TYPE_MONSTER|TYPE_NORMAL,POS_FACEUP_ATTACK);
     prompt();
+    require(ocg_admin_command(handle,0,10,0,4500*8)==0,"Owner can set own monster ATK");
+    require(mine->get_attack()==4500,"Own monster displays requested 4500 ATK");
+    prompt();
+    require(ocg_admin_command(handle,0,10,0,0)==0 && mine->get_attack()==0,"Own monster can also be set to zero ATK");
+    prompt();
+    require(ocg_admin_command(handle,0,10,1,3200*8)==0 && normal->get_attack()==3200,"Opponent accepts arbitrary ATK as well as zero");
+    prompt();
+    require(ocg_admin_command(handle,0,10,0,-1)==3,"Negative ATK is rejected");
+    require(ocg_admin_command(handle,0,10,0,4500*8+7)==3,"Invalid packed monster zone is rejected");
+    require(ocg_admin_command(handle,0,10,1,2500*8+2)==3,"ATK setting cannot reveal a hidden monster");
     require(ocg_admin_command(handle,0,7,1,1)==3,"Link monster rejects Defense command");
     require(ocg_admin_command(handle,0,8,1,2)==3,"Hidden monster rejects 0 ATK without revealing it");
     require(ocg_admin_command(handle,0,8,1,6)==3,"Empty monster zone rejects ATK command");
@@ -74,6 +85,7 @@ static void admin_rule_checks() {
     require(token->current.location==0,"Cleared token disappears instead of entering GY");
     require(material->current.location==LOCATION_GRAVE && !material->overlay_target,"Xyz materials are detached into GY");
     require(spell->current.location==LOCATION_GRAVE && field->current.location==LOCATION_GRAVE && hand->current.location==LOCATION_GRAVE,"Spell, Field Spell and hand card enter GY");
+    require(mine->current.location==LOCATION_MZONE,"Opponent clear preserves own field");
     end_duel(handle);
 }
 

@@ -57,7 +57,8 @@ table with actor, recipient, amount, reason and timestamp.
 
 The primary owner can open ADMIN during a duel to clear the opponent's hand,
 field, or both into the GY; switch a selected monster or all eligible monsters
-to Defense; set a selected face-up monster's ATK to 0; and end the opponent's
+to Defense; set a selected face-up monster on either side to any ATK from 0 to
+99,999,999; and end the opponent's
 current turn. These actions require a free Main/Battle Phase command prompt,
 and do not interrupt resolving chains or card selections. End turn enters the
 normal End Phase. Link monsters keep their legal position, and the ATK override

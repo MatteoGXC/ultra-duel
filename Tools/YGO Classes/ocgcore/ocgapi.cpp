@@ -39,16 +39,24 @@ extern "C" DECL_DLLEXPORT int32_t ocg_admin_command(intptr_t handle, int32_t act
     bool battle = units.front().type == PROCESSOR_SELECT_BATTLECMD
         && std::next(units.begin())->type == PROCESSOR_BATTLE_COMMAND;
     if(!idle && !battle) return 2;
-    if(operation < 2 || operation > 9) return 3;
+    if(operation < 2 || operation > 10) return 3;
     if((operation == 2 || operation == 3) && (!idle || f->infos.turn_player != actor)) return 2;
-    if(operation >= 4 && target == actor) return 3;
+    if(operation >= 4 && operation <= 9 && target == actor) return 3;
     if(operation == 2 && (value < 1 || value > 99999999)) return 3;
     if(operation == 3) {
         card_data data{}; creader(static_cast<uint32_t>(value), &data);
         if(!data.code || (data.type & TYPE_TOKEN) || target != actor || f->player[actor].list_hand.size() >= 60) return 3;
     }
     card* selected = nullptr;
-    if(operation == 7 || operation == 8) {
+    int attack = 0;
+    if(operation == 10) {
+        // Pack the monster zone into the low three bits of the existing
+        // native API's value argument. The HTTP API keeps zone/ATK separate.
+        if(value < 0 || value / 8 > 99999999) return 3;
+        attack = value / 8;
+        value %= 8;
+    }
+    if(operation == 7 || operation == 8 || operation == 10) {
         if(operation == 7 && value == -1) {
             bool found = false;
             for(auto* c : f->player[target].list_mzone)
@@ -58,7 +66,7 @@ extern "C" DECL_DLLEXPORT int32_t ocg_admin_command(intptr_t handle, int32_t act
             if(value < 0 || value >= 7) return 3;
             selected = f->player[target].list_mzone[value];
             if(!selected || (operation == 7 && (selected->data.type & TYPE_LINK))
-                || (operation == 8 && !selected->is_position(POS_FACEUP))) return 3;
+                || ((operation == 8 || operation == 10) && !selected->is_position(POS_FACEUP))) return 3;
         }
     }
     if(operation == 9 && f->infos.turn_player != target) return 2;
@@ -104,10 +112,10 @@ extern "C" DECL_DLLEXPORT int32_t ocg_admin_command(intptr_t handle, int32_t act
             if(c && !(c->data.type & TYPE_LINK)) cards.insert(c);
         f->change_position(cards,nullptr,actor,POS_FACEUP_DEFENSE,POS_FACEDOWN_DEFENSE,
             POS_FACEUP_DEFENSE,POS_FACEDOWN_DEFENSE,0);
-    } else if(operation == 8) {
+    } else if(operation == 8 || operation == 10) {
         auto* e = pd->new_effect();
         e->owner = selected; e->type = EFFECT_TYPE_SINGLE;
-        e->code = EFFECT_SET_ATTACK_FINAL; e->value = 0;
+        e->code = EFFECT_SET_ATTACK_FINAL; e->value = attack;
         e->flag[0] = EFFECT_FLAG_CANNOT_DISABLE;
         e->reset_flag = RESET_EVENT | RESETS_STANDARD;
         selected->add_effect(e);

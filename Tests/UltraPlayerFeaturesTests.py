@@ -93,6 +93,15 @@ class PlayerFeatures(unittest.TestCase):
                 self.assertEqual(denied.exception.status,403)
                 self.assertTrue(call(1,body)['ok'])
                 command.assert_called_with(room,'owner',op,1,value)
+            for target in (0,1):
+                body=dict(room='duel',action='set-atk',target=target,value=4500,zone=4)
+                with self.assertRaises(service.Problem):call(2,body)
+                self.assertTrue(call(1,body)['ok'])
+                command.assert_called_with(room,'owner',10,target,4500*8+4)
+            for value,zone in [(-1,0),(100000000,0),(1000,-1),(1000,7)]:
+                command.reset_mock()
+                with self.assertRaises(service.Problem):call(1,dict(room='duel',action='set-atk',value=value,zone=zone))
+                command.assert_not_called()
             for action,value in [('defense',-2),('defense',7),('zero-atk',-1),('zero-atk',7),('unknown',0)]:
                 command.reset_mock()
                 with self.assertRaises(service.Problem):call(1,dict(room='duel',action=action,value=value))
