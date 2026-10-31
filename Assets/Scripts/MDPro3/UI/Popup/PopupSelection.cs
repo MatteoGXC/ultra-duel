@@ -40,6 +40,7 @@ namespace MDPro3.UI.Popup
             var handle = Addressables.LoadAssetAsync<GameObject>("Popup/PopupSelectionItem.prefab");
             handle.Completed += (result) =>
             {
+                if(this==null || result.Status!=UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded || result.Result==null)return;
 
                 var superScrollView = new SuperScrollView(
                     1,
@@ -54,7 +55,11 @@ namespace MDPro3.UI.Popup
                 var tasks = new List<string[]>();
                 for (int i = 2; i < args.Count; i++)
                 {
-                    var task = args[i].Split(":");
+                    // Only r:/g:/b: are formatting prefixes. Ordinary effect,
+                    // pack and format labels may contain any number of colons.
+                    string value=args[i];
+                    var task=value.Length>=2 && value[1]==':' && (value[0]=='r' || value[0]=='g' || value[0]=='b')
+                        ?new[]{value[..1],value[2..]}:new[]{value};
                     tasks.Add(task);
                 }
                 superScrollView.Print(tasks);
@@ -83,6 +88,7 @@ namespace MDPro3.UI.Popup
 
         private void OnClick()
         {
+            if(lastSelectedItem!=null)EventSystem.current.SetSelectedGameObject(lastSelectedItem.gameObject);
             decideAction?.Invoke();
             Hide();
         }
@@ -92,7 +98,11 @@ namespace MDPro3.UI.Popup
             if(lastSelectedItem != null)
                 EventSystem.current.SetSelectedGameObject(lastSelectedItem.gameObject);
             else
-                EventSystem.current.SetSelectedGameObject(Manager.GetElement<ScrollRect>("EntryButtonsScrollView").content.GetChild(0).gameObject);
+            {
+                var content=Manager.GetElement<ScrollRect>("EntryButtonsScrollView").content;
+                if(content.childCount>0)EventSystem.current.SetSelectedGameObject(content.GetChild(0).gameObject);
+                else base.SelectLastSelected();
+            }
         }
 
         public void SelectLastItem()

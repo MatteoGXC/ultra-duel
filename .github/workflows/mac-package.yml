@@ -180,7 +180,7 @@ jobs:
           config=root/'ultra-runtime/Data/config.conf'
           lines=[line for line in config.read_text(encoding='utf-8-sig').splitlines() if not line.startswith('Background->')]
           config.write_text('\n'.join(lines+['Background->0'])+'\n',encoding='utf-8')
-          process=subprocess.Popen([str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','--ultra-result-check','-logFile',str(root/'mac-duel-ui.log')],env=env)
+          process=subprocess.Popen([str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(root/'mac-duel-ui'),'TCG','--ultra-result-check','--popup-audit','-logFile',str(root/'mac-duel-ui.log')],env=env)
           def desktop_capture():
               for _ in range(1200):
                   if (root/'mac-duel-ui/duel.png').exists():
@@ -188,8 +188,9 @@ jobs:
                   if process.poll() is not None:return
                   time.sleep(.25)
           threading.Thread(target=desktop_capture,daemon=True).start()
-          assert process.wait(timeout=300)==0
+          assert process.wait(timeout=420)==0
           assert (root/'mac-duel-ui/passed.txt').exists(),(root/'mac-duel-ui.log').read_text()[-6000:]
+          assert 'POPUP_AUDIT_PASSED' in (root/'mac-duel-ui.log').read_text()
           assert 'Failed to decompress' not in (root/'mac-duel-ui.log').read_text(), 'Unsupported compressed textures in installed duel'
           PY
       - name: Verify premade decks and revised menu layouts

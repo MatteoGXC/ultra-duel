@@ -39,7 +39,8 @@ namespace MDPro3.UI
         protected override void CallHoverOnEvent()
         {
             base.CallHoverOnEvent();
-            ((Popup.PopupSearchFilter)Program.instance.ui_.currentPopupB).lastSelectedToggle = this;
+            var popup=GetComponentInParent<Popup.PopupSearchFilter>();
+            if(popup!=null)popup.lastSelectedToggle = this;
         }
     }
 }

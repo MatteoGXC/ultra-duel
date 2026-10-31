@@ -63,6 +63,10 @@ namespace MDPro3.UI
             Program.instance.ui_.currentPopup = this;
 
             InitializeSelections();
+            float popupScale=UltraGuiScale.FitPopup(window,uiScale*UltraGuiScale.Percent/100f);
+            height=Mathf.Max(height,window.rect.height);
+            hideY=-540f-height*popupScale;
+            window.anchoredPosition=new Vector2(0f,hideY);
         }
         public virtual void InitializeSelections()
         {
@@ -96,9 +100,13 @@ namespace MDPro3.UI
             window.DOAnchorPos(new Vector2(0f, hideY), transitionTime).OnComplete(() =>
             {
                 Destroy(gameObject);
-                servant.returnAction = null;
-                Program.instance.ui_.currentPopup = lastPopup;
-                if (lastPopup == null && Cursor.lockState == CursorLockMode.Locked)
+                bool ownsPopup=Program.instance.ui_.currentPopup==this;
+                if(ownsPopup)
+                {
+                    servant.returnAction = null;
+                    Program.instance.ui_.currentPopup = lastPopup;
+                }
+                if (ownsPopup && lastPopup == null && Cursor.lockState == CursorLockMode.Locked)
                     Program.instance.currentServant.Select();
 
                 whenQuitDo?.Invoke();

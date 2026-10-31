@@ -1,0 +1,4706 @@
+{
+  "sourceCommit": "02e589ff78480151867abf5b399ae0689c6cd668",
+  "scriptsSha256": "10c6eeb6a55d26d82ad6519d23770f194342619ca7aa00f4a375140e68c77170",
+  "cards": 14988,
+  "referencedDescriptions": 17336,
+  "selectableDescriptions": 929,
+  "locales": {
+    "de-DE": {
+      "changed": 879,
+      "filled": 44,
+      "missingSelectableDescriptions": 0
+    },
+    "en-US": {
+      "changed": 11403,
+      "filled": 1497,
+      "missingSelectableDescriptions": 0
+    },
+    "es-ES": {
+      "changed": 1743,
+      "filled": 937,
+      "missingSelectableDescriptions": 0
+    },
+    "fr-FR": {
+      "changed": 871,
+      "filled": 44,
+      "missingSelectableDescriptions": 0
+    },
+    "it-IT": {
+      "changed": 878,
+      "filled": 44,
+      "missingSelectableDescriptions": 0
+    },
+    "ja-JP": {
+      "changed": 1324,
+      "filled": 524,
+      "missingSelectableDescriptions": 0
+    },
+    "ko-KR": {
+      "changed": 924,
+      "filled": 44,
+      "missingSelectableDescriptions": 0
+    },
+    "pt-PT": {
+      "changed": 883,
+      "filled": 44,
+      "missingSelectableDescriptions": 0
+    },
+    "zh-CN": {
+      "changed": 883,
+      "filled": 43,
+      "missingSelectableDescriptions": 0
+    },
+    "zh-TW": {
+      "changed": 1458,
+      "filled": 1458,
+      "missingSelectableDescriptions": 0
+    }
+  },
+  "choices": [
+    {
+      "card": 59080,
+      "index": 1,
+      "english": "Remove Spell Counters to activate"
+    },
+    {
+      "card": 59080,
+      "index": 2,
+      "english": "Send a card to the GY to activate"
+    },
+    {
+      "card": 59080,
+      "index": 3,
+      "english": "Special Summon"
+    },
+    {
+      "card": 59080,
+      "index": 4,
+      "english": "Banish"
+    },
+    {
+      "card": 197042,
+      "index": 0,
+      "english": "Xyz Summon"
+    },
+    {
+      "card": 197042,
+      "index": 1,
+      "english": "Banish a card"
+    },
+    {
+      "card": 197042,
+      "index": 2,
+      "english": "Do nothing"
+    },
+    {
+      "card": 365213,
+      "index": 1,
+      "english": "Draw 1 card(s)"
+    },
+    {
+      "card": 365213,
+      "index": 2,
+      "english": "Special Summon 1 Tuner(s) from your hand"
+    },
+    {
+      "card": 545781,
+      "index": 0,
+      "english": "Gain LP"
+    },
+    {
+      "card": 545781,
+      "index": 1,
+      "english": "Inflict damage"
+    },
+    {
+      "card": 581014,
+      "index": 1,
+      "english": "Recycle and draw"
+    },
+    {
+      "card": 581014,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 811734,
+      "index": 0,
+      "english": "Banish a monster"
+    },
+    {
+      "card": 811734,
+      "index": 1,
+      "english": "Search the Deck"
+    },
+    {
+      "card": 967928,
+      "index": 0,
+      "english": "Your opponent cannot draw during their next Draw Phase"
+    },
+    {
+      "card": 967928,
+      "index": 1,
+      "english": "Your opponent cannot activate Spell/Trap Cards this turn"
+    },
+    {
+      "card": 1006081,
+      "index": 1,
+      "english": "Increase Level by 1"
+    },
+    {
+      "card": 1006081,
+      "index": 2,
+      "english": "Decrease Level by 1"
+    },
+    {
+      "card": 1463589,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 1463589,
+      "index": 2,
+      "english": "Place on bottom of the Deck"
+    },
+    {
+      "card": 1607603,
+      "index": 0,
+      "english": "Special Summon 1 Level 4 Warrior monster from your Deck"
+    },
+    {
+      "card": 1607603,
+      "index": 1,
+      "english": "Target 1 Warrior monster you control; Special Summon"
+    },
+    {
+      "card": 1710647,
+      "index": 3,
+      "english": "Increase Level"
+    },
+    {
+      "card": 1710647,
+      "index": 4,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 1804528,
+      "index": 1,
+      "english": "Randomly discard 1 card(s) from your hand"
+    },
+    {
+      "card": 1804528,
+      "index": 2,
+      "english": "Destroy 1 monster you control"
+    },
+    {
+      "card": 2347656,
+      "index": 3,
+      "english": "Randomly select a card in your opponent's hand to destroy"
+    },
+    {
+      "card": 2347656,
+      "index": 4,
+      "english": "Select 1 card your opponent controls to destroy"
+    },
+    {
+      "card": 2419596,
+      "index": 1,
+      "english": "Add to hand"
+    },
+    {
+      "card": 2419596,
+      "index": 2,
+      "english": "As Xyz Material"
+    },
+    {
+      "card": 2461031,
+      "index": 2,
+      "english": "Increase by 1 Level"
+    },
+    {
+      "card": 2461031,
+      "index": 3,
+      "english": "Increase by 2 Levels"
+    },
+    {
+      "card": 2507443,
+      "index": 2,
+      "english": "Tribute and Special Summon"
+    },
+    {
+      "card": 2507443,
+      "index": 3,
+      "english": "Normal Summon"
+    },
+    {
+      "card": 3103067,
+      "index": 0,
+      "english": "Destroy the attacking monster"
+    },
+    {
+      "card": 3103067,
+      "index": 1,
+      "english": "Change attack target"
+    },
+    {
+      "card": 3160805,
+      "index": 2,
+      "english": "Send a LIGHT monster to the GY, add a DARK monster to your hand"
+    },
+    {
+      "card": 3160805,
+      "index": 3,
+      "english": "Send a DARK monster to the GY, add a LIGHT monster to your hand"
+    },
+    {
+      "card": 3289027,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 3289027,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 3441553,
+      "index": 1,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 3441553,
+      "index": 2,
+      "english": "Search effect"
+    },
+    {
+      "card": 3441553,
+      "index": 3,
+      "english": "Destruction effect"
+    },
+    {
+      "card": 3496543,
+      "index": 2,
+      "english": "Special Summon from the hand"
+    },
+    {
+      "card": 3496543,
+      "index": 3,
+      "english": "Fusion Summon"
+    },
+    {
+      "card": 3635138,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 3635138,
+      "index": 3,
+      "english": "Destruction effect"
+    },
+    {
+      "card": 3635138,
+      "index": 4,
+      "english": "Do nothing"
+    },
+    {
+      "card": 4582942,
+      "index": 1,
+      "english": "Gain 500 LP"
+    },
+    {
+      "card": 4582942,
+      "index": 2,
+      "english": "Take 500 damage"
+    },
+    {
+      "card": 4582942,
+      "index": 3,
+      "english": "Apply both"
+    },
+    {
+      "card": 4731783,
+      "index": 2,
+      "english": "Destroy"
+    },
+    {
+      "card": 4731783,
+      "index": 3,
+      "english": "Banish and Special Summon"
+    },
+    {
+      "card": 4836680,
+      "index": 0,
+      "english": "Add to the Extra Deck"
+    },
+    {
+      "card": 4841383,
+      "index": 2,
+      "english": "Add a \"Ragnaraika\" monster to your hand"
+    },
+    {
+      "card": 4841383,
+      "index": 3,
+      "english": "Special Summon a \"Ragnaraika\" monster"
+    },
+    {
+      "card": 4891376,
+      "index": 2,
+      "english": "Negate the chained effect"
+    },
+    {
+      "card": 4891376,
+      "index": 3,
+      "english": "Negate the effect that was chained to"
+    },
+    {
+      "card": 4928565,
+      "index": 1,
+      "english": "Send the top 3 cards of your Deck to the GY"
+    },
+    {
+      "card": 4928565,
+      "index": 2,
+      "english": "Send the top 3 cards of your opponent's Deck to the GY"
+    },
+    {
+      "card": 4997565,
+      "index": 2,
+      "english": "Increase DEF"
+    },
+    {
+      "card": 4997565,
+      "index": 3,
+      "english": "Change battle position"
+    },
+    {
+      "card": 5067884,
+      "index": 1,
+      "english": "Direct attack"
+    },
+    {
+      "card": 5067884,
+      "index": 2,
+      "english": "Multiple attacks"
+    },
+    {
+      "card": 5121528,
+      "index": 2,
+      "english": "Search effect"
+    },
+    {
+      "card": 5121528,
+      "index": 3,
+      "english": "Special Summon"
+    },
+    {
+      "card": 5125629,
+      "index": 1,
+      "english": "Place face-up"
+    },
+    {
+      "card": 5605529,
+      "index": 1,
+      "english": "Gain 500 LP"
+    },
+    {
+      "card": 5605529,
+      "index": 2,
+      "english": "Take 500 damage"
+    },
+    {
+      "card": 5817857,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 5817857,
+      "index": 1,
+      "english": "Reveal 1 Zombie monster to your opponent"
+    },
+    {
+      "card": 5817857,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Ghoulungulate\""
+    },
+    {
+      "card": 6958567,
+      "index": 2,
+      "english": "Destruction effect"
+    },
+    {
+      "card": 6958567,
+      "index": 3,
+      "english": "Fusion Summon"
+    },
+    {
+      "card": 6967870,
+      "index": 1,
+      "english": "Destroy 1 Spell or Trap on the field."
+    },
+    {
+      "card": 6967870,
+      "index": 2,
+      "english": "Send the top 2 cards of your opponent's Deck to the GY."
+    },
+    {
+      "card": 8165596,
+      "index": 2,
+      "english": "Overlay as Xyz material"
+    },
+    {
+      "card": 8445808,
+      "index": 3,
+      "english": "Place a counter"
+    },
+    {
+      "card": 8445808,
+      "index": 4,
+      "english": "Take control"
+    },
+    {
+      "card": 8653757,
+      "index": 1,
+      "english": "Place face-up"
+    },
+    {
+      "card": 8690387,
+      "index": 2,
+      "english": "Destroy that monster"
+    },
+    {
+      "card": 8690387,
+      "index": 3,
+      "english": "Your opponent gains LP equal to that monster's ATK"
+    },
+    {
+      "card": 8842266,
+      "index": 0,
+      "english": "Gain 1200 LP"
+    },
+    {
+      "card": 8842266,
+      "index": 1,
+      "english": "Inflict 800 damage to your opponent"
+    },
+    {
+      "card": 9069157,
+      "index": 0,
+      "english": "Search the Deck"
+    },
+    {
+      "card": 9069157,
+      "index": 1,
+      "english": "Fusion resistance"
+    },
+    {
+      "card": 9491461,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 9491461,
+      "index": 3,
+      "english": "Change battle position"
+    },
+    {
+      "card": 9491461,
+      "index": 4,
+      "english": "Do not resolve the effect"
+    },
+    {
+      "card": 9780364,
+      "index": 0,
+      "english": "Change battle position"
+    },
+    {
+      "card": 9780364,
+      "index": 1,
+      "english": "Take control"
+    },
+    {
+      "card": 9978697,
+      "index": 2,
+      "english": "Attack twice"
+    },
+    {
+      "card": 9978697,
+      "index": 3,
+      "english": "Direct attack"
+    },
+    {
+      "card": 10000030,
+      "index": 1,
+      "english": "Gain control of 1 monster on your opponent's field"
+    },
+    {
+      "card": 10000030,
+      "index": 2,
+      "english": "Special Summon 1 monster from your opponent's GY"
+    },
+    {
+      "card": 10032958,
+      "index": 1,
+      "english": "Increase ATK by 1000"
+    },
+    {
+      "card": 10032958,
+      "index": 2,
+      "english": "If you destroy an opponent's monster by battle, you can make 1 additional attack"
+    },
+    {
+      "card": 10032958,
+      "index": 3,
+      "english": "When a monster is destroyed by battle and sent to the GY, inflict damage to your opponent equal to that monster's ATK"
+    },
+    {
+      "card": 10060427,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 10060427,
+      "index": 1,
+      "english": "Reveal 1 Warrior monster to your opponent"
+    },
+    {
+      "card": 10060427,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Rooklord\""
+    },
+    {
+      "card": 10406322,
+      "index": 2,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 10406322,
+      "index": 3,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 10691144,
+      "index": 3,
+      "english": "Banish 1 random card from your opponent's hand"
+    },
+    {
+      "card": 10691144,
+      "index": 4,
+      "english": "Banish 2 random cards from your opponent's hand"
+    },
+    {
+      "card": 10807219,
+      "index": 4,
+      "english": "Top of the Deck"
+    },
+    {
+      "card": 10807219,
+      "index": 5,
+      "english": "Bottom of the Deck"
+    },
+    {
+      "card": 10925955,
+      "index": 0,
+      "english": "Check the Set card(s) in your opponent's Spell & Trap Zone"
+    },
+    {
+      "card": 10925955,
+      "index": 1,
+      "english": "Look at the top 2 cards of the Deck"
+    },
+    {
+      "card": 10925955,
+      "index": 2,
+      "english": "Use both effects"
+    },
+    {
+      "card": 10925955,
+      "index": 3,
+      "english": "Check your Deck"
+    },
+    {
+      "card": 10925955,
+      "index": 4,
+      "english": "Check your opponent's Deck"
+    },
+    {
+      "card": 11132674,
+      "index": 3,
+      "english": "Destroy"
+    },
+    {
+      "card": 11132674,
+      "index": 4,
+      "english": "Return to the hand"
+    },
+    {
+      "card": 11234702,
+      "index": 1,
+      "english": "Increase Level by 1"
+    },
+    {
+      "card": 11234702,
+      "index": 2,
+      "english": "Decrease Level by 1"
+    },
+    {
+      "card": 11522479,
+      "index": 1,
+      "english": "Special Summon a monster from the GY"
+    },
+    {
+      "card": 11522479,
+      "index": 2,
+      "english": "Set a Counter Trap from the GY"
+    },
+    {
+      "card": 11609969,
+      "index": 0,
+      "english": "Return 1 \"D/D\" card you control to your hand"
+    },
+    {
+      "card": 11609969,
+      "index": 1,
+      "english": "Add 1 \"Dark Contract\" card from your Deck to your hand"
+    },
+    {
+      "card": 11654067,
+      "index": 0,
+      "english": "Inflict damage to your opponent"
+    },
+    {
+      "card": 11654067,
+      "index": 1,
+      "english": "Special Summon a Token"
+    },
+    {
+      "card": 11654067,
+      "index": 2,
+      "english": "Do nothing"
+    },
+    {
+      "card": 11677278,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 11677278,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 12079734,
+      "index": 1,
+      "english": "Equip a Union monster to this card"
+    },
+    {
+      "card": 12079734,
+      "index": 2,
+      "english": "Return to the Deck and draw 1 card"
+    },
+    {
+      "card": 12081875,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 12081875,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 12183332,
+      "index": 1,
+      "english": "Shuffle your Deck"
+    },
+    {
+      "card": 12183332,
+      "index": 2,
+      "english": "Shuffle your opponent's Deck"
+    },
+    {
+      "card": 12197543,
+      "index": 0,
+      "english": "Discard the drawn card(s)."
+    },
+    {
+      "card": 12197543,
+      "index": 1,
+      "english": "Destroy 1 Spell/Trap your opponent controls."
+    },
+    {
+      "card": 12289247,
+      "index": 1,
+      "english": "Place in the Pendulum Zone"
+    },
+    {
+      "card": 12289247,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 12435193,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 12435193,
+      "index": 1,
+      "english": "Reveal 1 Dragon monster to your opponent"
+    },
+    {
+      "card": 12435193,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Drago\""
+    },
+    {
+      "card": 12467005,
+      "index": 1,
+      "english": "Change a monster to face-down Defense Position"
+    },
+    {
+      "card": 12467005,
+      "index": 2,
+      "english": "Return a Spell/Trap Card to the hand"
+    },
+    {
+      "card": 12822541,
+      "index": 0,
+      "english": "Add 1 \"D/D\" monster from your GY to your hand"
+    },
+    {
+      "card": 12822541,
+      "index": 1,
+      "english": "Add 1 \"D/D\" Pendulum Monster from your Extra Deck to your hand"
+    },
+    {
+      "card": 13014905,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 13014905,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 13364097,
+      "index": 2,
+      "english": "Increase"
+    },
+    {
+      "card": 13364097,
+      "index": 3,
+      "english": "Decrease"
+    },
+    {
+      "card": 14220547,
+      "index": 1,
+      "english": "View your Extra Deck"
+    },
+    {
+      "card": 14220547,
+      "index": 2,
+      "english": "View your opponent's Extra Deck"
+    },
+    {
+      "card": 14309486,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 14309486,
+      "index": 1,
+      "english": "Reveal 1 Rock monster to your opponent"
+    },
+    {
+      "card": 14309486,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Overload\""
+    },
+    {
+      "card": 14425515,
+      "index": 2,
+      "english": "Reveal the Deck"
+    },
+    {
+      "card": 14425515,
+      "index": 3,
+      "english": "Take no effect damage"
+    },
+    {
+      "card": 14532163,
+      "index": 0,
+      "english": "Destroy all Attack Position monsters your opponent controls"
+    },
+    {
+      "card": 14532163,
+      "index": 1,
+      "english": "Destroy all Spells and Traps your opponent controls"
+    },
+    {
+      "card": 14732294,
+      "index": 3,
+      "english": "Do not resolve the effect"
+    },
+    {
+      "card": 14732294,
+      "index": 4,
+      "english": "Special Summon"
+    },
+    {
+      "card": 14732294,
+      "index": 5,
+      "english": "Add to hand"
+    },
+    {
+      "card": 14756848,
+      "index": 1,
+      "english": "Destroy 1 card in your opponent's Spell & Trap Zone"
+    },
+    {
+      "card": 14756848,
+      "index": 2,
+      "english": "Destroy 1 card in your opponent's Pendulum Zone"
+    },
+    {
+      "card": 14934922,
+      "index": 0,
+      "english": "Destroy 1 card"
+    },
+    {
+      "card": 14934922,
+      "index": 1,
+      "english": "Destroy a number of cards equal to the number of Link Markers"
+    },
+    {
+      "card": 15521027,
+      "index": 3,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 15521027,
+      "index": 4,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 15552258,
+      "index": 0,
+      "english": "ATK becomes half"
+    },
+    {
+      "card": 15552258,
+      "index": 1,
+      "english": "End the Battle Phase"
+    },
+    {
+      "card": 15758127,
+      "index": 0,
+      "english": "Add to hand"
+    },
+    {
+      "card": 15758127,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 16387555,
+      "index": 2,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 16387555,
+      "index": 3,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 16734927,
+      "index": 1,
+      "english": "Add to hand"
+    },
+    {
+      "card": 16734927,
+      "index": 2,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 17151328,
+      "index": 2,
+      "english": "Destroy a face-up monster your opponent controls"
+    },
+    {
+      "card": 17151328,
+      "index": 3,
+      "english": "Destroy 1 FIRE monster in your hand"
+    },
+    {
+      "card": 17209452,
+      "index": 2,
+      "english": "Return 1 card from your opponent's GY to the bottom of the Deck"
+    },
+    {
+      "card": 17209452,
+      "index": 3,
+      "english": "Reveal your opponent's hand"
+    },
+    {
+      "card": 17621695,
+      "index": 3,
+      "english": "Place in the Pendulum Zone"
+    },
+    {
+      "card": 17621695,
+      "index": 4,
+      "english": "Add to hand"
+    },
+    {
+      "card": 18138630,
+      "index": 3,
+      "english": "Top of the Deck"
+    },
+    {
+      "card": 18138630,
+      "index": 4,
+      "english": "Bottom of the Deck"
+    },
+    {
+      "card": 18482473,
+      "index": 1,
+      "english": "Piercing damage"
+    },
+    {
+      "card": 18482473,
+      "index": 2,
+      "english": "Destroy a card"
+    },
+    {
+      "card": 18482473,
+      "index": 3,
+      "english": "Recover from the GY"
+    },
+    {
+      "card": 18482473,
+      "index": 4,
+      "english": "Direct attack"
+    },
+    {
+      "card": 19338434,
+      "index": 1,
+      "english": "That monster becomes face-up Attack Position or face-up Defense Position"
+    },
+    {
+      "card": 19338434,
+      "index": 2,
+      "english": "Send that monster to the GY, then its owner draws 2 cards"
+    },
+    {
+      "card": 19462747,
+      "index": 1,
+      "english": "Increase Level"
+    },
+    {
+      "card": 19462747,
+      "index": 2,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 19491080,
+      "index": 2,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 19491080,
+      "index": 3,
+      "english": "Special Summon"
+    },
+    {
+      "card": 19508728,
+      "index": 0,
+      "english": "Top of the Deck"
+    },
+    {
+      "card": 19508728,
+      "index": 1,
+      "english": "Bottom of the Deck"
+    },
+    {
+      "card": 19642889,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 19642889,
+      "index": 1,
+      "english": "Reveal 1 Normal Trap to your opponent"
+    },
+    {
+      "card": 19642889,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Powerhand\""
+    },
+    {
+      "card": 19959742,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 19959742,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 20032555,
+      "index": 1,
+      "english": "Inflict 800 damage to your opponent"
+    },
+    {
+      "card": 20032555,
+      "index": 2,
+      "english": "This card's Level becomes 8 until the End Phase"
+    },
+    {
+      "card": 20426176,
+      "index": 3,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 20508881,
+      "index": 2,
+      "english": "Draw"
+    },
+    {
+      "card": 20508881,
+      "index": 3,
+      "english": "Search Typhoon"
+    },
+    {
+      "card": 21767650,
+      "index": 1,
+      "english": "Increase all Levels by 1"
+    },
+    {
+      "card": 21767650,
+      "index": 2,
+      "english": "Increase all Levels by 2"
+    },
+    {
+      "card": 21915012,
+      "index": 1,
+      "english": "Increase Level"
+    },
+    {
+      "card": 21915012,
+      "index": 2,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 22106558,
+      "index": 3,
+      "english": "Increase Level"
+    },
+    {
+      "card": 22106558,
+      "index": 4,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 22339232,
+      "index": 0,
+      "english": "Return \"Skull Servant\" or \"Wightmare\" to the GY"
+    },
+    {
+      "card": 22339232,
+      "index": 1,
+      "english": "Special Summon \"The Lady in Wight\" or \"King of the Skull Servants\""
+    },
+    {
+      "card": 22454453,
+      "index": 0,
+      "english": "Top of the Deck"
+    },
+    {
+      "card": 22454453,
+      "index": 1,
+      "english": "Bottom of the Deck"
+    },
+    {
+      "card": 22669793,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 22669793,
+      "index": 2,
+      "english": "Set"
+    },
+    {
+      "card": 23064604,
+      "index": 3,
+      "english": "Select 1 card in your opponent's hand to return to the Deck"
+    },
+    {
+      "card": 23064604,
+      "index": 4,
+      "english": "Select 1 card your opponent controls to return to the Deck"
+    },
+    {
+      "card": 23064604,
+      "index": 5,
+      "english": "Select 1 card in your opponent's GY to return to the Deck"
+    },
+    {
+      "card": 23153227,
+      "index": 2,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 23212990,
+      "index": 0,
+      "english": "Destroy 1 monster your opponent controls."
+    },
+    {
+      "card": 23212990,
+      "index": 1,
+      "english": "Return 1 card your opponent controls to the hand."
+    },
+    {
+      "card": 23446369,
+      "index": 1,
+      "english": "Cannot be destroyed by battle"
+    },
+    {
+      "card": 23446369,
+      "index": 2,
+      "english": "Take control"
+    },
+    {
+      "card": 23446369,
+      "index": 3,
+      "english": "Change attack target"
+    },
+    {
+      "card": 23617756,
+      "index": 1,
+      "english": "Add a \"Forbidden One\" monster to your hand"
+    },
+    {
+      "card": 23617756,
+      "index": 2,
+      "english": "Recover a \"Forbidden One\" monster"
+    },
+    {
+      "card": 23746827,
+      "index": 1,
+      "english": "End this Main Phase"
+    },
+    {
+      "card": 23746827,
+      "index": 2,
+      "english": "Skip Main Phase 1 of your opponent's next turn"
+    },
+    {
+      "card": 23912837,
+      "index": 2,
+      "english": "Change a face-down monster to face-up Defense Position"
+    },
+    {
+      "card": 23912837,
+      "index": 3,
+      "english": "Change a face-up monster to face-down Defense Position"
+    },
+    {
+      "card": 23927567,
+      "index": 0,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 24140059,
+      "index": 0,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 24220368,
+      "index": 1,
+      "english": "Fusion Summon"
+    },
+    {
+      "card": 24220368,
+      "index": 2,
+      "english": "Add to hand"
+    },
+    {
+      "card": 24413299,
+      "index": 1,
+      "english": "Take control"
+    },
+    {
+      "card": 24413299,
+      "index": 2,
+      "english": "Destroy Spell/Trap Card"
+    },
+    {
+      "card": 24673894,
+      "index": 0,
+      "english": "Gain LP"
+    },
+    {
+      "card": 24673894,
+      "index": 1,
+      "english": "Inflict damage to your opponent"
+    },
+    {
+      "card": 25163979,
+      "index": 1,
+      "english": "Move position"
+    },
+    {
+      "card": 25163979,
+      "index": 2,
+      "english": "Swap positions"
+    },
+    {
+      "card": 25396150,
+      "index": 1,
+      "english": "Add to hand"
+    },
+    {
+      "card": 25396150,
+      "index": 2,
+      "english": "Place in the Pendulum Zone"
+    },
+    {
+      "card": 25415161,
+      "index": 2,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 25484449,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 25484449,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 25784595,
+      "index": 1,
+      "english": "Increase Level"
+    },
+    {
+      "card": 25784595,
+      "index": 2,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 25788011,
+      "index": 1,
+      "english": "Increase Level by 1"
+    },
+    {
+      "card": 25788011,
+      "index": 2,
+      "english": "Increase Level by 2"
+    },
+    {
+      "card": 25788011,
+      "index": 3,
+      "english": "Increase Level by 3"
+    },
+    {
+      "card": 25857977,
+      "index": 2,
+      "english": "Do not change Level"
+    },
+    {
+      "card": 25857977,
+      "index": 3,
+      "english": "Increase Level"
+    },
+    {
+      "card": 25857977,
+      "index": 4,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 25940932,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 25940932,
+      "index": 3,
+      "english": "Add to hand"
+    },
+    {
+      "card": 26357901,
+      "index": 0,
+      "english": "Destroy a monster"
+    },
+    {
+      "card": 26357901,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 26387390,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 26387390,
+      "index": 2,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 26420373,
+      "index": 1,
+      "english": "Increase Scale"
+    },
+    {
+      "card": 26420373,
+      "index": 2,
+      "english": "Decrease Scale"
+    },
+    {
+      "card": 26931058,
+      "index": 0,
+      "english": "Union Equip"
+    },
+    {
+      "card": 26931058,
+      "index": 1,
+      "english": "Unequip"
+    },
+    {
+      "card": 27753563,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 27753563,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 27918963,
+      "index": 1,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 27918963,
+      "index": 2,
+      "english": "Add to hand"
+    },
+    {
+      "card": 28531163,
+      "index": 1,
+      "english": "Decrease ATK"
+    },
+    {
+      "card": 28531163,
+      "index": 2,
+      "english": "ATK becomes 0"
+    },
+    {
+      "card": 28531163,
+      "index": 3,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 28531163,
+      "index": 4,
+      "english": "Destroy"
+    },
+    {
+      "card": 28653611,
+      "index": 1,
+      "english": "Search effect"
+    },
+    {
+      "card": 28653611,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 28927782,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 28927782,
+      "index": 2,
+      "english": "Equip"
+    },
+    {
+      "card": 29369059,
+      "index": 1,
+      "english": "Return both players' cards to the hand"
+    },
+    {
+      "card": 29369059,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 29369059,
+      "index": 3,
+      "english": "Return the Field Spell to the hand"
+    },
+    {
+      "card": 29424328,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 29424328,
+      "index": 2,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 29510428,
+      "index": 1,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 29510428,
+      "index": 2,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 29876299,
+      "index": 1,
+      "english": "Draw"
+    },
+    {
+      "card": 29876299,
+      "index": 2,
+      "english": "Tribute"
+    },
+    {
+      "card": 30064423,
+      "index": 1,
+      "english": "Return all monsters to the Deck"
+    },
+    {
+      "card": 30064423,
+      "index": 2,
+      "english": "Return all Spell/Trap Cards to the Deck"
+    },
+    {
+      "card": 30064423,
+      "index": 3,
+      "english": "Banish a card from the Extra Deck"
+    },
+    {
+      "card": 30109445,
+      "index": 1,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 30109445,
+      "index": 2,
+      "english": "Draw"
+    },
+    {
+      "card": 30126992,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 30126992,
+      "index": 2,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 30271097,
+      "index": 1,
+      "english": "Destroy"
+    },
+    {
+      "card": 30271097,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 30291086,
+      "index": 0,
+      "english": "Banish a monster from the hand/GY"
+    },
+    {
+      "card": 30291086,
+      "index": 1,
+      "english": "Recover banished monsters"
+    },
+    {
+      "card": 30291086,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 30291086,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 30453613,
+      "index": 1,
+      "english": "Place it in your Field Zone"
+    },
+    {
+      "card": 30453613,
+      "index": 2,
+      "english": "Place it in your opponent's Field Zone"
+    },
+    {
+      "card": 30461781,
+      "index": 0,
+      "english": "Draw 1 card"
+    },
+    {
+      "card": 30461781,
+      "index": 1,
+      "english": "Draw 2 cards"
+    },
+    {
+      "card": 30752324,
+      "index": 2,
+      "english": "Destroy a monster"
+    },
+    {
+      "card": 30752324,
+      "index": 3,
+      "english": "Destroy Spell/Trap Card(s)"
+    },
+    {
+      "card": 30752324,
+      "index": 4,
+      "english": "Draw"
+    },
+    {
+      "card": 30752324,
+      "index": 5,
+      "english": "Special Summon"
+    },
+    {
+      "card": 30936186,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 30936186,
+      "index": 1,
+      "english": "Select a Beast-Warrior monster to reveal to your opponent"
+    },
+    {
+      "card": 30936186,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Urnight\""
+    },
+    {
+      "card": 31533473,
+      "index": 1,
+      "english": "Return Fusion Monsters to the Deck"
+    },
+    {
+      "card": 31533473,
+      "index": 2,
+      "english": "Set a Trap Card"
+    },
+    {
+      "card": 31971040,
+      "index": 1,
+      "english": "Gain 500 LP"
+    },
+    {
+      "card": 31971040,
+      "index": 2,
+      "english": "Take 500 damage"
+    },
+    {
+      "card": 31971040,
+      "index": 3,
+      "english": "Apply both"
+    },
+    {
+      "card": 32314730,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 32314730,
+      "index": 1,
+      "english": "Select a Beast-Warrior monster to reveal to your opponent"
+    },
+    {
+      "card": 32314730,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Crusader\""
+    },
+    {
+      "card": 32549749,
+      "index": 0,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 32549749,
+      "index": 1,
+      "english": "Recover Equip Spell Card(s)"
+    },
+    {
+      "card": 32549749,
+      "index": 2,
+      "english": "Set on the field"
+    },
+    {
+      "card": 32549749,
+      "index": 3,
+      "english": "Equip to a monster"
+    },
+    {
+      "card": 32768230,
+      "index": 0,
+      "english": "Return to the Extra Deck"
+    },
+    {
+      "card": 33503878,
+      "index": 2,
+      "english": "Place in the Pendulum Zone"
+    },
+    {
+      "card": 33503878,
+      "index": 3,
+      "english": "Destroy"
+    },
+    {
+      "card": 33970665,
+      "index": 0,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 33970665,
+      "index": 1,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 34314989,
+      "index": 1,
+      "english": "Place a Trap Card"
+    },
+    {
+      "card": 34314989,
+      "index": 2,
+      "english": "Recover a monster"
+    },
+    {
+      "card": 34688023,
+      "index": 1,
+      "english": "Return to the top of the Deck"
+    },
+    {
+      "card": 34688023,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 34690953,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 34690953,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 34721681,
+      "index": 1,
+      "english": "Change battle position"
+    },
+    {
+      "card": 34721681,
+      "index": 2,
+      "english": "Attach Xyz Material"
+    },
+    {
+      "card": 34884015,
+      "index": 1,
+      "english": "Increase Scale"
+    },
+    {
+      "card": 34884015,
+      "index": 2,
+      "english": "Decrease Scale"
+    },
+    {
+      "card": 34968834,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 34968834,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 35380371,
+      "index": 2,
+      "english": "Return to the hand"
+    },
+    {
+      "card": 35380371,
+      "index": 3,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 35487920,
+      "index": 2,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 35544402,
+      "index": 2,
+      "english": "Increase Level by 1"
+    },
+    {
+      "card": 35544402,
+      "index": 3,
+      "english": "Increase Level by 2"
+    },
+    {
+      "card": 36400569,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 36400569,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 36742774,
+      "index": 4,
+      "english": "Increase Level"
+    },
+    {
+      "card": 36742774,
+      "index": 5,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 36894320,
+      "index": 0,
+      "english": "Special Summon"
+    },
+    {
+      "card": 36894320,
+      "index": 1,
+      "english": "Recover from the GY"
+    },
+    {
+      "card": 36920182,
+      "index": 0,
+      "english": "Special Summon from the GY"
+    },
+    {
+      "card": 36920182,
+      "index": 1,
+      "english": "Recover and Synchro Summon"
+    },
+    {
+      "card": 37055344,
+      "index": 1,
+      "english": "Change your \"Ghostrick\" monster to face-down Defense Position"
+    },
+    {
+      "card": 37055344,
+      "index": 2,
+      "english": "Change your monster to face-up Attack Position"
+    },
+    {
+      "card": 37390589,
+      "index": 0,
+      "english": "Change the attacking monster to Defense Position"
+    },
+    {
+      "card": 37390589,
+      "index": 1,
+      "english": "Become an Equip Card"
+    },
+    {
+      "card": 37390589,
+      "index": 2,
+      "english": "Use both effects"
+    },
+    {
+      "card": 37561138,
+      "index": 0,
+      "english": "Add 1 \"Gravekeeper's\" monster from your Deck to your hand"
+    },
+    {
+      "card": 37561138,
+      "index": 1,
+      "english": "Normal Summon 1 \"Gravekeeper's\" monster from your hand"
+    },
+    {
+      "card": 37675907,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 37675907,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 37750912,
+      "index": 1,
+      "english": "Increase Level"
+    },
+    {
+      "card": 37750912,
+      "index": 2,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 37839434,
+      "index": 1,
+      "english": "Special Summon as a monster"
+    },
+    {
+      "card": 37839434,
+      "index": 2,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 38082437,
+      "index": 4,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 38082437,
+      "index": 5,
+      "english": "Place on bottom of the Deck"
+    },
+    {
+      "card": 38129297,
+      "index": 1,
+      "english": "Fusion Summon"
+    },
+    {
+      "card": 38129297,
+      "index": 2,
+      "english": "Ritual Summon"
+    },
+    {
+      "card": 38273745,
+      "index": 1,
+      "english": "Return 1 card your opponent controls to its owner's hand."
+    },
+    {
+      "card": 38273745,
+      "index": 2,
+      "english": "Send 1 random card from your opponent's hand to the GY."
+    },
+    {
+      "card": 38273745,
+      "index": 3,
+      "english": "Banish 1 card in your opponent's GY."
+    },
+    {
+      "card": 38491852,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 38491852,
+      "index": 2,
+      "english": "Add to hand"
+    },
+    {
+      "card": 38817295,
+      "index": 1,
+      "english": "Negate the effects of face-up cards on the field"
+    },
+    {
+      "card": 38817295,
+      "index": 2,
+      "english": "Negate a monster effect activated in the hand or GY"
+    },
+    {
+      "card": 38837163,
+      "index": 1,
+      "english": "This card's ATK becomes doubled until the End Phase."
+    },
+    {
+      "card": 38837163,
+      "index": 2,
+      "english": "This card can attack your opponent directly this turn."
+    },
+    {
+      "card": 39016067,
+      "index": 2,
+      "english": "Special Summon this card"
+    },
+    {
+      "card": 39016067,
+      "index": 3,
+      "english": "Destroy this card"
+    },
+    {
+      "card": 39037517,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 39037517,
+      "index": 1,
+      "english": "Reveal 1 Insect monster to your opponent"
+    },
+    {
+      "card": 39037517,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Beetle\""
+    },
+    {
+      "card": 39185163,
+      "index": 1,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 39185163,
+      "index": 2,
+      "english": "Banish a monster"
+    },
+    {
+      "card": 39238953,
+      "index": 0,
+      "english": "Add to hand"
+    },
+    {
+      "card": 39238953,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 39568067,
+      "index": 2,
+      "english": "Equip"
+    },
+    {
+      "card": 39672388,
+      "index": 1,
+      "english": "Increase by 1 Level"
+    },
+    {
+      "card": 39672388,
+      "index": 2,
+      "english": "Increase by 2 Levels"
+    },
+    {
+      "card": 39978267,
+      "index": 1,
+      "english": "Destroy Equip Card(s)"
+    },
+    {
+      "card": 39978267,
+      "index": 2,
+      "english": "Equip an Equip Card to this card"
+    },
+    {
+      "card": 40005099,
+      "index": 0,
+      "english": "Special Summon"
+    },
+    {
+      "card": 40005099,
+      "index": 1,
+      "english": "Return to the GY"
+    },
+    {
+      "card": 40044918,
+      "index": 1,
+      "english": "Destroy Spell/Trap Card"
+    },
+    {
+      "card": 40044918,
+      "index": 2,
+      "english": "Add 1 \"HERO\" monster to your hand"
+    },
+    {
+      "card": 40227329,
+      "index": 0,
+      "english": "This card can attack directly"
+    },
+    {
+      "card": 40227329,
+      "index": 1,
+      "english": "Your opponent cannot activate the effects of cards in their Spell & Trap Zone"
+    },
+    {
+      "card": 40227329,
+      "index": 2,
+      "english": "Your opponent cannot activate the effects of cards in their hand or GY"
+    },
+    {
+      "card": 40235813,
+      "index": 1,
+      "english": "Add to hand"
+    },
+    {
+      "card": 40235813,
+      "index": 2,
+      "english": "Toss a coin"
+    },
+    {
+      "card": 40380686,
+      "index": 0,
+      "english": "Change Type"
+    },
+    {
+      "card": 40380686,
+      "index": 1,
+      "english": "Change Attribute"
+    },
+    {
+      "card": 40390147,
+      "index": 1,
+      "english": "Special Summon 1 \"Galaxy-Eyes Photon Dragon\" from your hand"
+    },
+    {
+      "card": 40390147,
+      "index": 2,
+      "english": "Special Summon 1 \"Galaxy-Eyes Photon Dragon\" from your Deck"
+    },
+    {
+      "card": 40456412,
+      "index": 1,
+      "english": "Destroy and Special Summon"
+    },
+    {
+      "card": 40456412,
+      "index": 2,
+      "english": "Place a Pendulum Monster from the Extra Deck"
+    },
+    {
+      "card": 40456412,
+      "index": 3,
+      "english": "Set a Quick-Play Spell from the Deck"
+    },
+    {
+      "card": 40680521,
+      "index": 0,
+      "english": "Special Summon"
+    },
+    {
+      "card": 40680521,
+      "index": 1,
+      "english": "Move position"
+    },
+    {
+      "card": 40695128,
+      "index": 2,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 40695128,
+      "index": 3,
+      "english": "Place on bottom of the Deck"
+    },
+    {
+      "card": 41201555,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 41201555,
+      "index": 1,
+      "english": "Reveal 1 Plant monster to your opponent"
+    },
+    {
+      "card": 41201555,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Gravirose\""
+    },
+    {
+      "card": 41406613,
+      "index": 3,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 41406613,
+      "index": 4,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 41858121,
+      "index": 0,
+      "english": "Draw 1 card from your Deck."
+    },
+    {
+      "card": 41858121,
+      "index": 1,
+      "english": "Destroy 1 card your opponent controls."
+    },
+    {
+      "card": 42193638,
+      "index": 1,
+      "english": "Gain 500 LP"
+    },
+    {
+      "card": 42193638,
+      "index": 2,
+      "english": "Take 500 damage"
+    },
+    {
+      "card": 42291297,
+      "index": 1,
+      "english": "Skip your next Draw Phase"
+    },
+    {
+      "card": 42291297,
+      "index": 2,
+      "english": "Negate this card's effects until your opponent's next Standby Phase"
+    },
+    {
+      "card": 42377643,
+      "index": 3,
+      "english": "Become Level 4"
+    },
+    {
+      "card": 42377643,
+      "index": 4,
+      "english": "Become Level 5"
+    },
+    {
+      "card": 42544773,
+      "index": 2,
+      "english": "Add to hand"
+    },
+    {
+      "card": 42544773,
+      "index": 3,
+      "english": "ATK becomes half"
+    },
+    {
+      "card": 42759961,
+      "index": 2,
+      "english": "Return Ritual Monsters to the Deck"
+    },
+    {
+      "card": 42759961,
+      "index": 3,
+      "english": "Set a monster"
+    },
+    {
+      "card": 42925441,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 42925441,
+      "index": 2,
+      "english": "Search the Deck"
+    },
+    {
+      "card": 42925441,
+      "index": 3,
+      "english": "All of them"
+    },
+    {
+      "card": 42932862,
+      "index": 2,
+      "english": "Flip face-up"
+    },
+    {
+      "card": 42932862,
+      "index": 3,
+      "english": "Turn face-down"
+    },
+    {
+      "card": 43066927,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 43066927,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 43270827,
+      "index": 1,
+      "english": "Negate that effect"
+    },
+    {
+      "card": 43270827,
+      "index": 2,
+      "english": "Banish that monster"
+    },
+    {
+      "card": 43270827,
+      "index": 3,
+      "english": "Select both players"
+    },
+    {
+      "card": 44595286,
+      "index": 0,
+      "english": "Send 1 card your opponent controls to the GY"
+    },
+    {
+      "card": 44595286,
+      "index": 1,
+      "english": "Send 1 card from your opponent's hand to the GY"
+    },
+    {
+      "card": 44857722,
+      "index": 1,
+      "english": "Special Summon 1 Level 6 or lower monster from your hand or GY"
+    },
+    {
+      "card": 44857722,
+      "index": 2,
+      "english": "Add 1 Level 10 DARK monster to your hand"
+    },
+    {
+      "card": 44857722,
+      "index": 3,
+      "english": "Special Summon 1 Level 10 monster from your hand or GY"
+    },
+    {
+      "card": 44886582,
+      "index": 1,
+      "english": "Fusion Summon"
+    },
+    {
+      "card": 44886582,
+      "index": 2,
+      "english": "Send to the GY"
+    },
+    {
+      "card": 44994712,
+      "index": 2,
+      "english": "Place a counter"
+    },
+    {
+      "card": 44994712,
+      "index": 3,
+      "english": "Set \"Polymerization/Fusion\""
+    },
+    {
+      "card": 45005708,
+      "index": 0,
+      "english": "Take control of a monster your opponent controls"
+    },
+    {
+      "card": 45005708,
+      "index": 1,
+      "english": "Special Summon a monster from your opponent's GY"
+    },
+    {
+      "card": 45041488,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 45041488,
+      "index": 1,
+      "english": "Reveal 1 Rock monster to your opponent"
+    },
+    {
+      "card": 45041488,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Guardian\""
+    },
+    {
+      "card": 45236142,
+      "index": 2,
+      "english": "Return to the hand"
+    },
+    {
+      "card": 45236142,
+      "index": 3,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 45536531,
+      "index": 3,
+      "english": "Place"
+    },
+    {
+      "card": 45653036,
+      "index": 0,
+      "english": "Decrease ATK by 1000"
+    },
+    {
+      "card": 45653036,
+      "index": 1,
+      "english": "Decrease ATK by 2000"
+    },
+    {
+      "card": 45710945,
+      "index": 3,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 45710945,
+      "index": 4,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 45974017,
+      "index": 1,
+      "english": "Place 1 \"D/D\" Pendulum Monster from your GY in your Pendulum Zone"
+    },
+    {
+      "card": 45974017,
+      "index": 2,
+      "english": "Place 1 \"D/D\" Pendulum Monster from your Extra Deck in your Pendulum Zone"
+    },
+    {
+      "card": 46001505,
+      "index": 1,
+      "english": "End the Battle Phase"
+    },
+    {
+      "card": 46001505,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 46485778,
+      "index": 3,
+      "english": "Add from the Deck to your hand"
+    },
+    {
+      "card": 46485778,
+      "index": 4,
+      "english": "Special Summon from the hand"
+    },
+    {
+      "card": 46593546,
+      "index": 5,
+      "english": "Detach 2 material(s) from this card"
+    },
+    {
+      "card": 46593546,
+      "index": 6,
+      "english": "Destroy 1 \"Dark Contract\" card you control"
+    },
+    {
+      "card": 47330808,
+      "index": 2,
+      "english": "Add to hand"
+    },
+    {
+      "card": 47330808,
+      "index": 3,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 47961342,
+      "index": 1,
+      "english": "Send the selected monster to the GY"
+    },
+    {
+      "card": 47961342,
+      "index": 2,
+      "english": "Send all other monsters to the GY"
+    },
+    {
+      "card": 48016074,
+      "index": 1,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 48016074,
+      "index": 2,
+      "english": "Add to hand"
+    },
+    {
+      "card": 48016074,
+      "index": 3,
+      "english": "Return to the hand"
+    },
+    {
+      "card": 48016074,
+      "index": 4,
+      "english": "Special Summon"
+    },
+    {
+      "card": 48016074,
+      "index": 5,
+      "english": "End"
+    },
+    {
+      "card": 48032131,
+      "index": 2,
+      "english": "Banish a card from the hand"
+    },
+    {
+      "card": 48032131,
+      "index": 3,
+      "english": "Banish a card from the field or the GY"
+    },
+    {
+      "card": 48386462,
+      "index": 1,
+      "english": "Destroy this card, then draw 1 card"
+    },
+    {
+      "card": 48386462,
+      "index": 2,
+      "english": "Discard 1 card, then draw 1 card"
+    },
+    {
+      "card": 48386462,
+      "index": 3,
+      "english": "During this turn's End Phase, draw 1 card"
+    },
+    {
+      "card": 48576971,
+      "index": 1,
+      "english": "Draw 1 card(s)"
+    },
+    {
+      "card": 48576971,
+      "index": 2,
+      "english": "Your opponent discards 1 random card from their hand to the GY"
+    },
+    {
+      "card": 48680970,
+      "index": 1,
+      "english": "Special Summon \"Dark Magician\""
+    },
+    {
+      "card": 48680970,
+      "index": 2,
+      "english": "Add \"Dark Magic Attack\" or \"Thousand Knives\" to your hand"
+    },
+    {
+      "card": 48739627,
+      "index": 2,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 48739627,
+      "index": 3,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 48768179,
+      "index": 1,
+      "english": "Return 1 monster your opponent controls to the top of their Deck."
+    },
+    {
+      "card": 48768179,
+      "index": 2,
+      "english": "Send the top card of your opponent's Deck to the GY."
+    },
+    {
+      "card": 49202162,
+      "index": 1,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 49202162,
+      "index": 2,
+      "english": "Attack twice"
+    },
+    {
+      "card": 49202162,
+      "index": 3,
+      "english": "Banish 1 card on the field"
+    },
+    {
+      "card": 49238328,
+      "index": 0,
+      "english": "Activate by banishing 3 card(s)"
+    },
+    {
+      "card": 49238328,
+      "index": 1,
+      "english": "Activate by banishing 6 card(s)"
+    },
+    {
+      "card": 49451215,
+      "index": 1,
+      "english": "Destroy 1 card your opponent controls"
+    },
+    {
+      "card": 49451215,
+      "index": 2,
+      "english": "Inflict 1500 damage to your opponent"
+    },
+    {
+      "card": 49451215,
+      "index": 3,
+      "english": "Apply both effects"
+    },
+    {
+      "card": 49680980,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 49680980,
+      "index": 1,
+      "english": "Reveal 1 Rock monster to your opponent"
+    },
+    {
+      "card": 49680980,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Sandman\""
+    },
+    {
+      "card": 50383626,
+      "index": 2,
+      "english": "Top of the Deck"
+    },
+    {
+      "card": 50383626,
+      "index": 3,
+      "english": "Bottom of the Deck"
+    },
+    {
+      "card": 50669347,
+      "index": 1,
+      "english": "Search and recover"
+    },
+    {
+      "card": 50669347,
+      "index": 2,
+      "english": "Destroy and Special Summon"
+    },
+    {
+      "card": 50789693,
+      "index": 2,
+      "english": "Increase ATK by 1000"
+    },
+    {
+      "card": 50789693,
+      "index": 3,
+      "english": "Increase DEF by 1000"
+    },
+    {
+      "card": 51474037,
+      "index": 0,
+      "english": "Change to face-down Defense Position"
+    },
+    {
+      "card": 51474037,
+      "index": 1,
+      "english": "ATK becomes 0"
+    },
+    {
+      "card": 52155219,
+      "index": 0,
+      "english": "Search the Deck"
+    },
+    {
+      "card": 52155219,
+      "index": 1,
+      "english": "Effect protection"
+    },
+    {
+      "card": 53039326,
+      "index": 0,
+      "english": "Reveal 1 \"Iron Core of Koa'ki Meiru\" to your opponent"
+    },
+    {
+      "card": 53039326,
+      "index": 1,
+      "english": "Destroy \"Iron Core Specimen Lab\""
+    },
+    {
+      "card": 54239282,
+      "index": 0,
+      "english": "Discard 1 card"
+    },
+    {
+      "card": 54239282,
+      "index": 1,
+      "english": "Lose LP"
+    },
+    {
+      "card": 54332792,
+      "index": 3,
+      "english": "Increase Level"
+    },
+    {
+      "card": 54332792,
+      "index": 4,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 54399598,
+      "index": 1,
+      "english": "Place a monster"
+    },
+    {
+      "card": 54399598,
+      "index": 2,
+      "english": "Recover a Spell Card"
+    },
+    {
+      "card": 54399598,
+      "index": 3,
+      "english": "Do nothing"
+    },
+    {
+      "card": 54520292,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 54520292,
+      "index": 1,
+      "english": "Reveal 1 Continuous Spell Card to your opponent"
+    },
+    {
+      "card": 54520292,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Ice\""
+    },
+    {
+      "card": 54611591,
+      "index": 2,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 54611591,
+      "index": 3,
+      "english": "Inflict damage"
+    },
+    {
+      "card": 54631665,
+      "index": 1,
+      "english": "Shuffle 1 monster from your GY into the Deck"
+    },
+    {
+      "card": 54631665,
+      "index": 2,
+      "english": "Destroy this card"
+    },
+    {
+      "card": 54974237,
+      "index": 0,
+      "english": "Spell Card"
+    },
+    {
+      "card": 54974237,
+      "index": 1,
+      "english": "Trap Card"
+    },
+    {
+      "card": 55591586,
+      "index": 4,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 55591586,
+      "index": 5,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 55705473,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 55705473,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 55749927,
+      "index": 0,
+      "english": "Banish and destroy"
+    },
+    {
+      "card": 55749927,
+      "index": 1,
+      "english": "Destroy and Special Summon"
+    },
+    {
+      "card": 55948544,
+      "index": 0,
+      "english": "\"Yu-Jo Friendship\""
+    },
+    {
+      "card": 55948544,
+      "index": 1,
+      "english": "\"Unity\""
+    },
+    {
+      "card": 56465981,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 56465981,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 56787189,
+      "index": 1,
+      "english": "Search the Deck"
+    },
+    {
+      "card": 56787189,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 56827051,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 56827051,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 56838842,
+      "index": 3,
+      "english": "Decrease by 1 Level"
+    },
+    {
+      "card": 56838842,
+      "index": 4,
+      "english": "Decrease by 2 Levels"
+    },
+    {
+      "card": 57232301,
+      "index": 2,
+      "english": "Monster: Negate Spell/Trap effects"
+    },
+    {
+      "card": 57232301,
+      "index": 3,
+      "english": "Spell: Draw a card"
+    },
+    {
+      "card": 57232301,
+      "index": 4,
+      "english": "Trap: Banish a monster"
+    },
+    {
+      "card": 57256127,
+      "index": 2,
+      "english": "Declare an Attribute"
+    },
+    {
+      "card": 57256127,
+      "index": 3,
+      "english": "Declare a monster type"
+    },
+    {
+      "card": 57261568,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 57261568,
+      "index": 2,
+      "english": "Place on bottom of the Deck"
+    },
+    {
+      "card": 57329501,
+      "index": 0,
+      "english": "Special Summon from the GY"
+    },
+    {
+      "card": 57329501,
+      "index": 1,
+      "english": "Special Summon from the Deck"
+    },
+    {
+      "card": 57511992,
+      "index": 1,
+      "english": "Change card name and Level"
+    },
+    {
+      "card": 57511992,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 57775790,
+      "index": 3,
+      "english": "Draw"
+    },
+    {
+      "card": 57775790,
+      "index": 4,
+      "english": "Special Summon"
+    },
+    {
+      "card": 57809669,
+      "index": 1,
+      "english": "Return a Spell/Trap to the hand"
+    },
+    {
+      "card": 57809669,
+      "index": 2,
+      "english": "Fusion Summon"
+    },
+    {
+      "card": 57869175,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 57869175,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 58074572,
+      "index": 0,
+      "english": "Gain 200 LP"
+    },
+    {
+      "card": 58074572,
+      "index": 1,
+      "english": "Your opponent gains 200 LP"
+    },
+    {
+      "card": 58143766,
+      "index": 0,
+      "english": "Add to hand or Special Summon"
+    },
+    {
+      "card": 58143766,
+      "index": 1,
+      "english": "Inflict damage to your opponent"
+    },
+    {
+      "card": 58165765,
+      "index": 1,
+      "english": "Return to the top of the Deck"
+    },
+    {
+      "card": 58165765,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 58205203,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 58205203,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 58995660,
+      "index": 1,
+      "english": "Cannot be destroyed"
+    },
+    {
+      "card": 58995660,
+      "index": 2,
+      "english": "Unaffected by effects"
+    },
+    {
+      "card": 58995660,
+      "index": 3,
+      "english": "Continue attacking"
+    },
+    {
+      "card": 59293853,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 59293853,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 59494222,
+      "index": 0,
+      "english": "Neither player can activate the effects of cards in the GY"
+    },
+    {
+      "card": 59494222,
+      "index": 1,
+      "english": "Neither player can banish cards from the GY"
+    },
+    {
+      "card": 59494222,
+      "index": 2,
+      "english": "Neither player can Special Summon monsters from the GY"
+    },
+    {
+      "card": 59514116,
+      "index": 0,
+      "english": "Fusion Summon"
+    },
+    {
+      "card": 59514116,
+      "index": 1,
+      "english": "Ritual Summon"
+    },
+    {
+      "card": 59805313,
+      "index": 1,
+      "english": "Send from the Deck to the GY"
+    },
+    {
+      "card": 59805313,
+      "index": 2,
+      "english": "Set from hand/Deck"
+    },
+    {
+      "card": 59983249,
+      "index": 1,
+      "english": "Destroy 1 monster on the field"
+    },
+    {
+      "card": 59983249,
+      "index": 2,
+      "english": "Destroy up to 2 Spell/Trap Cards on the field"
+    },
+    {
+      "card": 59983249,
+      "index": 3,
+      "english": "Your opponent discards 1 random card"
+    },
+    {
+      "card": 59983249,
+      "index": 4,
+      "english": "Destroy 1 face-down card on the field"
+    },
+    {
+      "card": 59983249,
+      "index": 5,
+      "english": "Return 1 card on the field to the top of the Deck"
+    },
+    {
+      "card": 59983249,
+      "index": 6,
+      "english": "Banish 1 card on the field"
+    },
+    {
+      "card": 60158866,
+      "index": 0,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 60158866,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 60439482,
+      "index": 2,
+      "english": "Destroy"
+    },
+    {
+      "card": 60439482,
+      "index": 3,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 60759087,
+      "index": 0,
+      "english": "Switch control"
+    },
+    {
+      "card": 60759087,
+      "index": 1,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 60921537,
+      "index": 1,
+      "english": "View your Extra Deck"
+    },
+    {
+      "card": 60921537,
+      "index": 2,
+      "english": "View your opponent's Extra Deck"
+    },
+    {
+      "card": 61466310,
+      "index": 1,
+      "english": "Monster with 2400 ATK / 1000 DEF"
+    },
+    {
+      "card": 61466310,
+      "index": 2,
+      "english": "Monster with 2800 ATK / 1000 DEF"
+    },
+    {
+      "card": 61587183,
+      "index": 1,
+      "english": "Return 1 card on the field to its owner's hand."
+    },
+    {
+      "card": 61587183,
+      "index": 2,
+      "english": "Look at the top 1 card(s) of your opponent's Deck."
+    },
+    {
+      "card": 61587183,
+      "index": 3,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 61587183,
+      "index": 4,
+      "english": "Place on bottom of the Deck"
+    },
+    {
+      "card": 61884774,
+      "index": 0,
+      "english": "Search the Deck"
+    },
+    {
+      "card": 61884774,
+      "index": 1,
+      "english": "Place in the Pendulum Zone"
+    },
+    {
+      "card": 62006866,
+      "index": 2,
+      "english": "Search effect"
+    },
+    {
+      "card": 62006866,
+      "index": 3,
+      "english": "Destroy a monster"
+    },
+    {
+      "card": 62089826,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 62089826,
+      "index": 2,
+      "english": "Set Spell/Trap"
+    },
+    {
+      "card": 62480168,
+      "index": 1,
+      "english": "Add to hand"
+    },
+    {
+      "card": 62480168,
+      "index": 2,
+      "english": "Place in the Pendulum Zone"
+    },
+    {
+      "card": 62968263,
+      "index": 2,
+      "english": "As Xyz Material"
+    },
+    {
+      "card": 63111591,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 63111591,
+      "index": 3,
+      "english": "Set"
+    },
+    {
+      "card": 63111591,
+      "index": 4,
+      "english": "No effect"
+    },
+    {
+      "card": 63136489,
+      "index": 2,
+      "english": "Add this card to your hand"
+    },
+    {
+      "card": 63136489,
+      "index": 3,
+      "english": "Banish this card and Special Summon"
+    },
+    {
+      "card": 63181559,
+      "index": 2,
+      "english": "Fusion effect"
+    },
+    {
+      "card": 63181559,
+      "index": 3,
+      "english": "Link Summon"
+    },
+    {
+      "card": 63193879,
+      "index": 1,
+      "english": "Increase Level by 1"
+    },
+    {
+      "card": 63193879,
+      "index": 2,
+      "english": "Decrease Level by 1"
+    },
+    {
+      "card": 63251695,
+      "index": 2,
+      "english": "Make another attack"
+    },
+    {
+      "card": 63251695,
+      "index": 3,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 63251695,
+      "index": 4,
+      "english": "Return 1 card from your opponent's hand to the owner's Deck"
+    },
+    {
+      "card": 63251695,
+      "index": 5,
+      "english": "Return 1 card your opponent controls to the owner's Deck"
+    },
+    {
+      "card": 63265554,
+      "index": 2,
+      "english": "Change battle position"
+    },
+    {
+      "card": 63265554,
+      "index": 3,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 63485233,
+      "index": 0,
+      "english": "Increase Level by 1"
+    },
+    {
+      "card": 63485233,
+      "index": 1,
+      "english": "Decrease Level by 1"
+    },
+    {
+      "card": 63612442,
+      "index": 1,
+      "english": "If this card battles a monster, destroy it without damage calculation."
+    },
+    {
+      "card": 63612442,
+      "index": 2,
+      "english": "This card cannot be destroyed by Trap effects."
+    },
+    {
+      "card": 63926180,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 63926180,
+      "index": 2,
+      "english": "Select 1 \"Aleister\" monster from your Deck"
+    },
+    {
+      "card": 63926180,
+      "index": 3,
+      "english": "Banish from the Extra Deck"
+    },
+    {
+      "card": 64038662,
+      "index": 2,
+      "english": "Equip"
+    },
+    {
+      "card": 64038662,
+      "index": 3,
+      "english": "Special Summon"
+    },
+    {
+      "card": 64049762,
+      "index": 2,
+      "english": "Set a Continuous Trap Card"
+    },
+    {
+      "card": 64049762,
+      "index": 3,
+      "english": "Destruction effect"
+    },
+    {
+      "card": 64245689,
+      "index": 0,
+      "english": "Send a Plant monster from the Deck to the GY"
+    },
+    {
+      "card": 64245689,
+      "index": 1,
+      "english": "Special Summon a Plant monster from the GY"
+    },
+    {
+      "card": 64327901,
+      "index": 2,
+      "english": "Make 1 of them become the same Level as the other"
+    },
+    {
+      "card": 64327901,
+      "index": 3,
+      "english": "Make both of their Levels become the total of their original Levels"
+    },
+    {
+      "card": 64455720,
+      "index": 1,
+      "english": "Special Summon as a monster"
+    },
+    {
+      "card": 64455720,
+      "index": 2,
+      "english": "Special Summon a monster from the GY"
+    },
+    {
+      "card": 65026212,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 65026212,
+      "index": 1,
+      "english": "Send a monster with \"Koa'ki Meiru\" in its name to the GY"
+    },
+    {
+      "card": 65026212,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Maximus\""
+    },
+    {
+      "card": 65357623,
+      "index": 1,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 65357623,
+      "index": 2,
+      "english": "Decrease ATK"
+    },
+    {
+      "card": 65496951,
+      "index": 1,
+      "english": "Gain 500 LP"
+    },
+    {
+      "card": 65496951,
+      "index": 2,
+      "english": "Take 500 damage"
+    },
+    {
+      "card": 65514302,
+      "index": 1,
+      "english": "Add \"Conduction Warrior Linear Magnum Plus Minus\" or a Level 4 or lower \"Magnet Warrior\" monster to your hand"
+    },
+    {
+      "card": 65514302,
+      "index": 2,
+      "english": "Add a Level 8 \"Magna Warrior\" to your hand"
+    },
+    {
+      "card": 65514302,
+      "index": 3,
+      "english": "Fusion Summon"
+    },
+    {
+      "card": 66011101,
+      "index": 0,
+      "english": "Draw, then discard 1 card"
+    },
+    {
+      "card": 66011101,
+      "index": 1,
+      "english": "Special Summon from the GY"
+    },
+    {
+      "card": 66011101,
+      "index": 2,
+      "english": "Double its ATK"
+    },
+    {
+      "card": 66472129,
+      "index": 1,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 66472129,
+      "index": 2,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 66736715,
+      "index": 1,
+      "english": "Top of the Deck"
+    },
+    {
+      "card": 66736715,
+      "index": 2,
+      "english": "Bottom of the Deck"
+    },
+    {
+      "card": 66816282,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 66816282,
+      "index": 1,
+      "english": "Reveal 1 Rock monster to your opponent"
+    },
+    {
+      "card": 66816282,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Wall\""
+    },
+    {
+      "card": 67115133,
+      "index": 2,
+      "english": "Add a \"Radiant Typhoon\" monster to your hand"
+    },
+    {
+      "card": 67115133,
+      "index": 3,
+      "english": "Add \"Mystical Space Typhoon\" to your hand"
+    },
+    {
+      "card": 67694706,
+      "index": 2,
+      "english": "Synchro Summon"
+    },
+    {
+      "card": 67694706,
+      "index": 3,
+      "english": "Xyz Summon"
+    },
+    {
+      "card": 68223137,
+      "index": 1,
+      "english": "Return to the Extra Deck"
+    },
+    {
+      "card": 68809475,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 68809475,
+      "index": 1,
+      "english": "Reveal 1 Machine monster to your opponent"
+    },
+    {
+      "card": 68809475,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Speeder\""
+    },
+    {
+      "card": 69217334,
+      "index": 0,
+      "english": "Draw 1 card(s)"
+    },
+    {
+      "card": 69217334,
+      "index": 1,
+      "english": "Destroy 1 card on the field"
+    },
+    {
+      "card": 69327790,
+      "index": 3,
+      "english": "Place a card on the field on top of the Deck"
+    },
+    {
+      "card": 69327790,
+      "index": 4,
+      "english": "Place a card from the GY on top of the Deck"
+    },
+    {
+      "card": 69385019,
+      "index": 3,
+      "english": "Equip"
+    },
+    {
+      "card": 69394324,
+      "index": 0,
+      "english": "Reveal your Deck"
+    },
+    {
+      "card": 69394324,
+      "index": 1,
+      "english": "Reveal your opponent's Deck"
+    },
+    {
+      "card": 69678646,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 69678646,
+      "index": 2,
+      "english": "Negate the effect"
+    },
+    {
+      "card": 69700783,
+      "index": 0,
+      "english": "Change Level"
+    },
+    {
+      "card": 69700783,
+      "index": 1,
+      "english": "Special Summon from the GY"
+    },
+    {
+      "card": 69964858,
+      "index": 2,
+      "english": "Search effect"
+    },
+    {
+      "card": 69964858,
+      "index": 3,
+      "english": "Copy effect"
+    },
+    {
+      "card": 70058649,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 70058649,
+      "index": 3,
+      "english": "Add to hand"
+    },
+    {
+      "card": 70222318,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 70222318,
+      "index": 2,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 70488851,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 70488851,
+      "index": 2,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 70908596,
+      "index": 1,
+      "english": "Increase by 1 Level."
+    },
+    {
+      "card": 70908596,
+      "index": 2,
+      "english": "Decrease by 1 Level."
+    },
+    {
+      "card": 71275181,
+      "index": 1,
+      "english": "Confirm the selected card"
+    },
+    {
+      "card": 71275181,
+      "index": 2,
+      "english": "Confirm the unselected card"
+    },
+    {
+      "card": 71583486,
+      "index": 1,
+      "english": "Place this card on the bottom of the Deck"
+    },
+    {
+      "card": 71583486,
+      "index": 2,
+      "english": "Add 1 \"Outstanding Dog Marron\" from your Deck to your hand"
+    },
+    {
+      "card": 71750854,
+      "index": 0,
+      "english": "Select an opponent's monster"
+    },
+    {
+      "card": 71750854,
+      "index": 1,
+      "english": "Select a monster you control"
+    },
+    {
+      "card": 71791814,
+      "index": 0,
+      "english": "Add a Spell/Trap to your hand"
+    },
+    {
+      "card": 71791814,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 71978434,
+      "index": 2,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 71978434,
+      "index": 3,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 72258771,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 72258771,
+      "index": 1,
+      "english": "Destroy \"Koa'ki Meiru Valafar\""
+    },
+    {
+      "card": 72498838,
+      "index": 0,
+      "english": "Add 1 \"Magistus\" Spell/Trap from your Deck to your hand"
+    },
+    {
+      "card": 72498838,
+      "index": 1,
+      "english": "Select 1 of your banished Level 4 or lower Spellcaster monsters; return it to the GY"
+    },
+    {
+      "card": 73575650,
+      "index": 0,
+      "english": "Add a Flip monster with a different name"
+    },
+    {
+      "card": 73575650,
+      "index": 1,
+      "english": "Add a lower-Level monster"
+    },
+    {
+      "card": 73664385,
+      "index": 1,
+      "english": "Send to the GY"
+    },
+    {
+      "card": 73664385,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 73988674,
+      "index": 0,
+      "english": "Fusion Card"
+    },
+    {
+      "card": 73988674,
+      "index": 1,
+      "english": "Synchro Card"
+    },
+    {
+      "card": 73988674,
+      "index": 2,
+      "english": "Xyz Card"
+    },
+    {
+      "card": 74148483,
+      "index": 1,
+      "english": "Increase Level"
+    },
+    {
+      "card": 74148483,
+      "index": 2,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 74153887,
+      "index": 1,
+      "english": "Search the Deck"
+    },
+    {
+      "card": 74153887,
+      "index": 2,
+      "english": "Recover from the GY"
+    },
+    {
+      "card": 74213995,
+      "index": 3,
+      "english": "Add 1 \"Battleguard Rage\" or \"Battleguard Howling\" from your Deck to your hand"
+    },
+    {
+      "card": 74213995,
+      "index": 4,
+      "english": "Change 1 face-up monster on the field to face-down Defense Position"
+    },
+    {
+      "card": 74576482,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 74576482,
+      "index": 1,
+      "english": "Reveal 1 WATER monster to your opponent"
+    },
+    {
+      "card": 74576482,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Sea Panther\""
+    },
+    {
+      "card": 74906081,
+      "index": 1,
+      "english": "Place a monster"
+    },
+    {
+      "card": 74906081,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 75304793,
+      "index": 0,
+      "english": "5: Inflict damage to your opponent"
+    },
+    {
+      "card": 75304793,
+      "index": 1,
+      "english": "7: Banish your opponent's cards"
+    },
+    {
+      "card": 76075139,
+      "index": 0,
+      "english": "Special Summon"
+    },
+    {
+      "card": 76075139,
+      "index": 1,
+      "english": "Move position"
+    },
+    {
+      "card": 76290637,
+      "index": 3,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 76290637,
+      "index": 4,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 76334960,
+      "index": 1,
+      "english": "Fusion Summon using your hand, field, and Deck"
+    },
+    {
+      "card": 76334960,
+      "index": 2,
+      "english": "Fusion Summon using monsters on both fields"
+    },
+    {
+      "card": 76614003,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 76614003,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 76725398,
+      "index": 1,
+      "english": "Destroy"
+    },
+    {
+      "card": 76725398,
+      "index": 2,
+      "english": "Ritual Summon"
+    },
+    {
+      "card": 76754619,
+      "index": 0,
+      "english": "Increase ATK by 200"
+    },
+    {
+      "card": 76754619,
+      "index": 1,
+      "english": "Increase DEF by 500"
+    },
+    {
+      "card": 76794549,
+      "index": 1,
+      "english": "Place in the Pendulum Zone"
+    },
+    {
+      "card": 76794549,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 76922029,
+      "index": 1,
+      "english": "Your opponent discards 1 random card."
+    },
+    {
+      "card": 76922029,
+      "index": 2,
+      "english": "Send the top 2 cards of your opponent's Deck to the GY."
+    },
+    {
+      "card": 77124096,
+      "index": 1,
+      "english": "Fusion Summon as if using \"Dark Fusion\""
+    },
+    {
+      "card": 77124096,
+      "index": 2,
+      "english": "Add to hand"
+    },
+    {
+      "card": 77456448,
+      "index": 1,
+      "english": "Destroy all face-up Spell Cards your opponent controls"
+    },
+    {
+      "card": 77456448,
+      "index": 2,
+      "english": "Make the targeted monster's ATK 0 and negate its effects"
+    },
+    {
+      "card": 77456448,
+      "index": 4,
+      "english": "Randomly select a card in your opponent's hand to destroy"
+    },
+    {
+      "card": 77456448,
+      "index": 5,
+      "english": "Select 1 card your opponent controls to destroy"
+    },
+    {
+      "card": 77482666,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 77482666,
+      "index": 3,
+      "english": "Send to the GY"
+    },
+    {
+      "card": 78114463,
+      "index": 1,
+      "english": "Negate and destroy"
+    },
+    {
+      "card": 78114463,
+      "index": 2,
+      "english": "Negate and banish"
+    },
+    {
+      "card": 78598237,
+      "index": 1,
+      "english": "Gain 500 LP"
+    },
+    {
+      "card": 78598237,
+      "index": 2,
+      "english": "Take 500 damage"
+    },
+    {
+      "card": 78693036,
+      "index": 1,
+      "english": "Destroy a monster"
+    },
+    {
+      "card": 78693036,
+      "index": 2,
+      "english": "Destroy Spell/Trap"
+    },
+    {
+      "card": 78783557,
+      "index": 2,
+      "english": "Do nothing"
+    },
+    {
+      "card": 78910832,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 78910832,
+      "index": 3,
+      "english": "Send to the GY"
+    },
+    {
+      "card": 80015408,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 80015408,
+      "index": 3,
+      "english": "Change battle position"
+    },
+    {
+      "card": 80161395,
+      "index": 1,
+      "english": "Monster's ATK"
+    },
+    {
+      "card": 80161395,
+      "index": 2,
+      "english": "Monster's DEF"
+    },
+    {
+      "card": 80367387,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 80367387,
+      "index": 1,
+      "english": "Reveal 1 Warrior monster to your opponent"
+    },
+    {
+      "card": 80367387,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Bergzak\""
+    },
+    {
+      "card": 80551022,
+      "index": 3,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 80551022,
+      "index": 4,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 80635735,
+      "index": 2,
+      "english": "Destroy a monster"
+    },
+    {
+      "card": 80635735,
+      "index": 3,
+      "english": "Destroy Spell/Trap"
+    },
+    {
+      "card": 80925836,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 80925836,
+      "index": 1,
+      "english": "Reveal 1 Fiend monster to your opponent"
+    },
+    {
+      "card": 80925836,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru Doom\""
+    },
+    {
+      "card": 81005500,
+      "index": 2,
+      "english": "Increase ATK"
+    },
+    {
+      "card": 81005500,
+      "index": 3,
+      "english": "Inflict damage"
+    },
+    {
+      "card": 81028112,
+      "index": 1,
+      "english": "Top of the Deck"
+    },
+    {
+      "card": 81028112,
+      "index": 2,
+      "english": "Bottom of the Deck"
+    },
+    {
+      "card": 81306186,
+      "index": 0,
+      "english": "Ritual Summon using banished monsters"
+    },
+    {
+      "card": 81306186,
+      "index": 1,
+      "english": "Add a banished monster to your hand"
+    },
+    {
+      "card": 81332143,
+      "index": 0,
+      "english": "Accept handshake"
+    },
+    {
+      "card": 81332143,
+      "index": 1,
+      "english": "Decline handshake"
+    },
+    {
+      "card": 81560239,
+      "index": 1,
+      "english": "Ritual Summon from the Deck"
+    },
+    {
+      "card": 81560239,
+      "index": 2,
+      "english": "Ritual Summon from the hand"
+    },
+    {
+      "card": 81978611,
+      "index": 2,
+      "english": "Change the selected monster's Level to 3"
+    },
+    {
+      "card": 81978611,
+      "index": 3,
+      "english": "Change the selected monster's Level to 5"
+    },
+    {
+      "card": 81978611,
+      "index": 4,
+      "english": "Do not change Level"
+    },
+    {
+      "card": 82012319,
+      "index": 1,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 82012319,
+      "index": 2,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 82159583,
+      "index": 3,
+      "english": "Draw"
+    },
+    {
+      "card": 82159583,
+      "index": 4,
+      "english": "Negate"
+    },
+    {
+      "card": 82308875,
+      "index": 1,
+      "english": "Send all other cards on the field to the GY"
+    },
+    {
+      "card": 82308875,
+      "index": 2,
+      "english": "Special Summon 1 monster from your hand or GY"
+    },
+    {
+      "card": 82308875,
+      "index": 3,
+      "english": "Draw 3 cards, then discard 2 cards"
+    },
+    {
+      "card": 82768499,
+      "index": 0,
+      "english": "Destroy a card"
+    },
+    {
+      "card": 82768499,
+      "index": 1,
+      "english": "Add to hand"
+    },
+    {
+      "card": 82933935,
+      "index": 2,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 82933935,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 82997779,
+      "index": 0,
+      "english": "Set"
+    },
+    {
+      "card": 82997779,
+      "index": 1,
+      "english": "Ritual Summon"
+    },
+    {
+      "card": 83315222,
+      "index": 3,
+      "english": "Increase Level"
+    },
+    {
+      "card": 83315222,
+      "index": 4,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 83528184,
+      "index": 2,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 83528184,
+      "index": 3,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 83880087,
+      "index": 0,
+      "english": "Proceed to this turn's End Phase"
+    },
+    {
+      "card": 83880087,
+      "index": 1,
+      "english": "Double its ATK"
+    },
+    {
+      "card": 83880473,
+      "index": 0,
+      "english": "Special Summon in Attack Position"
+    },
+    {
+      "card": 83880473,
+      "index": 1,
+      "english": "Special Summon in Defense Position"
+    },
+    {
+      "card": 84117021,
+      "index": 0,
+      "english": "Spellcaster Summons cannot be negated & opponent cannot respond."
+    },
+    {
+      "card": 84117021,
+      "index": 1,
+      "english": "Target Spellcaster: Opponent cannot activate effects when attacking."
+    },
+    {
+      "card": 84211599,
+      "index": 0,
+      "english": "Activate by banishing 3 card(s)"
+    },
+    {
+      "card": 84211599,
+      "index": 1,
+      "english": "Activate by banishing 6 card(s)"
+    },
+    {
+      "card": 84305651,
+      "index": 1,
+      "english": "Special Summon"
+    },
+    {
+      "card": 84305651,
+      "index": 2,
+      "english": "Take control"
+    },
+    {
+      "card": 84442536,
+      "index": 0,
+      "english": "That effect becomes: \"Destroy that monster\""
+    },
+    {
+      "card": 84442536,
+      "index": 1,
+      "english": "Negate that activation, and destroy it"
+    },
+    {
+      "card": 84488827,
+      "index": 1,
+      "english": "Destroy all monsters on the field, except this card."
+    },
+    {
+      "card": 84488827,
+      "index": 2,
+      "english": "Destroy all Spell/Trap Cards on the field."
+    },
+    {
+      "card": 84755744,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 84755744,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 85150300,
+      "index": 2,
+      "english": "Place a monster"
+    },
+    {
+      "card": 85150300,
+      "index": 3,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 85310252,
+      "index": 1,
+      "english": "Increase Level by 1"
+    },
+    {
+      "card": 85310252,
+      "index": 2,
+      "english": "Decrease Level by 1"
+    },
+    {
+      "card": 86170989,
+      "index": 1,
+      "english": "Send a monster from the Deck to the GY"
+    },
+    {
+      "card": 86170989,
+      "index": 2,
+      "english": "Special Summon a monster from the GY"
+    },
+    {
+      "card": 86198326,
+      "index": 0,
+      "english": "Increase ATK by ７００"
+    },
+    {
+      "card": 86198326,
+      "index": 1,
+      "english": "Increase DEF by ７００"
+    },
+    {
+      "card": 86223870,
+      "index": 0,
+      "english": "Decrease Level by 1"
+    },
+    {
+      "card": 86223870,
+      "index": 1,
+      "english": "Decrease Level by 2"
+    },
+    {
+      "card": 86686671,
+      "index": 0,
+      "english": "Search the Deck"
+    },
+    {
+      "card": 86686671,
+      "index": 1,
+      "english": "Recover from the GY"
+    },
+    {
+      "card": 86686671,
+      "index": 2,
+      "english": "Select both players"
+    },
+    {
+      "card": 86778566,
+      "index": 0,
+      "english": "The selected monster cannot be destroyed by battle or card effects"
+    },
+    {
+      "card": 86778566,
+      "index": 1,
+      "english": "During this Battle Phase, you take 0 battle damage"
+    },
+    {
+      "card": 86852702,
+      "index": 0,
+      "english": "Add a \"Machina\" monster to your hand"
+    },
+    {
+      "card": 86852702,
+      "index": 1,
+      "english": "Add 1 \"Machina\" card to your hand"
+    },
+    {
+      "card": 87347365,
+      "index": 1,
+      "english": "Special Summon this card"
+    },
+    {
+      "card": 87347365,
+      "index": 2,
+      "english": "Add this card to your hand"
+    },
+    {
+      "card": 87497553,
+      "index": 0,
+      "english": "Cannot be activated in response"
+    },
+    {
+      "card": 87497553,
+      "index": 1,
+      "english": "Draw"
+    },
+    {
+      "card": 87804365,
+      "index": 0,
+      "english": "Revive and Synchro Summon"
+    },
+    {
+      "card": 87804365,
+      "index": 1,
+      "english": "Revive and Xyz Summon"
+    },
+    {
+      "card": 88409165,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 88409165,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 88616795,
+      "index": 0,
+      "english": "Unaffected by Spell effects, except this card"
+    },
+    {
+      "card": 88616795,
+      "index": 1,
+      "english": "Unaffected by Trap effects"
+    },
+    {
+      "card": 89320376,
+      "index": 0,
+      "english": "Change a face-down monster to face-up position"
+    },
+    {
+      "card": 89320376,
+      "index": 1,
+      "english": "Change a face-up monster to face-down position"
+    },
+    {
+      "card": 89642993,
+      "index": 1,
+      "english": "Both players draw a card"
+    },
+    {
+      "card": 89642993,
+      "index": 2,
+      "english": "Both players gain 1000 LP"
+    },
+    {
+      "card": 89875646,
+      "index": 1,
+      "english": "Return 1 monster to the Deck"
+    },
+    {
+      "card": 89875646,
+      "index": 2,
+      "english": "Return 2 monsters to the Deck"
+    },
+    {
+      "card": 89875646,
+      "index": 3,
+      "english": "Return 3 monsters to the Deck"
+    },
+    {
+      "card": 90386276,
+      "index": 0,
+      "english": "Target a card in the GY or that is banished"
+    },
+    {
+      "card": 90386276,
+      "index": 1,
+      "english": "Target a card in the Spell & Trap Zone"
+    },
+    {
+      "card": 90615639,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 90615639,
+      "index": 2,
+      "english": "Return to the bottom of the Deck"
+    },
+    {
+      "card": 90724272,
+      "index": 2,
+      "english": "Top of the Deck"
+    },
+    {
+      "card": 90724272,
+      "index": 3,
+      "english": "Bottom of the Deck"
+    },
+    {
+      "card": 90875418,
+      "index": 3,
+      "english": "Search effect"
+    },
+    {
+      "card": 90875418,
+      "index": 4,
+      "english": "Special Summon"
+    },
+    {
+      "card": 91237821,
+      "index": 1,
+      "english": "Recover an Xyz Monster"
+    },
+    {
+      "card": 91237821,
+      "index": 2,
+      "english": "Set a Spell Card"
+    },
+    {
+      "card": 91444835,
+      "index": 1,
+      "english": "Special Summon as a monster"
+    },
+    {
+      "card": 91444835,
+      "index": 2,
+      "english": "Destruction effect"
+    },
+    {
+      "card": 91592030,
+      "index": 0,
+      "english": "Special Summon the selected monster"
+    },
+    {
+      "card": 91592030,
+      "index": 1,
+      "english": "Special Summon as many targeted monsters as possible, except the selected monster"
+    },
+    {
+      "card": 91650245,
+      "index": 0,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 91650245,
+      "index": 1,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 92269002,
+      "index": 1,
+      "english": "Search effect"
+    },
+    {
+      "card": 92269002,
+      "index": 2,
+      "english": "Link Summon"
+    },
+    {
+      "card": 92530005,
+      "index": 5,
+      "english": "Add to the Extra Deck"
+    },
+    {
+      "card": 92530005,
+      "index": 6,
+      "english": "Destruction effect"
+    },
+    {
+      "card": 92595825,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 92595825,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 93125329,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 93125329,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 93130021,
+      "index": 1,
+      "english": "This card gains 400 ATK"
+    },
+    {
+      "card": 93130021,
+      "index": 2,
+      "english": "Destroy a face-up Spell/Trap Card"
+    },
+    {
+      "card": 93130021,
+      "index": 3,
+      "english": "Special Summon \"Option Token\""
+    },
+    {
+      "card": 93172951,
+      "index": 1,
+      "english": "Return Synchro Monsters to the Deck"
+    },
+    {
+      "card": 93172951,
+      "index": 2,
+      "english": "Return to the hand"
+    },
+    {
+      "card": 93481594,
+      "index": 1,
+      "english": "Search effect"
+    },
+    {
+      "card": 93481594,
+      "index": 2,
+      "english": "Additional Pendulum Summon"
+    },
+    {
+      "card": 93481594,
+      "index": 3,
+      "english": "Special Summon"
+    },
+    {
+      "card": 93850690,
+      "index": 2,
+      "english": "Increase Level"
+    },
+    {
+      "card": 93850690,
+      "index": 3,
+      "english": "Decrease Level"
+    },
+    {
+      "card": 93860227,
+      "index": 1,
+      "english": "Equip"
+    },
+    {
+      "card": 93860227,
+      "index": 2,
+      "english": "Draw"
+    },
+    {
+      "card": 94103142,
+      "index": 2,
+      "english": "Send a \"Radiant Typhoon\" monster to the GY"
+    },
+    {
+      "card": 94103142,
+      "index": 3,
+      "english": "Add \"Mystical Space Typhoon\" to your hand"
+    },
+    {
+      "card": 95081386,
+      "index": 0,
+      "english": "Your monsters cannot be destroyed by battle"
+    },
+    {
+      "card": 95081386,
+      "index": 1,
+      "english": "The battle damage you take becomes 0"
+    },
+    {
+      "card": 95081386,
+      "index": 2,
+      "english": "Recover LP when you take battle damage"
+    },
+    {
+      "card": 95090813,
+      "index": 0,
+      "english": "Select 1 \"Iron Core of Koa'ki Meiru\" to send to the GY"
+    },
+    {
+      "card": 95090813,
+      "index": 1,
+      "english": "Reveal 1 Warrior monster to your opponent"
+    },
+    {
+      "card": 95090813,
+      "index": 2,
+      "english": "Destroy \"Koa'ki Meiru War Arms\""
+    },
+    {
+      "card": 95113856,
+      "index": 1,
+      "english": "Banish 1 card on your opponent's field"
+    },
+    {
+      "card": 95113856,
+      "index": 2,
+      "english": "Banish 1 random card from your opponent's hand"
+    },
+    {
+      "card": 95113856,
+      "index": 3,
+      "english": "Banish 1 card in your opponent's GY"
+    },
+    {
+      "card": 95113856,
+      "index": 4,
+      "english": "Banish the top card of your opponent's Deck"
+    },
+    {
+      "card": 96239878,
+      "index": 2,
+      "english": "Return to the Deck"
+    },
+    {
+      "card": 96352712,
+      "index": 1,
+      "english": "Change that attacking monster to Defense Position"
+    },
+    {
+      "card": 96352712,
+      "index": 2,
+      "english": "Return that attack target to the hand"
+    },
+    {
+      "card": 96352712,
+      "index": 3,
+      "english": "Destroy the 2 battling monsters"
+    },
+    {
+      "card": 96565487,
+      "index": 1,
+      "english": "Place on top of the Deck"
+    },
+    {
+      "card": 96565487,
+      "index": 2,
+      "english": "Place on the bottom of the Deck"
+    },
+    {
+      "card": 96914272,
+      "index": 1,
+      "english": "Increase Level by the Level of the Beast monster sent to the GY"
+    },
+    {
+      "card": 96914272,
+      "index": 2,
+      "english": "Decrease Level by the Level of the Beast monster sent to the GY"
+    },
+    {
+      "card": 97462632,
+      "index": 1,
+      "english": "Damage change"
+    },
+    {
+      "card": 97462632,
+      "index": 2,
+      "english": "Set Spell/Trap"
+    },
+    {
+      "card": 97631303,
+      "index": 0,
+      "english": "Special Summon this card"
+    },
+    {
+      "card": 97631303,
+      "index": 1,
+      "english": "Send this card to the GY"
+    },
+    {
+      "card": 97946536,
+      "index": 2,
+      "english": "Treat as an Equip Card"
+    },
+    {
+      "card": 98045062,
+      "index": 0,
+      "english": "Change the battle position of 1 face-up monster your opponent controls"
+    },
+    {
+      "card": 98045062,
+      "index": 1,
+      "english": "Take control of 1 face-up monster your opponent controls"
+    },
+    {
+      "card": 98349765,
+      "index": 1,
+      "english": "Change battle position"
+    },
+    {
+      "card": 98349765,
+      "index": 2,
+      "english": "Special Summon"
+    },
+    {
+      "card": 98349765,
+      "index": 3,
+      "english": "Set a Trap"
+    },
+    {
+      "card": 98986900,
+      "index": 1,
+      "english": "Add from the Deck to your hand"
+    },
+    {
+      "card": 98986900,
+      "index": 2,
+      "english": "Special Summon from your hand/Deck"
+    },
+    {
+      "card": 99092624,
+      "index": 1,
+      "english": "Special Summon to your field"
+    },
+    {
+      "card": 99092624,
+      "index": 2,
+      "english": "Special Summon to your opponent's field"
+    },
+    {
+      "card": 99458769,
+      "index": 2,
+      "english": "Destroy all monsters your opponent controls"
+    },
+    {
+      "card": 99458769,
+      "index": 3,
+      "english": "Destroy all Spells and Traps your opponent controls"
+    },
+    {
+      "card": 99505609,
+      "index": 2,
+      "english": "Destroy your own cards"
+    },
+    {
+      "card": 99505609,
+      "index": 3,
+      "english": "Destroy an opponent's card"
+    },
+    {
+      "card": 99505609,
+      "index": 4,
+      "english": "Main Monster Zone"
+    },
+    {
+      "card": 99505609,
+      "index": 5,
+      "english": "Spell & Trap Zone"
+    },
+    {
+      "card": 99707692,
+      "index": 0,
+      "english": "Increase Level"
+    },
+    {
+      "card": 99707692,
+      "index": 1,
+      "english": "Decrease Level"
+    }
+  ]
+}

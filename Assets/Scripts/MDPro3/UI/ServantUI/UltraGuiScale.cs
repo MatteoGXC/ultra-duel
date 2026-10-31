@@ -14,6 +14,20 @@ namespace MDPro3.UI.ServantUI
         float nextScan;
         public static int Percent => Mathf.Clamp(int.TryParse(Config.Get("UltraGuiScale","100"),out int value)?value:100,70,125);
         public static void Set(int value){Config.Set("UltraGuiScale",Mathf.Clamp(value,70,125).ToString());Config.Save();}
+        public static float FitPopup(RectTransform frame,float requested)
+        {
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(frame);
+            var canvas=frame.GetComponentInParent<Canvas>().rootCanvas.transform as RectTransform;
+            float scale=requested;
+            if(canvas!=null)
+            {
+                if(frame.rect.width>0)scale=Mathf.Min(scale,canvas.rect.width*.94f/frame.rect.width);
+                if(frame.rect.height>0)scale=Mathf.Min(scale,canvas.rect.height*.94f/frame.rect.height);
+            }
+            frame.localScale=Vector3.one*scale;
+            return scale;
+        }
         void LateUpdate()
         {
             if(Time.unscaledTime>=nextScan)
@@ -22,6 +36,11 @@ namespace MDPro3.UI.ServantUI
                 foreach(var item in Resources.FindObjectsOfTypeAll<Selectable>())
                 {
                     if(item==null || !item.gameObject.scene.IsValid() || item.GetComponentInParent<Canvas>()==null)continue;
+                    // Popup layouts scale as a group. Enlarging each row button
+                    // independently makes neighboring choices overlap or clip.
+                    if(item.GetComponentInParent<PopupBase>(true)!=null
+                        || item.GetComponentInParent<MDPro3.UI.Popup.Popup>(true)!=null
+                        || item.GetComponentInParent<UltraPopupFrame>(true)!=null)continue;
                     var ancestor=item.transform.parent;
                     bool nested=false;
                     while(ancestor!=null){if(ancestor.GetComponent<Selectable>()!=null){nested=true;break;}ancestor=ancestor.parent;}

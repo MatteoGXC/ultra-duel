@@ -1,5 +1,7 @@
 """Check actual registered effect labels and operations through the native Lua API."""
 import ctypes as C
+import json
+import hashlib
 import os
 from pathlib import Path
 import sqlite3
@@ -41,6 +43,55 @@ Duel.GetChainInfo=function() return 1,1500 end
 Duel.Damage=function(p,n,reason) assert(p==1 and n==1500);damage=damage+1 end
 found[3]:GetOperation()(found[3],0,nil,0,0,nil,0,0)
 assert(draw==1 and damage==1,"EARTH/FIRE choice must deal 1500 damage")
+
+-- Reproduce both reported choice menus through their real registered effects.
+Debug.ReloadFieldBegin(DUEL_TEST_MODE,5)
+Debug.SetPlayerInfo(0,8000,0,0)
+Debug.SetPlayerInfo(1,8000,0,0)
+local zalen=Debug.AddCard(4891376,0,0,LOCATION_MZONE,0,POS_FACEUP_ATTACK)
+local cue=Debug.AddCard(16387555,0,0,LOCATION_MZONE,1,POS_FACEUP_ATTACK)
+local first=Debug.AddCard(89631139,1,1,LOCATION_DECK,0,POS_FACEDOWN_DEFENSE)
+local second=Debug.AddCard(69247929,1,1,LOCATION_DECK,1,POS_FACEDOWN_DEFENSE)
+Debug.ReloadFieldEnd()
+local ze=descriptions[4891376*16+1]
+assert(ze,"Zalen registered effect missing")
+local choice,options=0,nil
+Duel.SelectOption=function(tp,...) options={...};return choice end
+Duel.IsChainDisablable=function() return true end
+Duel.GetChainInfo=function() return ze end
+Duel.SetOperationInfo=function() end
+Card.IsRelateToChain=function() return true end
+local negated,destroyed=nil,0
+Duel.NegateEffect=function(link) negated=link;return true end
+Duel.Destroy=function() destroyed=destroyed+1;return 1 end
+local eg=Group.FromCards(zalen)
+for selected=0,1 do
+ choice=selected
+ ze:GetTarget()(ze,0,eg,0,3,ze,0,1,1)
+ assert(options[1]==4891376*16+2 and options[2]==4891376*16+3,"Wrong Zalen option IDs")
+ ze:GetOperation()(ze,0,eg,0,3,ze,0,1)
+ assert(negated==(selected==0 and 3 or 2),"Zalen label selected the wrong Chain Link")
+end
+assert(destroyed==2,"Zalen's two choices must both destroy the negated card")
+
+local ce=descriptions[16387555*16+1]
+assert(ce,"Cue registered banish effect missing")
+Duel.IsPlayerCanRemove=function() return true end
+Duel.GetFieldGroupCount=function() return 2 end
+Duel.ConfirmDecktop=function() end
+Duel.GetDecktopGroup=function() return Group.FromCards(first,second) end
+Group.FilterSelect=function() return Group.FromCards(first) end
+Duel.RevealSelectDeckSequence=function() end
+Duel.DisableShuffleCheck=function() end
+Duel.Remove=function() return 1 end
+local bottom=0
+Duel.MoveSequence=function(card,sequence) assert(card==second and sequence==SEQ_DECKBOTTOM);bottom=bottom+1 end
+for selected=0,1 do
+ choice=selected
+ ce:GetOperation()(ce,0,nil,0,0,nil,0,0)
+ assert(options[1]==16387555*16+2 and options[2]==16387555*16+3,"Wrong Cue top/bottom option IDs")
+ assert(bottom==selected,"Cue top/bottom choice executed the wrong placement")
+end
 '''
 
 buffers={};errors=[]
@@ -83,3 +134,19 @@ for locale in (CONTENT/'Data/locales').glob('*/cards.cdb'):
         choices=translated.execute('select str3,str4 from texts where id=92895501').fetchone()
         assert choices and all(choices),('Missing translated effect choice',locale,choices)
 print('PASS translated effect choices exist at the registered indexes in every bundled language.')
+
+audit=json.loads((CONTENT/'Data/popup-label-audit.json').read_text(encoding='utf-8'))
+assert audit['scriptsSha256']==hashlib.sha256((CONTENT/'Data/script.zip').read_bytes()).hexdigest(),'Popup description audit does not match the installed scripts'
+assert audit['selectableDescriptions']>=900
+for locale in (CONTENT/'Data/locales').glob('*/cards.cdb'):
+    with sqlite3.connect(locale) as translated:
+        rows={r[0]:r for r in translated.execute('select * from texts')}
+        for choice in audit['choices']:
+            label=rows[choice['card']][3+choice['index']]
+            assert label and label.strip()!='???',(locale,choice)
+            if locale.parent.name=='en-US':assert label==choice['english'],(choice,label)
+cue=db.execute('select str3,str4 from texts where id=16387555').fetchone()
+assert cue==('Place on top of the Deck','Place on the bottom of the Deck'),cue
+zalen=db.execute('select str3,str4 from texts where id=4891376').fetchone()
+assert zalen==('Negate the chained effect','Negate the effect that was chained to'),zalen
+print('PASS Zalen latest/previous Chain Link operations, Cue top/bottom placement, and all '+str(audit['selectableDescriptions'])+' choice descriptions in every bundled language.')

@@ -47,7 +47,9 @@ namespace MDPro3.UI
 
         private void OnDestroy()
         {
-            OcgCore.inputMode = false;
+            base.OnDestroy();
+            OcgCore.inputMode = Program.instance!=null && Program.instance.ocgcore!=null
+                && Program.instance.ocgcore.currentPopup is PopupDuelInput;
         }
     }
 }

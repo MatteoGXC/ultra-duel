@@ -37,16 +37,13 @@ jobs:
           assert server.get_server_format_capabilities() & 3 == 3
           print('PASS Apple Silicon native TCG and Genesys capabilities')
           PY
-      - name: Fetch verified released card database
+      - name: Verify the tracked card database
         run: |
           python3 - <<'PY'
-          import urllib.request,hashlib,zipfile
-          from pathlib import Path
-          p=Path('build/mac/released-update.zip')
-          urllib.request.urlretrieve('https://github.com/MatteoGXC/ultra-duel/releases/download/v0.1.10/Ultra-Duel-Update.zip',p)
-          assert hashlib.sha256(p.read_bytes()).hexdigest()=='9071ceec6fb04fde914266d04154e612ad780c1ee19805bdea896bf4e434cd6f'
-          with zipfile.ZipFile(p) as z:
-              target=Path('Data/locales/en-US/cards.cdb');target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(z.read(str(target)))
+          import sqlite3
+          with sqlite3.connect('Data/locales/en-US/cards.cdb') as db:
+              assert db.execute('pragma integrity_check').fetchone()[0]=='ok'
+              assert db.execute('select count(*) from texts').fetchone()[0]>14000
           PY
       - name: Verify production archive effect loading
         run: build/mac/server_archive_effects "$GITHUB_WORKSPACE"

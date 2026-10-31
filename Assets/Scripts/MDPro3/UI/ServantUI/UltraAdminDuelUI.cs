@@ -50,6 +50,7 @@ namespace MDPro3.UI.ServantUI
             overlay=Rect("Owner duel controls",transform,0,0,1,1);
             var shade=overlay.gameObject.AddComponent<Image>();shade.color=new Color(0,0,0,.76f);
             var panel=Rect("Admin panel",overlay,.12f,.04f,.76f,.92f);
+            panel.gameObject.AddComponent<UltraPopupFrame>();
             var background=panel.gameObject.AddComponent<UltraChrome>();background.color=new Color(UltraTheme.Ink.r,UltraTheme.Ink.g,UltraTheme.Ink.b,.98f);background.cut=UltraCut.Panel;background.rim=1.5f;
             Text(panel,"ADMIN / CURRENT DUEL",30,.05f,.91f,.75f,.07f);
             Button(panel,"CLOSE",Close,.80f,.91f,.15f,.065f);
@@ -76,6 +77,7 @@ namespace MDPro3.UI.ServantUI
             Button(panel,"END OPPONENT TURN",()=>Apply("skip-turn",1,0).Forget(),.05f,.12f,.44f,.08f,UltraTier.Danger);
             Button(panel,"WIN THIS DUEL",()=>Apply("win",0,0).Forget(),.51f,.12f,.44f,.08f,UltraTier.Danger);
             status=Text(panel,"ATK changes last while face-up on the field. Link monsters cannot enter Defense.",17,.05f,.025f,.9f,.08f);
+            UltraGuiScale.FitPopup(panel,UltraGuiScale.Percent/100f);
         }
 
         void CycleMonster()

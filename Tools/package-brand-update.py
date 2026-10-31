@@ -55,6 +55,7 @@ def main():
     names += ['Data/locales/en-US/translation.conf']
     names += ['Data/betb-update-audit.json','Data/beyond-the-brave-index.json']
     names += ['Data/premade-decks.json', 'Data/PremadeDecks', 'Data/MenuIcons-LICENSES.txt',
+              'Data/popup-label-sources.json','Data/popup-label-audit.json',
               'Data/card-image-source.json', 'Data/card-image-missing.json', 'Picture/FullCard']
     if (ROOT/'Data/beyond-the-brave-index.json').exists():
         names += ['Picture/Art/'+str(row['id'])+'.jpg' for row in json.loads((ROOT/'Data/beyond-the-brave-index.json').read_text(encoding='utf-8')) if (PLAYER/'Picture/Art'/f"{row['id']}.jpg").exists()]

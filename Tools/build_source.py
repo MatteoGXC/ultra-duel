@@ -8,6 +8,7 @@ SCOPES = ['Assets/Scripts/MDPro3', 'Assets/Scripts/Editor', 'Tools', 'Tests',
           'Assets/Resources/Ultra/MenuIcons', 'Data/PremadeDecks',
           'Data/premade-decks.json', 'Data/card-image-source.json',
           'Data/card-image-missing.json', 'Data/MenuIcons-LICENSES.txt',
+          'Data/popup-label-sources.json','Data/popup-label-audit.json','Data/locales',
           'README.md', 'FORMAT-BUILD.md', 'BRANDING-MIGRATION.md']
 
 def release_version(root):

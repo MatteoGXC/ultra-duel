@@ -1,0 +1,97 @@
+{
+  "repository": "https://github.com/mycard/ygopro-database",
+  "commit": "02e589ff78480151867abf5b399ae0689c6cd668",
+  "purpose": "Effect descriptions compatible with the bundled Fluorohydride scripts; card names, rules text and card data remain unchanged.",
+  "locales": {
+    "en-US": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/en-US/cards.cdb",
+        "sha256": "7f57ae28bb1d0b5987c8159c193c18ff820b1119a513949b1bf3cb5aa36234ef"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/en-US/strings.conf",
+        "sha256": "f1282302f54926094044cfb2e2f9a66a74b7fd642b891d8be7f4e79d8cbdc2e5"
+      }
+    },
+    "de-DE": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/de-DE/cards.cdb",
+        "sha256": "7427085aab0adc466b209d8b00aa1987db6f07c4ef624b17b05afa2c592db137"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/de-DE/strings.conf",
+        "sha256": "d3be4ffefb55ee8dd2759bb5f877672b265b9e1c6d83f4b69a95056149c223ea"
+      }
+    },
+    "es-ES": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/es-ES/cards.cdb",
+        "sha256": "d76cf431022b68ab9f4ea944a99822e853b2aa53a0d327e627b06bdaff01cb05"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/es-ES/strings.conf",
+        "sha256": "bbf60286f0394725544bb65c93f5de82401dd713d78819b58d339051efcf280d"
+      }
+    },
+    "fr-FR": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/fr-FR/cards.cdb",
+        "sha256": "400f263d4a9177d91e4e46d607d9c646581bd23a4a091e32a618f5a0b948a63c"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/fr-FR/strings.conf",
+        "sha256": "6f51e4074dbef52ec95c8cfe3bbddba2a0a0b58aa4158964b6fc16b32a8a33f4"
+      }
+    },
+    "it-IT": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/it-IT/cards.cdb",
+        "sha256": "56c287b7e00af420853f9001a5d7f3f6c64a54d6d55b76286ba5eeb4784914f1"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/it-IT/strings.conf",
+        "sha256": "3b1619e98393ec80c4e9e909f7d5f6645ee6662078b2b852f0b0bdde10af35bd"
+      }
+    },
+    "ja-JP": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/ja-JP/cards.cdb",
+        "sha256": "103c8455d379a81d7ed35986434096fe8f9eb5cb3a1c3b9c6f1e9f0aa67d0c74"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/ja-JP/strings.conf",
+        "sha256": "f701eaa82d8e05db3afa431ff4a02aed710f6aba3444fc74806b5b53a7bb1b8a"
+      }
+    },
+    "ko-KR": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/ko-KR/cards.cdb",
+        "sha256": "7de9c1b77530321dee6f2cf9dfb77552b306755065d85b16ad77f504f4776c4b"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/ko-KR/strings.conf",
+        "sha256": "aff36bc9b63ad35514184923adfefe6924b5204fb66a3c93cd10315a419f7f84"
+      }
+    },
+    "pt-PT": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/pt-PT/cards.cdb",
+        "sha256": "1bd44d2b9cbc339531968cc50d5136440bc8d3b70b1dac4f1a6eb6cd79740b34"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/pt-PT/strings.conf",
+        "sha256": "082e88aef5a263ccab15de86fed799c99d486423b6abab4c9a96b17e74a1d027"
+      }
+    },
+    "zh-CN": {
+      "cards.cdb": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/zh-CN/cards.cdb",
+        "sha256": "fab5deeb43447f80c11e5dea16b87fedd6d0f9a220c427d3a70ebb8eb0d74cfa"
+      },
+      "strings.conf": {
+        "url": "https://raw.githubusercontent.com/mycard/ygopro-database/02e589ff78480151867abf5b399ae0689c6cd668/locales/zh-CN/strings.conf",
+        "sha256": "6992b30aa0cfe27cfbc499980ac92bee536f523738c679efa99be5eea57ef23b"
+      }
+    }
+  }
+}

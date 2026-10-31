@@ -32,7 +32,7 @@ namespace MDPro3.UI
                     Program.instance.ocgcore.returnAction = () => { };
             }
 
-            var uiScale = Config.GetUIScale(maxUIScale);
+            var uiScale = window.localScale.x;
             hideY = -540f - height * uiScale - extraHeight;
             window.anchoredPosition = new Vector2(0f, hideY);
         }
@@ -75,10 +75,12 @@ namespace MDPro3.UI
             window.DOAnchorPos(new Vector2(0f, hideY), transitionTime).OnComplete(() =>
             {
                 Destroy(gameObject);
-                Program.instance.ocgcore.returnAction = null;
+                if(Program.instance.ocgcore.currentPopup==null || Program.instance.ocgcore.currentPopup==this)
+                    Program.instance.ocgcore.returnAction = null;
+                if(Program.instance.ui_.currentPopup==this)Program.instance.ui_.currentPopup=lastPopup;
                 whenQuitDo?.Invoke();
             });
-            Program.instance.ocgcore.currentPopup = null;
+            if(Program.instance.ocgcore.currentPopup==this)Program.instance.ocgcore.currentPopup = null;
         }
 
         public override void OnConfirm()
@@ -93,7 +95,12 @@ namespace MDPro3.UI
 
         public void OnDestroy()
         {
-            Program.instance.ocgcore.returnAction = null;
+            if(Program.instance==null || Program.instance.ocgcore==null)return;
+            if(Program.instance.ocgcore.currentPopup==this)
+            {
+                Program.instance.ocgcore.currentPopup=null;
+                Program.instance.ocgcore.returnAction = null;
+            }
         }
 
         protected void SendReturn(byte[] buffer)

@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 import re
 import sqlite3
+import subprocess
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -147,6 +149,7 @@ def main():
     write_json(ROOT/'Data/card-update-audit.json',report)
     from card_archetype_compat import apply as align_archetypes
     align_archetypes(ROOT)
+    subprocess.run([sys.executable,str(ROOT/'Tools/refresh-popup-labels.py')],check=True)
     print('CARD_REFRESH',len(missing),'added;',len(flags),'availability corrections;',len(scripts),'scripts;',len(retained),'legacy IDs preserved',flush=True)
     missing_tcg=[r['id'] for r in image_results if r.get('missing') and r.get('tcg')]
     print('TCG_ART_STILL_MISSING',missing_tcg,flush=True)

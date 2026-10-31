@@ -883,10 +883,14 @@ namespace MDPro3
             if(commandLine.Contains("--owner-admin-actions"))
             {
                 yield return CheckOwnerAdminActions();
+                if(commandLine.Contains("--popup-audit"))
+                {deadline=Time.realtimeSinceStartup+300;yield return PopupRuntimeAudit.Run(output,Capture);}
                 File.WriteAllText(Path.Combine(output,"passed.txt"),"Owner duel controls rendered and applied successfully.");
                 Application.Quit(0);
                 yield break;
             }
+            if(commandLine.Contains("--popup-audit"))
+            {deadline=Time.realtimeSinceStartup+300;yield return PopupRuntimeAudit.Run(output,Capture);}
             yield return CheckHandMovement();
             yield return CheckDamageDisplay();
             if(Environment.GetCommandLineArgs().Contains("--ultra-result-check"))
@@ -935,6 +939,23 @@ namespace MDPro3
             if(!OcgCore.myTurn || OcgCore.currentMessage!=GameMessage.SelectIdleCmd)
                 throw new Exception("Owner action test did not reach the owner's Main Phase.");
             var controls=core.GetUI<OcgCoreUI>().GetComponent<UltraAdminDuelUI>();
+            string originalGuiScale=Config.Get("UltraGuiScale","100");
+            foreach(int scale in new[]{70,100,125})
+            {
+                Config.Set("UltraGuiScale",scale.ToString());controls.Open();
+                yield return new WaitForSecondsRealtime(.5f);
+                var popupCanvas=core.GetUI<OcgCoreUI>().GetComponentInParent<Canvas>();
+                Camera popupCamera=popupCanvas.renderMode==RenderMode.ScreenSpaceOverlay?null:popupCanvas.worldCamera;
+                var bounds=controls.GetComponentsInChildren<UnityEngine.UI.Button>()
+                    .Where(b=>b.GetComponentInParent<UltraPopupFrame>()!=null)
+                    .Select(b=>{var corners=new Vector3[4];b.GetComponent<RectTransform>().GetWorldCorners(corners);var pixels=corners.Select(p=>RectTransformUtility.WorldToScreenPoint(popupCamera,p)).ToArray();return new{left=pixels.Min(p=>p.x),right=pixels.Max(p=>p.x),top=pixels.Max(p=>p.y),bottom=pixels.Min(p=>p.y)};}).ToArray();
+                for(int a=0;a<bounds.Length;a++)for(int b=a+1;b<bounds.Length;b++)
+                    if(Mathf.Min(bounds[a].right,bounds[b].right)-Mathf.Max(bounds[a].left,bounds[b].left)>1
+                        && Mathf.Min(bounds[a].top,bounds[b].top)-Mathf.Max(bounds[a].bottom,bounds[b].bottom)>1)
+                        throw new Exception("Admin controls overlap at GUI scale "+scale);
+                if(scale==125)yield return Capture("owner-admin-125-percent");
+            }
+            Config.Set("UltraGuiScale",originalGuiScale);
             controls.Open();
             yield return null;
             int mine=core.GetLocationCardCount(CardLocation.Hand,0);

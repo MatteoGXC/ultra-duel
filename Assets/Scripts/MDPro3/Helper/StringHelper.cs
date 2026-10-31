@@ -23,12 +23,14 @@ namespace MDPro3
         private static readonly List<HashedString> hashedStringsForRender = new();
         private static readonly List<HashedString> hashedStringsForPrerelease = new();
         private static readonly List<HashedString> setNames = new();
+        private static readonly HashSet<uint> missingDescriptions = new();
 
         public static void Initialize()
         {
             hashedStrings.Clear();
             hashedStringsForRender.Clear();
             hashedStringsForPrerelease.Clear();
+            missingDescriptions.Clear();
 
             var text = File.ReadAllText(Program.PATH_LOCALES + Language.GetConfig() + PATH_CONF_FILE);
             AddExpansionStrings(ref text);
@@ -160,26 +162,28 @@ namespace MDPro3
         internal static string Get(int description)
         {
             var a = string.Empty;
-            if (description < 10000)
+            uint packed=unchecked((uint)description);
+            Card card=null;
+            int index=0;
+            if (packed < 10000)
             {
                 a = Get("system", description);
             }
             else
             {
-                var code = description >> 4;
-                var index = description & 0xf;
-                try
-                {
-                    a = CardsManager.Get(code).Str[index];
-                }
-                catch (Exception e)
-                {
-                    MessageManager.Cast(e.ToString());
-                }
+                var code = (int)(packed >> 4);
+                index = (int)(packed & 0xf);
+                card = CardsManager.GetCardRaw(code);
+                if(card?.Str!=null && index<card.Str.Length)a=card.Str[index];
             }
 
-            if (a == string.Empty)
-                a = "???";
+            if (string.IsNullOrWhiteSpace(a))
+            {
+                // Unknown/custom descriptions must not throw another popup on
+                // top of the active choice, or pretend to describe an action.
+                if(missingDescriptions.Add(packed))Debug.LogWarning("Missing effect description: "+packed);
+                a=card==null?InterString.Get("发动效果"):card.Name+" — "+InterString.Get("效果选择")+" "+(index+1);
+            }
             return a;
         }
 

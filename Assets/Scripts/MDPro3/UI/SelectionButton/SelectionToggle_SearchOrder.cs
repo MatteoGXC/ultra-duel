@@ -31,7 +31,8 @@ namespace MDPro3.UI
         protected override void CallHoverOnEvent()
         {
             base.CallHoverOnEvent();
-            ((Popup.PopupSearchOrder)Program.instance.ui_.currentPopupB).lastSelectedToggle = this;
+            var popup=GetComponentInParent<Popup.PopupSearchOrder>();
+            if(popup!=null)popup.lastSelectedToggle = this;
         }
 
         protected override void CallSubmitEvent()
@@ -40,7 +41,8 @@ namespace MDPro3.UI
             Program.instance.deckEditor.GetUI<DeckEditorUI>().CardCollectionView.SetSortIcon(GetIconSprite());
             Program.instance.deckEditor.GetUI<DeckEditorUI>().CardCollectionView.SetSortText(GetSortText());
             Program.instance.deckEditor.GetUI<DeckEditorUI>().CardCollectionView.PrintSearchCards();
-            Program.instance.ui_.currentPopupB.Hide();
+            var popup=GetComponentInParent<Popup.PopupSearchOrder>();
+            if(popup!=null)popup.Hide();
         }
 
         protected string GetSortText()

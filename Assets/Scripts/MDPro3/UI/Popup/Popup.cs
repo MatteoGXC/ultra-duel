@@ -1,6 +1,7 @@
 using DG.Tweening;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MDPro3.UI.ServantUI;
 using TMPro;
 using UnityEngine;
@@ -66,6 +67,7 @@ namespace MDPro3.UI.Popup
             Initialize();
             transitionTime = 0.25f;
             UltraScreenSkin.Apply(gameObject);
+            UltraGuiScale.FitPopup(Manager.GetElement<RectTransform>("Content"),UltraGuiScale.Percent/100f);
             Manager.GetElement<RectTransform>("Content").DOAnchorPosY(0f, transitionTime).SetEase(Ease.OutCubic).OnComplete(() =>
             {
                 inTransition = false;
@@ -82,10 +84,11 @@ namespace MDPro3.UI.Popup
             Manager.GetElement<RectTransform>("Content").DOAnchorPosY(-72f, transitionTime).SetEase(Ease.OutCubic).OnComplete(() =>
             {
                 Destroy(gameObject);
-                Program.instance.ui_.currentPopupB = lastPopup;
+                bool ownsPopup=Program.instance.ui_.currentPopupB==this;
+                if(ownsPopup)Program.instance.ui_.currentPopupB = lastPopup;
                 quitAction?.Invoke();
 
-                if (Cursor.lockState == CursorLockMode.Locked)
+                if (ownsPopup && Cursor.lockState == CursorLockMode.Locked)
                 {
                     if (lastPopup != null)
                         lastPopup.SelectLastSelected();
@@ -148,7 +151,8 @@ namespace MDPro3.UI.Popup
 
         protected virtual void SelectLastSelected()
         {
-            EventSystem.current.SetSelectedGameObject(lastSelectable.gameObject);
+            var target=lastSelectable!=null?lastSelectable:GetComponentsInChildren<Selectable>().FirstOrDefault(s=>s.IsActive() && s.IsInteractable());
+            if(target!=null)EventSystem.current.SetSelectedGameObject(target.gameObject);
         }
 
         protected virtual void OnEnable()

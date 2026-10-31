@@ -23,7 +23,8 @@ namespace MDPro3.UI.Popup
 
         protected override void SelectLastSelected()
         {
-            EventSystem.current.SetSelectedGameObject(lastSelectedToggle.gameObject);
+            if(lastSelectedToggle!=null)EventSystem.current.SetSelectedGameObject(lastSelectedToggle.gameObject);
+            else base.SelectLastSelected();
         }
 
         public void SelectLastItem()
