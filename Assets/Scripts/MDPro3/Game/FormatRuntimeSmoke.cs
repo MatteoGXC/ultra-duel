@@ -942,6 +942,7 @@ namespace MDPro3
             field.text="13068112";
             var add=controls.GetComponentsInChildren<UnityEngine.UI.Button>().First(b=>b.GetComponentsInChildren<TMPro.TextMeshProUGUI>().Any(t=>t.text=="ADD TO MY HAND"));
             yield return Capture("owner-admin-expanded-menu");
+            if(Program.instance.ui_.chatPanel.showing)throw new Exception("Chat covered the admin controls.");
             foreach(var label in controls.GetComponentsInChildren<TMPro.TextMeshProUGUI>())
             {
                 label.ForceMeshUpdate();
@@ -1018,16 +1019,26 @@ namespace MDPro3
                 if(summoned==null)throw new Exception("Own ATK test monster was not summonable.");
                 controls.SendMessage("Close");
                 core.SendReturn(BitConverter.GetBytes(summoned.buttons.First(b=>b.type==ButtonType.Summon).response[0]));
-                changedDeadline=Time.realtimeSinceStartup+20;
+                changedDeadline=Time.realtimeSinceStartup+40;
                 bool placed=false;
                 while(Time.realtimeSinceStartup<changedDeadline)
                 {
                     if(OcgCore.currentMessage==GameMessage.SelectPlace && !placed)
-                    {core.SendReturn(new byte[]{(byte)OcgCore.LocalPlayer(0),(byte)CardLocation.MonsterZone,0});placed=true;}
+                    {
+                        var selectingField=typeof(PlaceSelector).GetField("selecting",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+                        var place=core.places.FirstOrDefault(p=>p.p.controller==0 && p.p.InLocation(CardLocation.MonsterZone) && (bool)selectingField.GetValue(p));
+                        if(place!=null){place.SendMessage("OnClick");placed=true;}
+                    }
+                    if(OcgCore.currentMessage==GameMessage.SelectChain && !core.messageDispatcher.playerResponed)
+                    {core.SendReturn(BitConverter.GetBytes(-1));yield return new WaitForSecondsRealtime(.5f);}
                     if(summoned.p.location==(uint)CardLocation.MonsterZone && OcgCore.currentMessage==GameMessage.SelectIdleCmd){ownMonster=summoned;break;}
                     yield return null;
                 }
-                if(ownMonster==null)throw new Exception("Own ATK test monster did not reach the field.");
+                if(ownMonster==null)
+                {
+                    yield return Capture("owner-summon-failed");
+                    throw new Exception("Own ATK test monster did not reach the field. Message="+OcgCore.currentMessage+", placed="+placed+", card="+summoned.p.location+", responded="+core.messageDispatcher.playerResponed);
+                }
             }
             controls.Open();yield return null;
             typeof(UltraAdminDuelUI).GetField("myMonsterZone",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(controls,(int)ownMonster.p.sequence);

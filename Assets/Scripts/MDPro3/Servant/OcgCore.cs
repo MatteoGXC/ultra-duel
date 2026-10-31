@@ -703,12 +703,14 @@ namespace MDPro3.Servant
             {
                 messageDispatcher.playerResponed = true;
             }
-            else if(p.Function == (int)GameMessage.SelectIdleCmd
-                && currentMessage == GameMessage.SelectIdleCmd && packages.Count > 1
-                && packages[0].Function == (int)GameMessage.SelectIdleCmd)
+            else if((currentMessage == GameMessage.SelectIdleCmd || currentMessage == GameMessage.SelectBattleCmd)
+                && packages.Count > 1 && packages[0].Function == (int)currentMessage
+                && (p.Function == (int)GameMessage.SelectIdleCmd || p.Function == (int)GameMessage.SelectBattleCmd
+                    || p.Function == (int)GameMessage.NewPhase || p.Function == (int)GameMessage.NewTurn))
             {
-                // An explicit owner command can invalidate an idle menu while
-                // the client still awaits input. Release that superseded prompt
+                // An owner command can replace a Main/Battle Phase menu or end
+                // that turn while the other client still awaits input. Release
+                // that superseded prompt
                 // without sending any of its stale choices back to the server.
                 DuelBGManager?.ClearResponse();
                 messageDispatcher.playerResponed = true;

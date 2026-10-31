@@ -46,6 +46,7 @@ namespace MDPro3.UI.ServantUI
         {
             if(!CanOpen)return;
             Close();
+            Program.instance.ui_.chatPanel.Hide();
             overlay=Rect("Owner duel controls",transform,0,0,1,1);
             var shade=overlay.gameObject.AddComponent<Image>();shade.color=new Color(0,0,0,.76f);
             var panel=Rect("Admin panel",overlay,.12f,.04f,.76f,.92f);
