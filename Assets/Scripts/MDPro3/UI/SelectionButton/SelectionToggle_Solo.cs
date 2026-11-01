@@ -42,6 +42,83 @@ namespace MDPro3.UI
 
         public SoloSelector.BotInfo botInfo;
         private bool isDiyDeck;
+        private RawImage bannerImage;
+        private TextMeshProUGUI bannerSubtitle;
+
+        private void PaintBanner()
+        {
+            if (bannerImage == null)
+            {
+                var background = new GameObject("Arena backdrop", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                background.layer = gameObject.layer;
+                var bgRect = background.GetComponent<RectTransform>();
+                bgRect.SetParent(transform, false);
+                bgRect.SetAsFirstSibling();
+                Stretch(bgRect, Vector2.zero, Vector2.one, 4);
+                var fill = background.GetComponent<Image>();
+                fill.color = new Color(.025f, .045f, .075f, 1);
+                fill.raycastTarget = false;
+                bannerImage = Art.GetComponent<RawImage>();
+                bannerImage.rectTransform.SetParent(transform, false);
+                Stretch(bannerImage.rectTransform, new Vector2(.18f, 0), Vector2.one, 5);
+                bannerImage.raycastTarget = false;
+                var shade = new GameObject("Arena fade", typeof(RectTransform), typeof(CanvasRenderer), typeof(SoloBannerFade));
+                shade.layer = gameObject.layer;
+                var shadeRect = shade.GetComponent<RectTransform>();
+                shadeRect.SetParent(transform, false);
+                Stretch(shadeRect, Vector2.zero, Vector2.one, 5);
+                shade.GetComponent<SoloBannerFade>().raycastTarget = false;
+                Title.rectTransform.SetParent(transform, false);
+                Stretch(Title.rectTransform, new Vector2(0, .34f), new Vector2(.76f, .88f), 0);
+                Title.rectTransform.offsetMin = new Vector2(24, 0);
+                Title.rectTransform.offsetMax = new Vector2(-12, 0);
+                UltraTheme.Style(Title, true, 1);
+                Title.alignment = TextAlignmentOptions.MidlineLeft;
+                Title.enableAutoSizing = true;
+                Title.fontSizeMin = 30;
+                Title.fontSizeMax = 42;
+                Title.color = Color.white;
+                Title.raycastTarget = false;
+                var caption = new GameObject("Arena category", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+                caption.layer = gameObject.layer;
+                var captionRect = caption.GetComponent<RectTransform>();
+                captionRect.SetParent(transform, false);
+                Stretch(captionRect, new Vector2(0, .13f), new Vector2(.80f, .33f), 0);
+                captionRect.offsetMin = new Vector2(25, 0);
+                captionRect.offsetMax = new Vector2(-12, 0);
+                bannerSubtitle = caption.GetComponent<TextMeshProUGUI>();
+                UltraTheme.Style(bannerSubtitle, false, 1.2f);
+                bannerSubtitle.fontSize = 17;
+                bannerSubtitle.color = new Color(.65f, .83f, .94f);
+                bannerSubtitle.raycastTarget = false;
+                // The original title strip and full-color gate image obscure the new banner.
+                foreach (var graphic in GetComponentsInChildren<Graphic>(true))
+                    if (graphic.gameObject.name == "Base" || graphic.gameObject.name == "TextTitle") graphic.enabled = false;
+            }
+            Title.rectTransform.SetAsLastSibling();
+            bannerSubtitle.text = botInfo.subtitle ?? "SOLO CHALLENGE";
+        }
+
+        private static void Stretch(RectTransform rect, Vector2 min, Vector2 max, float inset)
+        {
+            rect.anchorMin = min; rect.anchorMax = max;
+            rect.offsetMin = new Vector2(inset, inset);
+            rect.offsetMax = new Vector2(-inset, -inset);
+            rect.localScale = Vector3.one;
+        }
+
+        private void LateUpdate()
+        {
+            if (bannerImage == null || bannerImage.texture == null) return;
+            var size = bannerImage.rectTransform.rect.size;
+            if (size.x <= 0 || size.y <= 0) return;
+            float imageAspect = (float)bannerImage.texture.width / bannerImage.texture.height;
+            float viewAspect = size.x / size.y;
+            // Fill by cropping, never stretch card art into a strip.
+            float width = Mathf.Min(1, viewAspect / imageAspect);
+            float height = Mathf.Min(1, imageAspect / viewAspect);
+            bannerImage.uvRect = new Rect((1-width)*.5f, (1-height)*.5f, width, height);
+        }
 
         public override void Refresh()
         {
@@ -49,6 +126,7 @@ namespace MDPro3.UI
             Title.text = botInfo.name;
             isDiyDeck = botInfo.command.Contains("Lucky");
             Art.SetArt(botInfo.main0);
+            PaintBanner();
 
             NumBadge.SetActive(false);
             TextClear.SetActive(false);
@@ -84,6 +162,25 @@ namespace MDPro3.UI
             {
                 UserInput.NextSelectionIsAxis = true;
                 Program.instance.solo.GetUI<SoloSelectorUI>().SelectOnRight();
+            }
+        }
+    }
+    public sealed class SoloBannerFade : MaskableGraphic
+    {
+        protected override void OnPopulateMesh(VertexHelper vh)
+        {
+            vh.Clear();
+            var r = rectTransform.rect;
+            float[] stops = { 0, .28f, .63f, 1 };
+            float[] opacity = { .98f, .90f, .45f, .05f };
+            for (int i=0; i<stops.Length; i++)
+            {
+                var c = new Color(.025f, .045f, .075f, opacity[i]);
+                float x = Mathf.Lerp(r.xMin, r.xMax, stops[i]);
+                vh.AddVert(new Vector3(x, r.yMin), c, Vector2.zero);
+                vh.AddVert(new Vector3(x, r.yMax), c, Vector2.up);
+                if (i==0) continue;
+                int k=i*2; vh.AddTriangle(k-2,k-1,k); vh.AddTriangle(k,k-1,k+1);
             }
         }
     }

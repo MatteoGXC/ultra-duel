@@ -71,7 +71,9 @@ namespace WindBot.Game.AI
 
             Executor executor = (Executor)Activator.CreateInstance(infos.Type, ai, duel);
             executor.Deck = infos.Deck;
-            if(executor is DefaultExecutor published && (ai.Game.DeckFile??"").Replace('\\','/').IndexOf("/Published/",StringComparison.OrdinalIgnoreCase)>=0)
+            string deckPath = (ai.Game.DeckFile ?? "").Replace('\\', '/');
+            if (executor is DefaultExecutor published && (deckPath.IndexOf("/Published/", StringComparison.OrdinalIgnoreCase) >= 0
+                || deckPath.IndexOf("/Practice/", StringComparison.OrdinalIgnoreCase) >= 0))
                 published.EnablePublishedDeckSupport();
             return executor;
         }

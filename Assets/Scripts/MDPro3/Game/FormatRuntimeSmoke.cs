@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MDPro3.Duel.YGOSharp;
@@ -826,12 +827,25 @@ namespace MDPro3
                 if (!SoloSelector.HasFormatOverride || DuelFormat.Genesys != selection.StartsWith("Genesys"))
                     throw new Exception("Solo session format override was not applied.");
                 int offered = SoloSelector.bots.Count(b => !b.command.StartsWith("Random=") && !b.flags.Contains("SELECT_DECKFILE"));
-                if (selection == "Genesys · 0 points" ? offered != 0 : offered == 0)
+                if (offered == 0)
                     throw new Exception("Solo catalog was not reloaded for the selected point cap.");
                 foreach (var bot in SoloSelector.bots.Where(b => !b.command.StartsWith("Random=") && !b.flags.Contains("SELECT_DECKFILE")))
                     if (!DuelFormat.ValidateBotCommand(bot.command)) throw new Exception("Format switch retained an illegal opponent.");
             }
             Debug.Log("FORMAT_SMOKE_SOLO_FORMAT_SWITCH_PASSED " + mode);
+            var soloUi = solo.GetUI<SoloSelectorUI>();
+            string originalDifficulty = soloUi.Difficulty;
+            var seenDifficulties = new HashSet<string>();
+            for (int i=0;i<3;i++)
+            {
+                soloUi.CycleDifficulty();
+                seenDifficulties.Add(soloUi.Difficulty);
+                string launch = (string)typeof(SoloSelector).GetMethod("GetWindBotCommand", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .Invoke(solo, new object[] { 0, false });
+                if (!launch.EndsWith("Difficulty=" + soloUi.Difficulty)) throw new Exception("Selected difficulty was not sent to AI.");
+            }
+            if (seenDifficulties.Count!=3 || soloUi.Difficulty!=originalDifficulty) throw new Exception("Difficulty cycle/persistence failed.");
+            Debug.Log("SOLO_DIFFICULTY_CONTROLS_PASSED Easy/Medium/Hard launch commands");
             yield return Capture("solo-library");
             string command;
             if (!DuelFormat.PrepareSoloBot("Deck=CyberDragon Name=SmokeAI Dialog=default", out command))

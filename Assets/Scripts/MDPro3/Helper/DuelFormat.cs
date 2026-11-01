@@ -136,8 +136,8 @@ namespace MDPro3
         [Serializable]
         public class PublishedSoloDeck
         {
-            public string name, executor, difficulty, mode, source, title, file;
-            public int points;
+            public string name, executor, difficulty, mode, source, title, file, note;
+            public int points, banner;
         }
         [Serializable]
         private class PublishedSoloCatalog { public PublishedSoloDeck[] decks; }
@@ -149,7 +149,10 @@ namespace MDPro3
             var catalog = UnityEngine.JsonUtility.FromJson<PublishedSoloCatalog>(File.ReadAllText(catalogPath));
             var ban = Genesys ? BanlistManager.currentGenesysBanList : TcgBanlist;
             if (catalog?.decks == null || ban == null) yield break;
-            foreach (var row in catalog.decks)
+            var practicePath = "Data/solo-practice-decks.json";
+            var practice = File.Exists(practicePath)
+                ? UnityEngine.JsonUtility.FromJson<PublishedSoloCatalog>(File.ReadAllText(practicePath)) : null;
+            foreach (var row in (practice?.decks ?? new PublishedSoloDeck[0]).Concat(catalog.decks))
             {
                 if (row.mode != (Genesys ? "Genesys" : "TCG")) continue;
                 string path = Path.Combine("Data", row.file);

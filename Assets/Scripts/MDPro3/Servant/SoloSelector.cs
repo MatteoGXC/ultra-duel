@@ -27,6 +27,7 @@ namespace MDPro3.Servant
             public string[] flags;
             public int main0;
             public string source;
+            public string subtitle;
         }
         public static readonly List<BotInfo> bots = new();
 
@@ -172,28 +173,35 @@ namespace MDPro3.Servant
                 var deck = new Deck(Path.Combine("Data", row.file));
                 string level = row.difficulty == "Casual" ? "AI_LV1" : row.difficulty == "Hard" ? "AI_LV3" : "AI_LV2";
                 bots.Add(new BotInfo {
-                    name = row.difficulty + " · " + row.name,
+                    name = row.name,
+                    subtitle = (string.IsNullOrEmpty(row.note) ? "PUBLISHED RECIPE" : "PRACTICE ARENA") + "  /  " + row.mode,
                     command = DuelFormat.PublishedSoloCommand(row),
                     source = row.source,
                     desc = row.name + " — " + DuelFormat.DisplayName + "\n"
-                        + row.difficulty + " practice (estimated difficulty).\n"
                         + (DuelFormat.Genesys ? row.points + " points, including Side Deck.\n" : "TCG legality checked.\n")
-                        + "Published Konami Neuron list; cards unchanged.\nUse View published list to see the original recipe.",
-                    flags = new[] { level, "SUPPORT_MASTER_RULE_2020" }, main0 = deck.Main[0]
+                        + (string.IsNullOrEmpty(row.note) ? "Published Konami Neuron list; cards unchanged.\n" : row.note + "\n"),
+                    flags = new[] { level, "SUPPORT_MASTER_RULE_2020" }, main0 = row.banner != 0 ? row.banner : SoloBannerCard(row.executor, deck)
                 });
             }
-            foreach (var tier in new[] { "Casual", "Standard", "Hard" })
-            {
-                string level = tier == "Casual" ? "AI_LV1" : tier == "Hard" ? "AI_LV3" : "AI_LV2";
-                if (!bots.Exists(bot => Array.IndexOf(bot.flags, level) >= 0)) continue;
-                bots.Add(new BotInfo { name = "Random · " + tier, command = "Random=" + level,
-                    desc = "Choose a legal published " + tier.ToLowerInvariant() + " opponent for " + DuelFormat.DisplayName + ".",
-                    flags = new[] { "SUPPORT_MASTER_RULE_2020" }, main0 = DEFAULT_CARD });
-            }
+            bots.Add(new BotInfo { name = "Random opponent", command = "Random=SUPPORT_MASTER_RULE_2020",
+                desc = "Choose a legal opponent from this format's library. Your selected AI difficulty applies.",
+                flags = new string[0], main0 = DEFAULT_CARD });
             bots.Add(new BotInfo { name = "Custom AI deck", command = "Deck=Lucky Name=CustomAI Dialog=Universal.EN",
                 desc = "Choose your own AI deck. It must meet " + DuelFormat.DisplayName
-                    + ".\nSome strategies require a dedicated AI executor.\nOnly published lists compatible with the selected rules and cap appear above; unavailable archetypes are never rebuilt automatically.",
+                    + ".\nSome strategies require a dedicated AI executor.\nOnly opponents compatible with the selected rules and cap appear above.",
                 flags = new[] { "SELECT_DECKFILE", "SUPPORT_MASTER_RULE_2020" }, main0 = DEFAULT_CARD });
+        }
+
+        private static int SoloBannerCard(string executor, Deck deck)
+        {
+            // Choose the strategy's boss rather than the first card in a sorted recipe.
+            var heroes = new Dictionary<string, int> {
+                { "Blue-Eyes", 89631139 }, { "CyberDragon", 10443957 }, { "Blackwing", 73218989 },
+                { "Labrynth", 81497285 }, { "Yubel", 78371393 }, { "Swordsoul", 96633955 },
+                { "Exosister", 59242457 }, { "Albaz", 44146295 }, { "Dracotail", 33760966 }
+            };
+            if (heroes.TryGetValue(executor, out int hero) && (deck.Main.Contains(hero) || deck.Extra.Contains(hero))) return hero;
+            return deck.Extra.Count > 0 ? deck.Extra[0] : deck.Main[0];
         }
 
         private void Print()
@@ -226,6 +234,8 @@ namespace MDPro3.Servant
                 if (command != string.Empty)
                     aiCommand = command;
             }
+            if (condition == Condition.ForSolo)
+                aiCommand += " Difficulty=" + GetUI<SoloSelectorUI>().Difficulty;
             return aiCommand;
         }
 
@@ -271,7 +281,7 @@ namespace MDPro3.Servant
             IList<BotInfo> foundBots = new List<BotInfo>();
             foreach (var bot in bots)
             {
-                if (Array.IndexOf(bot.flags, flag) >= 0) foundBots.Add(bot);
+                if (Array.IndexOf(bot.flags, flag) >= 0 && Array.IndexOf(bot.flags, "SELECT_DECKFILE") < 0 && !bot.command.StartsWith("Random=")) foundBots.Add(bot);
             }
             if (foundBots.Count > 0)
             {

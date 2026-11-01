@@ -88,6 +88,24 @@ namespace MDPro3.UI.ServantUI
         private GameObject formatControls;
         private GameObject sourceControl;
         private string selectedSource;
+        private TextMeshProUGUI difficultyLabel;
+        private string overviewDescription;
+        private RectTransform overviewScrollRect;
+        private Vector2 overviewScrollOffset;
+        public string Difficulty => Config.Get("SoloDifficulty", "Hard") is "Easy" ? "Easy"
+            : Config.Get("SoloDifficulty", "Hard") is "Medium" ? "Medium" : "Hard";
+
+        public void CycleDifficulty()
+        {
+            Config.Set("SoloDifficulty", Difficulty == "Hard" ? "Easy" : Difficulty == "Easy" ? "Medium" : "Hard");
+            RefreshDifficulty();
+        }
+
+        private void RefreshDifficulty()
+        {
+            difficultyLabel.text = "AI: " + Difficulty + "  >";
+            RefreshOverview();
+        }
 
         public override void Initialize(Servant.Servant servant)
         {            
@@ -100,22 +118,27 @@ namespace MDPro3.UI.ServantUI
             controls.anchorMin = Vector2.zero;
             controls.anchorMax = Vector2.one;
             controls.offsetMin = controls.offsetMax = Vector2.zero;
-            playerDeckLabel = AddSoloControl("Your deck", .34f, .30f, () => {
+            playerDeckLabel = AddSoloControl("Your deck", .34f, .24f, () => {
                 Program.instance.deckSelector.SwitchCondition(DeckSelector.Condition.ForSolo);
                 Program.instance.ShiftToServant(Program.instance.deckSelector);
             });
-            formatLabel = AddSoloControl("Format", .66f, .29f, OnChangeSoloFormat);
+            formatLabel = AddSoloControl("Format", .59f, .21f, OnChangeSoloFormat);
             var sourceLabel = AddSoloControl("Source", .55f, .38f, () => {
                 if (!string.IsNullOrEmpty(selectedSource)) Application.OpenURL(selectedSource);
             });
-            sourceLabel.text = "View published list  >";
+            sourceLabel.text = "View recipe source  >";
             sourceControl = sourceLabel.transform.parent.gameObject;
             var sourceRect = sourceControl.GetComponent<RectTransform>();
-            sourceRect.anchorMin = new Vector2(.55f, .18f);
-            sourceRect.anchorMax = new Vector2(.93f, .235f);
+            sourceRect.anchorMin = new Vector2(.55f, .155f);
+            sourceRect.anchorMax = new Vector2(.93f, .205f);
             sourceControl.SetActive(false);
+            difficultyLabel = AddSoloControl("AI difficulty", .81f, .14f, CycleDifficulty);
+            RefreshDifficulty();
             TextOverview.enableAutoSizing = false;
             TextOverview.fontSize = 25;
+            var overviewScroll = TextOverview.GetComponentInParent<ScrollRect>();
+            overviewScrollRect = overviewScroll != null ? overviewScroll.GetComponent<RectTransform>() : null;
+            if (overviewScrollRect != null) overviewScrollOffset = overviewScrollRect.offsetMin;
             TextOverview.textWrappingMode = TextWrappingModes.Normal;
             if (GetComponent<UltraSoloRepaint>() == null) gameObject.AddComponent<UltraSoloRepaint>();
         }
@@ -320,10 +343,22 @@ namespace MDPro3.UI.ServantUI
 
         public void SetOverview(string text, bool activateDeckButton, string source = null)
         {
-            TextOverview.text = text;
+            overviewDescription = text;
+            RefreshOverview();
             ButtonDeck.gameObject.SetActive(activateDeckButton);
             selectedSource = source;
             sourceControl.SetActive(!string.IsNullOrEmpty(source));
+            if (overviewScrollRect != null)
+                overviewScrollRect.offsetMin = overviewScrollOffset + new Vector2(0, string.IsNullOrEmpty(source) ? 0 : 66);
+        }
+
+        private void RefreshOverview()
+        {
+            if (overviewDescription == null) return;
+            string behavior = Difficulty == "Easy" ? "Shorter combos and missed responses."
+                : Difficulty == "Medium" ? "Full combos with occasional mistakes."
+                : "Full scripted combos. No deliberate mistakes.";
+            TextOverview.text = overviewDescription + "\n\n" + Difficulty + " AI\n" + behavior;
         }
 
         public string GetAIDeck()

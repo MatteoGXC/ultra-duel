@@ -15,6 +15,7 @@ namespace WindBot.Game
         public string Deck;
         public string DeckFile;
         public bool NativeChainProtocol;
+        public string Difficulty;
         public string Dialog;
         public int Hand;
         public bool Debug;
@@ -33,6 +34,7 @@ namespace WindBot.Game
             Username = Info.Name;
             Deck = Info.Deck;
             DeckFile = Info.DeckFile;
+            Difficulty = Info.Difficulty;
             NativeChainProtocol=Info.NativeChainProtocol;
             Dialog = Info.Dialog;
             Hand = Info.Hand;

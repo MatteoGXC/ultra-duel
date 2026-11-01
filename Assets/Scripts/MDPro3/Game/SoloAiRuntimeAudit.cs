@@ -19,6 +19,10 @@ namespace MDPro3
             WindBot.Program.InitDatas("cards.cdb");
             var results=new List<object>();int failures=0;
             var rows=JObject.Parse(File.ReadAllText("Data/solo-published-decks.json"))["decks"] as JArray;
+            bool practiceOnly=Array.IndexOf(Environment.GetCommandLineArgs(),"--solo-ai-practice")>=0;
+            var practice=JObject.Parse(File.ReadAllText("Data/solo-practice-decks.json"))["decks"] as JArray;
+            if(practiceOnly) rows=practice;
+            else foreach(var row in practice) rows.Add(row);
             int index=0;
             int target=Array.IndexOf(Environment.GetCommandLineArgs(),"--solo-ai-long")>=0?7:3;
             foreach(var row in rows)
@@ -36,7 +40,7 @@ namespace MDPro3
                     {
                         var info=new WindBot.WindBotInfo{Name="Audit "+seat,Deck=(string)row["executor"],
                             DeckFile=Path.GetFullPath(Path.Combine("Data",(string)row["file"])),
-                            Dialog="Universal.EN",Host="127.0.0.1",Port=port,Chat=false,NativeChainProtocol=true};
+                            Dialog="Universal.EN",Host="127.0.0.1",Port=port,Chat=false,NativeChainProtocol=true,Difficulty=(Array.IndexOf(Environment.GetCommandLineArgs(),"--solo-ai-easy")>=0?"Easy":Array.IndexOf(Environment.GetCommandLineArgs(),"--solo-ai-medium")>=0?"Medium":"Hard")};
                         clients[seat]=new WindBot.Game.GameClient(info);clients[seat].Start();
                     }
                 }catch(Exception e){error=e;}
@@ -53,7 +57,7 @@ namespace MDPro3
                 int turns=b?.AuditTurns??0, summons=b?.AuditSummons??0,activations=b?.AuditActivations??0;
                 bool passed=error==null && turns>=2 && (summons>0 || activations>0);
                 if(!passed)failures++;
-                results.Add(new{name=(string)row["name"],mode=(string)row["mode"],file=(string)row["file"],turns,summons,activations,passed,error=error?.ToString()});
+                results.Add(new{name=(string)row["name"],mode=(string)row["mode"],file=(string)row["file"],turns,summons,activations,passed,effects=b?.AuditAI?.AuditOwnActivations,missedResponses=b?.AuditAI?.AuditMissedResponses,shortTurns=b?.AuditAI?.AuditShortTurns,error=error?.ToString()});
                 Debug.Log("SOLO_AI_AUDIT "+index+"/"+rows.Count+" "+(string)row["name"]+" "+(string)row["mode"]+" turns="+turns+" summons="+summons+" effects="+activations+" "+(passed?"PASS":"FAIL "+error));
                 foreach(var client in clients)client?.Connection?.Close();
                 yield return new WaitForSecondsRealtime(.1f);
@@ -61,7 +65,7 @@ namespace MDPro3
                 yield return new WaitForSecondsRealtime(.2f);
                 File.WriteAllText(Path.Combine(output,"solo-ai-audit.json"),JsonConvert.SerializeObject(results,Formatting.Indented));
             }
-            File.WriteAllText(Path.Combine(output,failures==0?"passed.txt":"failed.txt"),rows.Count+" published opponents exercised; "+failures+" failures.");
+            File.WriteAllText(Path.Combine(output,failures==0?"passed.txt":"failed.txt"),rows.Count+" Solo opponents exercised; "+failures+" failures.");
             Application.Quit(failures==0?0:2);
         }
     }

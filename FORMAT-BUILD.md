@@ -28,16 +28,33 @@ library. The Dovphin option accepts your own AI Deck and checks its legality.
 Published Solo decks live in `Data/Windbot/Decks/Published`. The catalog in
 `Data/solo-published-decks.json` records public Konami Neuron source URLs, author
 titles, exact Main/Extra/Side arrays, supported executors, and estimated difficulty.
-There are 14 TCG entries and 15 Genesys entries at 100 points: a mixture of Casual,
-Standard, and Hard practice. No cards are added, removed, replaced, or optimized.
-Run `python Tools/import-published-solo.py` to reproduce and validate these exact
-snapshots; `Data/solo-decks-audit.json` records points and file hashes.
-Only legal source lists within the current cap are shown. Unsupported archetypes
-are unavailable, including Pendulum/Link strategies in Genesys. Smaller caps may
-leave no built-in opponents; a legal user-selected Custom AI deck can still play.
-The Solo header changes the session format/cap without changing a saved deck profile,
-and offers a separate player-deck selector. Random has separate difficulty pools.
-Difficulty is estimated; every AI combo and playing strength is not exhaustively tested.
+The original 29 published recipes remain unchanged. A separate curated practice
+catalog in `Data/solo-practice-decks.json` adds 22 format variants, including
+Branded Dracotail, Branded Dracotail Dogmatika, pure Dracotail, Maliss, Kashtira,
+Branded Despia, Tearlaments, Sky Striker, and other supported archetypes.
+These are practice builds, not claims of current tournament rankings. Curated
+recipes are labeled separately; their recipe-source button appears only when a
+public source URL exists. No personal player decks are used to generate them.
+Run `python Tools/build-solo-practice.py` to reproduce and legality-check them;
+run `python Tools/import-published-solo.py` for the unchanged Neuron snapshots.
+Only decks legal for the active format/cap are shown. Link and Pendulum strategies
+remain excluded from Genesys. Zero-point variants are available where supported.
+
+The Solo AI button cycles Easy, Medium, and Hard independently of the selected deck.
+Easy often settles for a smaller board and may miss an optional opposing-turn
+response; Medium does this less often. Mandatory selections and resolving effects
+are never randomized. Hard runs the full dedicated executor without intentional
+mistakes. These are scripted decision trees, not exhaustive search of every combo.
+Dracotail has dedicated starter/search, Fusion material, follow-up set, removal,
+and interruption decisions, layered on the existing Branded executor.
+The selected difficulty persists and is retained by the duel retry command.
+Banner artwork uses a boss from the actual recipe, aspect-preserving cropping,
+and a dark fade for readable names instead of stretching the first Main Deck card.
+
+`--format-smoke <output> TCG --solo-ai-audit --solo-ai-practice` exercises the new
+opponents through the real TCP server/card scripts. Add `--solo-ai-easy` or
+`--solo-ai-medium` for those behavior profiles; output records activated effects,
+intentional missed responses, and shortened turns. `--solo-ai-long` runs longer.
 
 ## Format changes
 

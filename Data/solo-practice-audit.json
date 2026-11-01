@@ -1,0 +1,158 @@
+{
+  "decks": [
+    {
+      "name": "Branded Dracotail",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/branded-dracotail.ydk",
+      "sha256": "0d8b091090332caaa0a06940c93c0092f41192536c5eaf80ff3588310b8661c6",
+      "points": 469
+    },
+    {
+      "name": "Branded Dracotail Dogmatika",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/branded-dracotail-dogmatika.ydk",
+      "sha256": "9ff15acda146bf05090d8fc659571c531c600b28e90f6e8d57cd51c0f3b6553c",
+      "points": 491
+    },
+    {
+      "name": "Dracotail",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/dracotail.ydk",
+      "sha256": "e4f4d898e7e1799dd1b5e0359a22de132a0edfb464b56d03182309533a3e968d",
+      "points": 389
+    },
+    {
+      "name": "Branded Despia",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/albaz-tcg.ydk",
+      "sha256": "6c6550aafc7664ade92d3d0ef90d52046219699561053eb9ae2ca0e983353be9",
+      "points": 123
+    },
+    {
+      "name": "Branded Despia",
+      "mode": "Genesys",
+      "file": "Windbot/Decks/Practice/albaz-genesys-100.ydk",
+      "sha256": "704b2d791a96c9d768dc989a34df40e6a54251c8cd85d4148c922aaa74849a8b",
+      "points": 96
+    },
+    {
+      "name": "Branded Despia",
+      "mode": "Genesys",
+      "file": "Windbot/Decks/Practice/albaz-genesys-0.ydk",
+      "sha256": "ace2b5381557cb3a65c8c328e642ba1a07cf12e8829fb75510aadaad11d5b922",
+      "points": 0
+    },
+    {
+      "name": "Altergeist",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/altergeist-tcg.ydk",
+      "sha256": "863a50f8518ca290977cfb5c9b6a56f5361a0feaba2bc9b4a78b3aa0baeb8edb",
+      "points": 144
+    },
+    {
+      "name": "Horus",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/horus-tcg.ydk",
+      "sha256": "0ff7bf3de42c4d9177378ef5c611c8a198ebfbad96b758db576c242b46535ba5",
+      "points": 16
+    },
+    {
+      "name": "Horus",
+      "mode": "Genesys",
+      "file": "Windbot/Decks/Practice/horus-genesys-100.ydk",
+      "sha256": "0ff7bf3de42c4d9177378ef5c611c8a198ebfbad96b758db576c242b46535ba5",
+      "points": 16
+    },
+    {
+      "name": "Horus",
+      "mode": "Genesys",
+      "file": "Windbot/Decks/Practice/horus-genesys-0.ydk",
+      "sha256": "ccc93864830f222933b4311998c33ff8a4a2025114c8bc63c519c48910dbdbb7",
+      "points": 0
+    },
+    {
+      "name": "Kashtira",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/kashtira-tcg.ydk",
+      "sha256": "ee51b29bb659daa616419ddfb58f6fc20d0b9a03826dc76eb193bb08b62b3c43",
+      "points": 280
+    },
+    {
+      "name": "Kashtira",
+      "mode": "Genesys",
+      "file": "Windbot/Decks/Practice/kashtira-genesys-100.ydk",
+      "sha256": "1091caeeeb325f9b760c3fc10fe038d3924d2b92b8c82c7d17d9708d3d635e1d",
+      "points": 91
+    },
+    {
+      "name": "Maliss",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/maliss-tcg.ydk",
+      "sha256": "755fcf4b0840e1d65c46de6c2ac4dc560e59b3ca2313fa52418a013814c1d864",
+      "points": 178
+    },
+    {
+      "name": "Mathmech",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/mathmech-tcg.ydk",
+      "sha256": "e1a7b9208e525ed41555d3dcc74ff6531a65d647bd908471667abccb79855ce1",
+      "points": 211
+    },
+    {
+      "name": "Mathmech",
+      "mode": "Genesys",
+      "file": "Windbot/Decks/Practice/mathmech-genesys-100.ydk",
+      "sha256": "f52e64cf49ffbbaea004e2d58af607f90696c5fd35083c454d664007fc2267b3",
+      "points": 93
+    },
+    {
+      "name": "Orcust",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/orcust-tcg.ydk",
+      "sha256": "070be94e9c3b1011a0c0f4cf4314f095e22722a06c4782b8af8cf9ca4745d49e",
+      "points": 117
+    },
+    {
+      "name": "Salamangreat",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/salamangreat-tcg.ydk",
+      "sha256": "a5956f8fc44e62e86164290b1a15bf2000ee77efa918b9b5651352a98ebdf407",
+      "points": 115
+    },
+    {
+      "name": "Sky Striker",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/sky-striker-tcg.ydk",
+      "sha256": "44e796e0bc63c937ab02eb7d8af603295244713113adec1b8a4c0075180a6713",
+      "points": 180
+    },
+    {
+      "name": "Tearlaments",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/tearlaments-tcg.ydk",
+      "sha256": "9e59a127f8c08b89737adabe4c12dc549dcd038ec8d53088eb099a7b6880c816",
+      "points": 517
+    },
+    {
+      "name": "Thunder Dragon",
+      "mode": "TCG",
+      "file": "Windbot/Decks/Practice/thunder-dragon-tcg.ydk",
+      "sha256": "de99402ba52b73a3a1c1985a785f51ddf6381c3562ecc72fb28c8d5c513b4699",
+      "points": 179
+    },
+    {
+      "name": "Thunder Dragon",
+      "mode": "Genesys",
+      "file": "Windbot/Decks/Practice/thunder-dragon-genesys-100.ydk",
+      "sha256": "047d64192ee49b81158cd4696354ce916873c685902263f42c24fec8a61880e3",
+      "points": 99
+    },
+    {
+      "name": "Thunder Dragon",
+      "mode": "Genesys",
+      "file": "Windbot/Decks/Practice/thunder-dragon-genesys-0.ydk",
+      "sha256": "c873b8bb2ab393c07e9e5878751f7fb4401d03ed9e8262f0908e14f677ba5eef",
+      "points": 0
+    }
+  ]
+}

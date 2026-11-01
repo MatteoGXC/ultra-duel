@@ -193,6 +193,18 @@ jobs:
           assert 'POPUP_AUDIT_PASSED' in (root/'mac-duel-ui.log').read_text()
           assert 'Failed to decompress' not in (root/'mac-duel-ui.log').read_text(), 'Unsupported compressed textures in installed duel'
           PY
+      - name: Verify all curated Solo AI opponents
+        run: |
+          python3 - <<'PY'
+          import os,subprocess,pathlib,json
+          root=pathlib.Path(os.environ['RUNNER_TEMP']);player=root/'Applications/Ultra Duel.app/Contents/Resources/Player.app/Contents/MacOS/Ultra Duel'
+          env=dict(os.environ,ULTRA_DUEL_DATA=str(root/'ultra-runtime'))
+          output=root/'mac-solo-ai';log=root/'mac-solo-ai.log'
+          result=subprocess.run([str(player),'-screen-width','1280','-screen-height','720','--format-smoke',str(output),'TCG','--solo-ai-audit','--solo-ai-practice','-logFile',str(log)],env=env,timeout=1200)
+          assert result.returncode==0 and (output/'passed.txt').exists(),log.read_text()[-6000:]
+          rows=json.loads((output/'solo-ai-audit.json').read_text())
+          assert len(rows)==22 and all(r['passed'] and r['missedResponses']==0 and r['shortTurns']==0 for r in rows)
+          PY
       - name: Verify premade decks and revised menu layouts
         run: |
           python3 - <<'PY'
@@ -220,6 +232,7 @@ jobs:
             ${{ runner.temp }}/mac-premades*
             ${{ runner.temp }}/mac-headers*
             ${{ runner.temp }}/mac-menu*
+            ${{ runner.temp }}/mac-solo-ai*
             ${{ runner.temp }}/ultra-runtime/installation.log
           retention-days: 7
       - uses: actions/upload-artifact@v4

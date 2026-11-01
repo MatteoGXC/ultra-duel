@@ -20,6 +20,7 @@ namespace WindBot.Game
         public Deck Deck { get; private set; }
 
         private GameAI _ai;
+        public GameAI AuditAI => _ai;
 
         private IDictionary<StocMessage, Action<BinaryReader>> _packets;
         private IDictionary<GameMessage, Action<BinaryReader>> _messages;

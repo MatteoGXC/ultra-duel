@@ -5,6 +5,7 @@ namespace WindBot
     public class WindBotInfo
     {
         public bool NativeChainProtocol;
+        public string Difficulty { get; set; } = "Hard";
         public string Name { get; set; }
         public string Deck { get; set; }
         public string DeckFile { get; set; }

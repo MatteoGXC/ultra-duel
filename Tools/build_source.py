@@ -4,7 +4,7 @@ import json
 import re
 import subprocess
 
-SCOPES = ['Assets/Scripts/MDPro3', 'Assets/Scripts/Editor', 'Tools', 'Tests',
+SCOPES = ['Assets/Scripts/Windbot', 'Data/solo-practice-decks.json', 'Data/solo-practice-audit.json', 'Data/solo-published-decks.json', 'Data/solo-executors.conf', 'Data/Windbot/Decks/Practice', 'Assets/Scripts/MDPro3', 'Assets/Scripts/Editor', 'Tools', 'Tests',
           'Assets/Resources/Ultra/MenuIcons', 'Data/PremadeDecks',
           'Data/premade-decks.json', 'Data/card-image-source.json',
           'Data/card-image-missing.json', 'Data/MenuIcons-LICENSES.txt',

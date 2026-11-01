@@ -13,6 +13,35 @@ namespace WindBot.Game
         public Executor Executor { get; set; }
 
         private Dialogs _dialogs;
+        private readonly System.Random practiceRandom = new System.Random();
+        public int AuditMissedResponses, AuditShortTurns;
+        public readonly HashSet<int> AuditOwnActivations = new HashSet<int>();
+        private int practiceActions;
+        private int practiceActionLimit = int.MaxValue;
+        private bool missedResponse;
+
+        private void ResetPracticeTurn()
+        {
+            practiceActions = 0;
+            missedResponse = false;
+            // Some turns finish the full line; others settle for a smaller board.
+            // Never interrupt a resolving effect or change mandatory selections.
+            bool easy = string.Equals(Game.Difficulty, "Easy", System.StringComparison.OrdinalIgnoreCase);
+            bool medium = string.Equals(Game.Difficulty, "Medium", System.StringComparison.OrdinalIgnoreCase);
+            practiceActionLimit = easy && practiceRandom.NextDouble() < .8 ? practiceRandom.Next(3, 7)
+                : medium && practiceRandom.NextDouble() < .4 ? practiceRandom.Next(7, 13) : int.MaxValue;
+        }
+
+        private bool MissOptionalResponse(bool forced)
+        {
+            if (forced || Duel.Player == 0 || missedResponse) return false;
+            double chance = string.Equals(Game.Difficulty, "Easy", System.StringComparison.OrdinalIgnoreCase) ? .28
+                : string.Equals(Game.Difficulty, "Medium", System.StringComparison.OrdinalIgnoreCase) ? .10 : 0;
+            if (practiceRandom.NextDouble() >= chance) return false;
+            missedResponse = true;
+            AuditMissedResponses++;
+            return true;
+        }
 
         // record activated count to prevent infinite actions
         private Dictionary<int, int> _activatedCards;
@@ -110,6 +139,7 @@ namespace WindBot.Game
         public void OnNewTurn()
         {
             _activatedCards.Clear();
+            ResetPracticeTurn();
             Executor.OnNewTurn();
         }
 
@@ -157,6 +187,7 @@ namespace WindBot.Game
         /// <param name="player">Player who is currently chaining.</param>
         public void OnChaining(ClientCard card, int player)
         {
+            if (player == 0) AuditOwnActivations.Add(card.Id);
             Executor.OnChaining(player,card);
         }
 
@@ -383,6 +414,7 @@ namespace WindBot.Game
         /// <returns>Index of the activated card or -1.</returns>
         public int OnSelectChain(IList<ClientCard> cards, IList<int> descs, IList<bool> forces, int timing = -1)
         {
+            if (cards.Count > 0 && MissOptionalResponse(forces.Any(f => f))) return -1;
             Executor.OnSelectChain(cards);
             foreach (CardExecutor exec in Executor.Executors)
             {
@@ -463,6 +495,7 @@ namespace WindBot.Game
         /// <returns>True for yes, false for no.</returns>
         public bool OnSelectEffectYn(ClientCard card, int desc)
         {
+            if (MissOptionalResponse(false)) return false;
             foreach (CardExecutor exec in Executor.Executors)
             {
                 if (ShouldExecute(exec, card, ExecutorType.Activate, desc))
@@ -478,6 +511,20 @@ namespace WindBot.Game
         /// <returns>A new MainPhaseAction containing the action to do.</returns>
         public MainPhaseAction OnSelectIdleCmd(MainPhase main)
         {
+            if (practiceActions >= practiceActionLimit && Duel.Fields[0].GetMonsterCount() > 0)
+            {
+                // Set interaction before passing; this avoids simply throwing away a hand.
+                foreach (var settable in main.SpellSetableCards)
+                    foreach (var exec in Executor.Executors)
+                        if (ShouldExecute(exec, settable, ExecutorType.SpellSet))
+                            return new MainPhaseAction(MainPhaseAction.MainAction.SetSpell, settable.ActionIndex);
+                if (main.CanBattlePhase && Duel.Fields[0].HasAttackingMonster())
+                {
+                    AuditShortTurns++;
+                    return new MainPhaseAction(MainPhaseAction.MainAction.ToBattlePhase);
+                }
+                if (main.CanEndPhase) { AuditShortTurns++; return new MainPhaseAction(MainPhaseAction.MainAction.ToEndPhase); }
+            }
             CheckSurrender();
             foreach (CardExecutor exec in Executor.Executors)
             {
@@ -1214,6 +1261,8 @@ namespace WindBot.Game
             bool result = card != null && exec.Type == type &&
                 (exec.CardId == -1 || exec.CardId == card.Id) &&
                 (exec.Func == null || exec.Func());
+            if (result && (type == ExecutorType.Activate || type == ExecutorType.Summon || type == ExecutorType.SpSummon))
+                practiceActions++;
             if (card.Id != 0 && type == ExecutorType.Activate && result)
             {
                 int count = card.IsDisabled() ? 3 : 1;

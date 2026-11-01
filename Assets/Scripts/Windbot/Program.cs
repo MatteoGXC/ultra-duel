@@ -79,6 +79,7 @@ namespace WindBot
             Info.Name = Config.GetString("Name", Info.Name);
             Info.Deck = Config.GetString("Deck", Info.Deck);
             Info.DeckFile = Config.GetString("DeckFile", Info.DeckFile);
+            Info.Difficulty = Config.GetString("Difficulty", Info.Difficulty);
             Info.NativeChainProtocol=Config.GetBool("NativeChainProtocol",false);
             Info.Dialog = Config.GetString("Dialog", Info.Dialog);
             Info.Host = Config.GetString("Host", Info.Host);
