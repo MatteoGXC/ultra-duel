@@ -49,26 +49,31 @@ namespace MDPro3.UI
         {
             if (bannerImage == null)
             {
+                // The native selection animation moves Offset by 48 pixels. Keep
+                // artwork, captions and frame in that same coordinate system.
+                var bannerParent = Manager.GetElement<RectTransform>("Offset");
                 var background = new GameObject("Arena backdrop", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
                 background.layer = gameObject.layer;
                 var bgRect = background.GetComponent<RectTransform>();
-                bgRect.SetParent(transform, false);
+                bgRect.SetParent(bannerParent, false);
                 bgRect.SetAsFirstSibling();
                 Stretch(bgRect, Vector2.zero, Vector2.one, 4);
                 var fill = background.GetComponent<Image>();
                 fill.color = new Color(.025f, .045f, .075f, 1);
                 fill.raycastTarget = false;
                 bannerImage = Art.GetComponent<RawImage>();
-                bannerImage.rectTransform.SetParent(transform, false);
+                bannerImage.rectTransform.SetParent(bannerParent, false);
                 Stretch(bannerImage.rectTransform, new Vector2(.18f, 0), Vector2.one, 5);
+                bannerImage.rectTransform.SetSiblingIndex(1);
                 bannerImage.raycastTarget = false;
                 var shade = new GameObject("Arena fade", typeof(RectTransform), typeof(CanvasRenderer), typeof(SoloBannerFade));
                 shade.layer = gameObject.layer;
                 var shadeRect = shade.GetComponent<RectTransform>();
-                shadeRect.SetParent(transform, false);
+                shadeRect.SetParent(bannerParent, false);
                 Stretch(shadeRect, Vector2.zero, Vector2.one, 5);
+                shadeRect.SetSiblingIndex(2);
                 shade.GetComponent<SoloBannerFade>().raycastTarget = false;
-                Title.rectTransform.SetParent(transform, false);
+                Title.rectTransform.SetParent(bannerParent, false);
                 Stretch(Title.rectTransform, new Vector2(0, .34f), new Vector2(.76f, .88f), 0);
                 Title.rectTransform.offsetMin = new Vector2(24, 0);
                 Title.rectTransform.offsetMax = new Vector2(-12, 0);
@@ -82,7 +87,7 @@ namespace MDPro3.UI
                 var caption = new GameObject("Arena category", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
                 caption.layer = gameObject.layer;
                 var captionRect = caption.GetComponent<RectTransform>();
-                captionRect.SetParent(transform, false);
+                captionRect.SetParent(bannerParent, false);
                 Stretch(captionRect, new Vector2(0, .13f), new Vector2(.80f, .33f), 0);
                 captionRect.offsetMin = new Vector2(25, 0);
                 captionRect.offsetMax = new Vector2(-12, 0);
