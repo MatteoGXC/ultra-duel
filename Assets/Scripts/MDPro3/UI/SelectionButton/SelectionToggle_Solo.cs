@@ -117,7 +117,12 @@ namespace MDPro3.UI
             // Fill by cropping, never stretch card art into a strip.
             float width = Mathf.Min(1, viewAspect / imageAspect);
             float height = Mathf.Min(1, imageAspect / viewAspect);
-            bannerImage.uvRect = new Rect((1-width)*.5f, (1-height)*.5f, width, height);
+            // Most monster faces sit above the center of the square art. These
+            // three fusion bosses need a higher focal point to avoid chest-only crops.
+            float focusY = botInfo.main0 == 33760966 ? .88f
+                : botInfo.main0 == 24915933 ? .84f
+                : botInfo.main0 == 79755671 ? .94f : .60f;
+            bannerImage.uvRect = new Rect((1-width)*.5f, (1-height)*focusY, width, height);
         }
 
         public override void Refresh()
